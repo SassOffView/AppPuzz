@@ -7,36 +7,55 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 
-# Unity asset meta files (keep these!)
-# *.meta  <-- NON ignorare, Unity le usa per i GUID
+# MemoryCaptures can get into the repository e.g. for use in the Unity diagnostics tool
+[Mm]emory[Cc]aptures/
 
-# Visual Studio / Rider
-.vs/
+# Asset meta data should only be ignored when the corresponding asset is also ignored
+# *.meta
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D generated file on crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Rider IDE
+.idea/
+
+# VS Code
+.vscode/
+
+# Visual Studio
 *.csproj
 *.unityproj
 *.sln
 *.suo
+*.tmp
 *.user
-*.userosscache
-*.sln.docstates
-*.pidb.meta
+*.userprefs
+*.pidb
+*.booproj
+*.svd
 *.pdb
-*.mdb
+*.opendb
+*.VC.db
 
-# macOS
+# OS generated
 .DS_Store
-*.DS_Store.meta
-
-# Windows
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-
-# Rider / JetBrains
-.idea/
-*.idea.meta
-
-# Crash reports
-crashlytics-build.properties
-
-# Node / npm (non usato in Unity, sicurezza)
-node_modules/
-package-lock.json
