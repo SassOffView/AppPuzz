@@ -3,17 +3,19 @@
 // Gestisce la generazione e il layout della griglia 5×5 di LetterCell.
 // Istanzia i prefab, assegna lettere ponderate, mantiene la matrice.
 // ============================================================
-// STEP 1 : stub compilabile — la griglia reale viene costruita nello STEP 2.
+// STEP 2 : GenerateGrid() e ResetAllCells() implementati.
 // ============================================================
 
 using UnityEngine;
-using AppPuzz.Utils;        // WeightedRandom
+using AppPuzz.Utils;
+using AppPuzz.Localization;
 
 namespace AppPuzz.Grid
 {
     /// <summary>
     /// Singleton MonoBehaviour che gestisce la griglia 5×5.
     /// Deve essere attaccato a un GameObject nella scena Gameplay.
+    /// Il gridContainer deve avere un GridLayoutGroup configurato 5×5.
     /// </summary>
     public class GridManager : MonoBehaviour
     {
@@ -57,8 +59,9 @@ namespace AppPuzz.Grid
 
         private void Start()
         {
-            // TODO (STEP 2): chiamare GenerateGrid() quando la scena è pronta
-            Debug.Log("[GridManager] Pronto. GenerateGrid() verrà implementata nello STEP 2.");
+            // La griglia viene generata da GameManager.StartGame()
+            // Qui non la generiamo automaticamente per evitare doppie chiamate.
+            Debug.Log("[GridManager] Pronto. In attesa di GenerateGrid() da GameManager.");
         }
 
         // ----------------------------------------------------------
@@ -67,16 +70,36 @@ namespace AppPuzz.Grid
 
         /// <summary>
         /// Genera (o rigenera) l'intera griglia 5×5.
-        /// Distrugge le celle precedenti e ne crea di nuove con lettere casuali.
+        /// Distrugge le celle precedenti e ne crea di nuove con lettere casuali
+        /// distribuite in base alla lingua corrente.
         /// </summary>
         public void GenerateGrid()
         {
-            // TODO (STEP 2): implementare
-            // 1. Distruggere le celle esistenti in gridContainer
-            // 2. Per ogni (row, col): istanziare letterCellPrefab
-            // 3. Chiamare cell.Initialize(lettera, row, col)
-            // 4. Salvare in _cells[row, col]
-            Debug.Log("[GridManager] GenerateGrid() — da implementare nello STEP 2.");
+            // 1. Distruggi le celle esistenti nel contenitore
+            foreach (Transform child in gridContainer)
+                Destroy(child.gameObject);
+
+            // 2. Scegli la distribuzione di lettere in base alla lingua corrente
+            var weights = (LanguageManager.Instance?.CurrentLanguage == Language.English)
+                ? WeightedRandom.EnglishWeights
+                : WeightedRandom.ItalianWeights;
+
+            // 3. Istanzia ogni cella e inizializzala
+            for (int r = 0; r < GRID_SIZE; r++)
+            {
+                for (int c = 0; c < GRID_SIZE; c++)
+                {
+                    GameObject obj = Instantiate(letterCellPrefab, gridContainer);
+                    LetterCell cell = obj.GetComponent<LetterCell>();
+
+                    char letter = WeightedRandom.GetLetter(weights);
+                    cell.Initialize(letter, r, c);
+
+                    _cells[r, c] = cell;
+                }
+            }
+
+            Debug.Log("[GridManager] Griglia 5×5 generata.");
         }
 
         /// <summary>
@@ -97,6 +120,16 @@ namespace AppPuzz.Grid
             int dr = Mathf.Abs(a.Row - b.Row);
             int dc = Mathf.Abs(a.Col - b.Col);
             return dr <= 1 && dc <= 1 && !(dr == 0 && dc == 0);
+        }
+
+        /// <summary>
+        /// Deseleziona visivamente tutte le celle della griglia.
+        /// Chiamato da WordSelector dopo ogni parola (valida o no).
+        /// </summary>
+        public void ResetAllCells()
+        {
+            foreach (var cell in _cells)
+                cell?.SetSelected(false);
         }
     }
 }
