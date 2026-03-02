@@ -1,0 +1,42 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Unity asset meta files (keep these!)
+# *.meta  <-- NON ignorare, Unity le usa per i GUID
+
+# Visual Studio / Rider
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.pidb.meta
+*.pdb
+*.mdb
+
+# macOS
+.DS_Store
+*.DS_Store.meta
+
+# Windows
+Thumbs.db
+
+# Rider / JetBrains
+.idea/
+*.idea.meta
+
+# Crash reports
+crashlytics-build.properties
+
+# Node / npm (non usato in Unity, sicurezza)
+node_modules/
+package-lock.json
