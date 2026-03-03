@@ -33,7 +33,14 @@ namespace AppPuzz.Gameplay
 
         [Header("Limiti")]
         [Tooltip("Energia massima raggiungibile.")]
-        public float maxEnergy = 200f;
+        public float maxEnergy = 5000f;
+
+        [Header("Streak")]
+        [Tooltip("Secondi massimi tra una parola valida e la successiva per mantenere lo streak.")]
+        public float streakTimeWindow = 1.5f;
+
+        [Tooltip("Numero di parole consecutive prima che inizi il bonus streak.")]
+        public int streakBonusThreshold = 3;
 
         // ----------------------------------------------------------
         // Stato
@@ -44,6 +51,12 @@ namespace AppPuzz.Gameplay
 
         /// <summary>Numero di parole valide consecutive (per il bonus streak).</summary>
         public int CurrentStreak { get; private set; }
+
+        /// <summary>Streak massimo raggiunto durante la partita.</summary>
+        public int MaxStreak { get; private set; }
+
+        // Timestamp dell'ultima parola valida (per il controllo finestra temporale)
+        private float _lastWordTime = float.NegativeInfinity;
 
         // ----------------------------------------------------------
         // Unity lifecycle
@@ -71,13 +84,20 @@ namespace AppPuzz.Gameplay
         /// <param name="isLegendary">True se è una parola fantasy.</param>
         public void AddEnergy(string word, bool isLegendary = false)
         {
+            // Reset streak se è passato troppo tempo dall'ultima parola valida
+            if (Time.time - _lastWordTime > streakTimeWindow)
+                CurrentStreak = 0;
+
+            _lastWordTime = Time.time;
             CurrentStreak++;
+            if (CurrentStreak > MaxStreak) MaxStreak = CurrentStreak;
 
             // Base: 2 punti per ogni lettera della parola
             float baseScore = word.Length * 2f;
 
-            // Bonus streak: +20% per ogni parola consecutiva, massimo 2.5×
-            float streakMultiplier = Mathf.Min(1f + CurrentStreak * 0.2f, 2.5f);
+            // Bonus streak: +20% per ogni parola oltre la soglia (default: dalla 4ª), cap 2.5×
+            int bonusStreak = Mathf.Max(0, CurrentStreak - streakBonusThreshold);
+            float streakMultiplier = Mathf.Min(1f + bonusStreak * 0.2f, 2.5f);
 
             // Bonus leggendario: punteggio triplicato
             float legendaryMultiplier = isLegendary ? 3f : 1f;
@@ -85,6 +105,7 @@ namespace AppPuzz.Gameplay
             float gained = baseScore * streakMultiplier * legendaryMultiplier;
             CurrentEnergy = Mathf.Clamp(CurrentEnergy + gained, 0f, maxEnergy);
             UpdateUI();
+            CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
 
             Debug.Log($"[EnergyManager] +{gained:F1} energia " +
                       $"(parola='{word}', streak={CurrentStreak}, legendary={isLegendary})");
@@ -103,6 +124,8 @@ namespace AppPuzz.Gameplay
         {
             CurrentEnergy  = 0f;
             CurrentStreak  = 0;
+            MaxStreak      = 0;
+            _lastWordTime  = float.NegativeInfinity;
             UpdateUI();
         }
 
@@ -114,8 +137,6 @@ namespace AppPuzz.Gameplay
         {
             if (energyBar != null)
                 energyBar.value = CurrentEnergy / maxEnergy;
-
-            CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
         }
     }
 }

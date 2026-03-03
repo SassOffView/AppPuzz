@@ -10,6 +10,8 @@ using UnityEngine;
 using TMPro;
 using AppPuzz.Grid;
 using AppPuzz.Localization;
+using AppPuzz.Creatures;
+using AppPuzz.UI;
 
 namespace AppPuzz.Gameplay
 {
@@ -40,34 +42,25 @@ namespace AppPuzz.Gameplay
         /// <summary>Stato corrente del flusso di gioco.</summary>
         public GameState CurrentState { get; private set; } = GameState.Idle;
 
-        /// <summary>Secondi rimanenti nella partita corrente.</summary>
-        public float TimeRemaining { get; private set; }
-
         // ----------------------------------------------------------
         // Configurazione
         // ----------------------------------------------------------
 
         [Header("Timer")]
-        [Tooltip("Durata di una partita in secondi.")]
-        public float gameDuration = 90f;
+        [Tooltip("Durata della partita in secondi.")]
+        public float gameDuration = 120f;
 
         // ----------------------------------------------------------
         // Riferimenti UI
         // ----------------------------------------------------------
 
         [Header("UI - Timer")]
-        [Tooltip("Testo che mostra i secondi rimanenti (es. '01:30').")]
+        [Tooltip("Testo che mostra il conto alla rovescia (es. '02:00').")]
         public TextMeshProUGUI timerText;
 
         [Header("UI - Risultati")]
-        [Tooltip("Pannello mostrato a fine partita.")]
-        public GameObject resultsPanel;
-
-        [Tooltip("Testo del punteggio finale nel pannello risultati.")]
-        public TextMeshProUGUI finalScoreText;
-
-        [Tooltip("Testo del livello creatura raggiunto nel pannello risultati.")]
-        public TextMeshProUGUI finalLevelText;
+        [Tooltip("Pannello risultati mostrato al termine della partita.")]
+        public ResultsPanel resultsPanel;
 
         // ----------------------------------------------------------
         // Riferimenti ai sistemi
@@ -79,6 +72,7 @@ namespace AppPuzz.Gameplay
 
         // WordValidator viene creato via codice (non MonoBehaviour)
         private WordValidator _wordValidator;
+        private float _timeRemaining;
 
         // ----------------------------------------------------------
         // Unity lifecycle
@@ -106,9 +100,6 @@ namespace AppPuzz.Gameplay
 
         private void Start()
         {
-            if (resultsPanel != null)
-                resultsPanel.SetActive(false);
-
             StartGame();
         }
 
@@ -116,11 +107,14 @@ namespace AppPuzz.Gameplay
         {
             if (CurrentState != GameState.Playing) return;
 
-            TimeRemaining -= Time.deltaTime;
+            _timeRemaining -= Time.deltaTime;
             UpdateTimerUI();
 
-            if (TimeRemaining <= 0f)
+            if (_timeRemaining <= 0f)
+            {
+                _timeRemaining = 0f;
                 EndGame();
+            }
         }
 
         // ----------------------------------------------------------
@@ -130,12 +124,10 @@ namespace AppPuzz.Gameplay
         /// <summary>Avvia una nuova partita (reset griglia, energia, timer).</summary>
         public void StartGame()
         {
-            CurrentState = GameState.Playing;
-            TimeRemaining = gameDuration;
+            CurrentState   = GameState.Playing;
+            _timeRemaining = gameDuration;
 
-            // Nascondi pannello risultati
-            if (resultsPanel != null)
-                resultsPanel.SetActive(false);
+            resultsPanel?.Hide();
 
             // Carica dizionari in base alla lingua corrente
             if (LanguageManager.Instance != null)
@@ -179,13 +171,13 @@ namespace AppPuzz.Gameplay
             if (CurrentState == GameState.GameOver) return;
 
             CurrentState = GameState.GameOver;
-            TimeRemaining = 0f;
-            UpdateTimerUI();
 
-            float finalEnergy = energyManager != null ? energyManager.CurrentEnergy : 0f;
-            Debug.Log($"[GameManager] Partita terminata. Energia finale: {finalEnergy:F0}");
+            float finalEnergy = energyManager?.CurrentEnergy ?? 0f;
+            int   finalLevel  = CreatureController.Instance?.CurrentLevel ?? 1;
+            int   maxStreak   = energyManager?.MaxStreak ?? 0;
 
-            ShowResults(finalEnergy);
+            Debug.Log($"[GameManager] Partita terminata. Energia={finalEnergy:F0}, Livello={finalLevel}, MaxStreak={maxStreak}");
+            resultsPanel?.Show(finalEnergy, finalLevel, maxStreak);
         }
 
         /// <summary>Riavvia la partita — collegare al bottone "Gioca ancora".</summary>
@@ -201,33 +193,13 @@ namespace AppPuzz.Gameplay
         private void UpdateTimerUI()
         {
             if (timerText == null) return;
-            int seconds = Mathf.CeilToInt(Mathf.Max(TimeRemaining, 0f));
-            int mm = seconds / 60;
-            int ss = seconds % 60;
-            timerText.text = $"{mm:D2}:{ss:D2}";
+            int seconds = Mathf.CeilToInt(Mathf.Max(_timeRemaining, 0f));
+            timerText.text = $"{seconds / 60:D2}:{seconds % 60:D2}";
 
             // Colore rosso quando mancano meno di 10 secondi
-            timerText.color = (TimeRemaining <= 10f && TimeRemaining > 0f)
+            timerText.color = (_timeRemaining <= 10f && _timeRemaining > 0f)
                 ? Color.red
                 : Color.white;
-        }
-
-        private void ShowResults(float finalEnergy)
-        {
-            if (resultsPanel != null)
-                resultsPanel.SetActive(true);
-
-            if (finalScoreText != null)
-                finalScoreText.text = $"{finalEnergy:F0}";
-
-            if (finalLevelText != null && energyManager != null)
-            {
-                // Livello leggibile in base all'energia
-                string levelLabel = finalEnergy >= 120f ? "Leggendario" :
-                                    finalEnergy >=  50f ? "Evoluto"     :
-                                                          "Base";
-                finalLevelText.text = levelLabel;
-            }
         }
     }
 }
