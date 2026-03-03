@@ -58,6 +58,9 @@ namespace AppPuzz.Creatures
         private int _currentLevel = 1;
         private Coroutine _animCoroutine;
 
+        /// <summary>Livello di evoluzione corrente (1, 2 o 3).</summary>
+        public int CurrentLevel => _currentLevel;
+
         // ----------------------------------------------------------
         // Unity lifecycle
         // ----------------------------------------------------------

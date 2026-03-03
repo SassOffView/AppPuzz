@@ -45,6 +45,9 @@ namespace AppPuzz.Gameplay
         /// <summary>Numero di parole valide consecutive (per il bonus streak).</summary>
         public int CurrentStreak { get; private set; }
 
+        /// <summary>Streak massimo raggiunto durante la partita.</summary>
+        public int MaxStreak { get; private set; }
+
         // ----------------------------------------------------------
         // Unity lifecycle
         // ----------------------------------------------------------
@@ -72,6 +75,7 @@ namespace AppPuzz.Gameplay
         public void AddEnergy(string word, bool isLegendary = false)
         {
             CurrentStreak++;
+            if (CurrentStreak > MaxStreak) MaxStreak = CurrentStreak;
 
             // Base: 2 punti per ogni lettera della parola
             float baseScore = word.Length * 2f;
@@ -104,6 +108,7 @@ namespace AppPuzz.Gameplay
         {
             CurrentEnergy  = 0f;
             CurrentStreak  = 0;
+            MaxStreak      = 0;
             UpdateUI();
         }
 
