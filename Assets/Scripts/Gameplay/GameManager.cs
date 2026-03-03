@@ -65,8 +65,7 @@ namespace AppPuzz.Gameplay
 
         private void Start()
         {
-            // TODO (STEP 7): avviare automaticamente la partita o aspettare input utente
-            Debug.Log("[GameManager] Pronto. StartGame() verrà implementata nello STEP 7.");
+            StartGame(); // test — verrà gestito meglio allo STEP 7
         }
 
         // ----------------------------------------------------------
