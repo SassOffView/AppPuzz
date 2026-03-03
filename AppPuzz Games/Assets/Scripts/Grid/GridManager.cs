@@ -123,6 +123,17 @@ namespace AppPuzz.Grid
         }
 
         /// <summary>
+        /// Restituisce tutte le 25 celle della griglia (usato da WordSelector).
+        /// </summary>
+        public System.Collections.Generic.IEnumerable<LetterCell> GetAllCells()
+        {
+            for (int r = 0; r < GRID_SIZE; r++)
+                for (int c = 0; c < GRID_SIZE; c++)
+                    if (_cells[r, c] != null)
+                        yield return _cells[r, c];
+        }
+
+        /// <summary>
         /// Deseleziona visivamente tutte le celle della griglia.
         /// Chiamato da WordSelector dopo ogni parola (valida o no).
         /// </summary>

@@ -7,10 +7,8 @@
 // compatibilità — niente più dipendenza dall'overlay EventSystem.
 // ============================================================
 
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Grid;
@@ -153,15 +151,13 @@ namespace AppPuzz.Gameplay
 
         private LetterCell GetCellAtScreenPos(Vector2 screenPos)
         {
-            var ped     = new PointerEventData(EventSystem.current) { position = screenPos };
-            var results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(ped, results);
+            if (GridManager.Instance == null) return null;
 
-            foreach (var result in results)
+            foreach (LetterCell cell in GridManager.Instance.GetAllCells())
             {
-                LetterCell cell = result.gameObject.GetComponent<LetterCell>()
-                               ?? result.gameObject.GetComponentInParent<LetterCell>();
-                if (cell != null) return cell;
+                RectTransform rt = cell.GetComponent<RectTransform>();
+                if (rt != null && RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, null))
+                    return cell;
             }
             return null;
         }
