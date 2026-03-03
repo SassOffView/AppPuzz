@@ -3,24 +3,26 @@
 // Gestisce l'input stile Ruzzle: il giocatore trascina il dito
 // (o il mouse in editor) sulle celle adiacenti per formare parole.
 // ============================================================
-// STEP 2 : implementazione completa drag-to-select.
+// STEP 7 revisione: Input.GetMouseButton in Update() per massima
+// compatibilità — niente più dipendenza dall'overlay EventSystem.
 // ============================================================
 
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Grid;
 
 namespace AppPuzz.Gameplay
 {
     /// <summary>
-    /// Componente da attaccare a un pannello trasparente che copre tutta la griglia.
-    /// Intercetta i gesti di drag e costruisce la parola in tempo reale.
-    /// Al rilascio, invia la parola a GameManager.
+    /// Legge l'input mouse/touch ogni frame con Input.GetMouseButton.
+    /// Può stare su qualsiasi GameObject attivo della scena (overlay,
+    /// GridManager, GameManager, ecc.) — non dipende da IPointerHandler.
     /// </summary>
-    public class WordSelector : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+    public class WordSelector : MonoBehaviour
     {
         // ----------------------------------------------------------
         // Singleton
@@ -28,20 +30,18 @@ namespace AppPuzz.Gameplay
         public static WordSelector Instance { get; private set; }
 
         // ----------------------------------------------------------
-        // Riferimenti UI (assegnati dall'Inspector)
+        // Riferimenti UI
         // ----------------------------------------------------------
 
         [Header("UI")]
-        [Tooltip("Il testo che mostra la parola in formazione.")]
+        [Tooltip("Testo che mostra la parola in formazione.")]
         public TextMeshProUGUI currentWordText;
 
         // ----------------------------------------------------------
         // Stato selezione
         // ----------------------------------------------------------
 
-        /// <summary>Celle selezionate nell'ordine in cui sono state toccate.</summary>
         private readonly List<LetterCell> _selectedCells = new List<LetterCell>();
-
         private bool _isSelecting = false;
 
         // ----------------------------------------------------------
@@ -54,35 +54,75 @@ namespace AppPuzz.Gameplay
             Instance = this;
         }
 
+        private void Start()
+        {
+            // Se questo script è su un oggetto con Image (es. WordSelectorOverlay),
+            // lo rende automaticamente trasparente così non copre la griglia.
+            var img = GetComponent<Image>();
+            if (img != null)
+            {
+                Color c = img.color;
+                c.a = 0f;
+                img.color = c;
+            }
+        }
+
+        private void Update()
+        {
+            // ---- MOUSE (editor / PC) ----
+            if (Input.GetMouseButtonDown(0))
+            {
+                BeginSelection(Input.mousePosition);
+            }
+            else if (Input.GetMouseButton(0) && _isSelecting)
+            {
+                ContinueSelection(Input.mousePosition);
+            }
+            else if (Input.GetMouseButtonUp(0) && _isSelecting)
+            {
+                EndSelection();
+            }
+
+            // ---- TOUCH (mobile) ----
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                switch (touch.phase)
+                {
+                    case TouchPhase.Began:
+                        BeginSelection(touch.position);
+                        break;
+                    case TouchPhase.Moved:
+                    case TouchPhase.Stationary:
+                        if (_isSelecting) ContinueSelection(touch.position);
+                        break;
+                    case TouchPhase.Ended:
+                    case TouchPhase.Canceled:
+                        if (_isSelecting) EndSelection();
+                        break;
+                }
+            }
+        }
+
         // ----------------------------------------------------------
-        // IPointerDownHandler — inizio del gesto
+        // Fasi della selezione
         // ----------------------------------------------------------
 
-        public void OnPointerDown(PointerEventData eventData)
+        private void BeginSelection(Vector2 screenPos)
         {
             _isSelecting = true;
             _selectedCells.Clear();
             GridManager.Instance?.ResetAllCells();
             UpdateWordDisplay();
-
-            TryAddCellAt(eventData.position);
+            TryAddCellAt(screenPos);
         }
 
-        // ----------------------------------------------------------
-        // IDragHandler — dito/mouse si sposta sulle celle
-        // ----------------------------------------------------------
-
-        public void OnDrag(PointerEventData eventData)
+        private void ContinueSelection(Vector2 screenPos)
         {
-            if (!_isSelecting) return;
-            TryAddCellAt(eventData.position);
+            TryAddCellAt(screenPos);
         }
 
-        // ----------------------------------------------------------
-        // IPointerUpHandler — rilascio: conferma la parola
-        // ----------------------------------------------------------
-
-        public void OnPointerUp(PointerEventData eventData)
+        private void EndSelection()
         {
             _isSelecting = false;
             SubmitCurrentWord();
@@ -92,20 +132,16 @@ namespace AppPuzz.Gameplay
         // Logica interna
         // ----------------------------------------------------------
 
-        /// <summary>
-        /// Trova la cella UI sotto la posizione schermo indicata e,
-        /// se è adiacente all'ultima selezionata e non già inclusa, la aggiunge.
-        /// </summary>
         private void TryAddCellAt(Vector2 screenPos)
         {
             LetterCell cell = GetCellAtScreenPos(screenPos);
             if (cell == null) return;
             if (_selectedCells.Contains(cell)) return;
 
-            // La prima cella è sempre accettata; le successive devono essere adiacenti
-            bool isFirst = _selectedCells.Count == 0;
+            bool isFirst  = _selectedCells.Count == 0;
             bool adjacent = !isFirst && GridManager.Instance != null &&
-                            GridManager.Instance.AreAdjacent(_selectedCells[_selectedCells.Count - 1], cell);
+                            GridManager.Instance.AreAdjacent(
+                                _selectedCells[_selectedCells.Count - 1], cell);
 
             if (isFirst || adjacent)
             {
@@ -115,18 +151,14 @@ namespace AppPuzz.Gameplay
             }
         }
 
-        /// <summary>
-        /// Esegue un raycast UI per trovare il LetterCell sotto la posizione schermo.
-        /// </summary>
         private LetterCell GetCellAtScreenPos(Vector2 screenPos)
         {
-            var ped = new PointerEventData(EventSystem.current) { position = screenPos };
+            var ped     = new PointerEventData(EventSystem.current) { position = screenPos };
             var results = new List<RaycastResult>();
             EventSystem.current.RaycastAll(ped, results);
 
             foreach (var result in results)
             {
-                // Controlla il GameObject stesso e il genitore (il prefab può avere sotto-oggetti)
                 LetterCell cell = result.gameObject.GetComponent<LetterCell>()
                                ?? result.gameObject.GetComponentInParent<LetterCell>();
                 if (cell != null) return cell;
@@ -134,18 +166,12 @@ namespace AppPuzz.Gameplay
             return null;
         }
 
-        /// <summary>
-        /// Aggiorna il testo della parola in formazione.
-        /// </summary>
         private void UpdateWordDisplay()
         {
             if (currentWordText != null)
                 currentWordText.text = BuildCurrentWord();
         }
 
-        /// <summary>
-        /// Concatena le lettere delle celle selezionate.
-        /// </summary>
         private string BuildCurrentWord()
         {
             var sb = new StringBuilder(_selectedCells.Count);
@@ -154,21 +180,14 @@ namespace AppPuzz.Gameplay
             return sb.ToString();
         }
 
-        /// <summary>
-        /// Invia la parola corrente a GameManager (minimo 3 lettere).
-        /// Resetta poi la selezione visiva.
-        /// </summary>
         private void SubmitCurrentWord()
         {
             string word = BuildCurrentWord();
-
             GridManager.Instance?.ResetAllCells();
             _selectedCells.Clear();
 
             if (word.Length >= 3)
-            {
                 GameManager.Instance?.SubmitWord(word);
-            }
 
             if (currentWordText != null)
                 currentWordText.text = string.Empty;
