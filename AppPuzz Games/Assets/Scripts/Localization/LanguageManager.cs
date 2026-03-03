@@ -41,13 +41,7 @@ namespace AppPuzz.Localization
         public Language CurrentLanguage { get; private set; }
 
         /// <summary>
-        /// Evento statico: viene invocato ogni volta che la lingua cambia.
-        /// Chiunque dipenda dalla lingua (es. GameManager) si sottoscrive qui.
-        /// </summary>
-        public static event System.Action<Language> OnLanguageChanged;
-
-        /// <summary>
-        /// Evento lanciato ogni volta che la lingua cambia.
+        /// Evento statico lanciato ogni volta che la lingua cambia.
         /// Sottoscrivi per ricaricare dizionari o aggiornare testi.
         /// </summary>
         public static event System.Action<Language> OnLanguageChanged;
