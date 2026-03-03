@@ -51,6 +51,7 @@ namespace AppPuzz.Gameplay
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            Debug.Log("[WordSelector] Awake OK — componente attivo su: " + gameObject.name);
         }
 
         private void Start()
@@ -109,6 +110,7 @@ namespace AppPuzz.Gameplay
 
         private void BeginSelection(Vector2 screenPos)
         {
+            Debug.Log("[WordSelector] BeginSelection @ " + screenPos);
             _isSelecting = true;
             _selectedCells.Clear();
             GridManager.Instance?.ResetAllCells();
@@ -152,14 +154,31 @@ namespace AppPuzz.Gameplay
 
         private LetterCell GetCellAtScreenPos(Vector2 screenPos)
         {
-            if (GridManager.Instance == null) return null;
+            if (GridManager.Instance == null)
+            {
+                Debug.LogWarning("[WordSelector] GridManager.Instance è NULL!");
+                return null;
+            }
 
+            int count = 0;
             foreach (LetterCell cell in GridManager.Instance.GetAllCells())
             {
+                count++;
                 RectTransform rt = cell.GetComponent<RectTransform>();
-                if (rt != null && RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, null))
+                if (rt == null) continue;
+
+                // Prima cella: logga posizione e dimensione per debug
+                if (count == 1)
+                    Debug.Log($"[WordSelector] Cella[0] rect={rt.rect}  anchoredPos={rt.anchoredPosition}  screenPos={screenPos}");
+
+                if (RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, null))
+                {
+                    Debug.Log($"[WordSelector] Cella trovata ({cell.Row},{cell.Col}) '{cell.Letter}'");
                     return cell;
+                }
             }
+
+            Debug.Log($"[WordSelector] Nessuna cella trovata. Celle controllate={count}, screenPos={screenPos}");
             return null;
         }
 
