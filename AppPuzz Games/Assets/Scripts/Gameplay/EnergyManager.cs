@@ -8,6 +8,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
+using AppPuzz.Creatures;
 
 namespace AppPuzz.Gameplay
 {
@@ -84,6 +85,7 @@ namespace AppPuzz.Gameplay
             float gained = baseScore * streakMultiplier * legendaryMultiplier;
             CurrentEnergy = Mathf.Clamp(CurrentEnergy + gained, 0f, maxEnergy);
             UpdateUI();
+            CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
 
             Debug.Log($"[EnergyManager] +{gained:F1} energia " +
                       $"(parola='{word}', streak={CurrentStreak}, legendary={isLegendary})");

@@ -41,6 +41,16 @@ namespace AppPuzz.Creatures
         public Sprite spriteLevel2;
         public Sprite spriteLevel3;
 
+        [Header("Colori per variante creatura (STEP 6)")]
+        [Tooltip("Colore tint per il Drago Mentale.")]
+        public Color colorMentalDragon    = new Color(0.7f, 0.4f, 1.0f); // viola
+
+        [Tooltip("Colore tint per il Lupo Astrale.")]
+        public Color colorAstralWolf      = new Color(0.4f, 0.8f, 1.0f); // ciano
+
+        [Tooltip("Colore tint per il Serpente Etereo.")]
+        public Color colorEtherealSerpent = new Color(0.4f, 1.0f, 0.5f); // verde
+
         // ----------------------------------------------------------
         // Metodo di utilità
         // ----------------------------------------------------------

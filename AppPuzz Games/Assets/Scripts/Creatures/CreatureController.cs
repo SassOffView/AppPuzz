@@ -7,6 +7,7 @@
 // STEP 1 : stub compilabile — reazioni visive nello STEP 6.
 // ============================================================
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using AppPuzz.Gameplay; // GameState
@@ -55,6 +56,7 @@ namespace AppPuzz.Creatures
         // ----------------------------------------------------------
 
         private int _currentLevel = 1;
+        private Coroutine _animCoroutine;
 
         // ----------------------------------------------------------
         // Unity lifecycle
@@ -90,7 +92,11 @@ namespace AppPuzz.Creatures
                 _currentLevel = newLevel;
                 UpdateVisuals(newLevel);
                 Debug.Log($"[CreatureController] Evoluzione al livello {newLevel}!");
-                // TODO (STEP 6): avviare animazione evoluzione
+                TriggerAnimation(PlayEvolutionAnimation());
+            }
+            else
+            {
+                TriggerAnimation(PlayEnergyPulse());
             }
         }
 
@@ -114,7 +120,95 @@ namespace AppPuzz.Creatures
             if (targetSprite != null)
                 creatureImage.sprite = targetSprite;
 
-            // TODO (STEP 6): cambiare colore/glow in base a selectedCreature
+            // Tint in base alla variante: più luminoso a ogni livello
+            Color baseColor = GetCreatureColor();
+            float intensity = 0.4f + (level - 1) * 0.3f; // 0.4 / 0.7 / 1.0
+            creatureImage.color = Color.Lerp(Color.white, baseColor, intensity);
+        }
+
+        // ----------------------------------------------------------
+        // Animazioni
+        // ----------------------------------------------------------
+
+        private void TriggerAnimation(IEnumerator anim)
+        {
+            if (_animCoroutine != null) StopCoroutine(_animCoroutine);
+            _animCoroutine = StartCoroutine(anim);
+        }
+
+        /// <summary>Pulsazione grande all'evoluzione: scala su → flash bianco → torna.</summary>
+        private IEnumerator PlayEvolutionAnimation()
+        {
+            Transform t = creatureImage.transform;
+            Vector3 original = t.localScale;
+            Color originalColor = creatureImage.color;
+
+            // Scala su in 0.15 s
+            float elapsed = 0f;
+            while (elapsed < 0.15f)
+            {
+                elapsed += Time.deltaTime;
+                t.localScale = Vector3.Lerp(original, original * 1.4f, elapsed / 0.15f);
+                yield return null;
+            }
+
+            // Flash bianco
+            creatureImage.color = Color.white;
+            yield return new WaitForSeconds(0.06f);
+            creatureImage.color = originalColor;
+
+            // Scala giù in 0.2 s
+            elapsed = 0f;
+            while (elapsed < 0.2f)
+            {
+                elapsed += Time.deltaTime;
+                t.localScale = Vector3.Lerp(original * 1.4f, original, elapsed / 0.2f);
+                yield return null;
+            }
+            t.localScale = original;
+            _animCoroutine = null;
+        }
+
+        /// <summary>Pulsazione leggera ad ogni parola valida.</summary>
+        private IEnumerator PlayEnergyPulse()
+        {
+            Transform t = creatureImage.transform;
+            Vector3 original = t.localScale;
+
+            // Scala su in 0.08 s
+            float elapsed = 0f;
+            while (elapsed < 0.08f)
+            {
+                elapsed += Time.deltaTime;
+                t.localScale = Vector3.Lerp(original, original * 1.1f, elapsed / 0.08f);
+                yield return null;
+            }
+
+            // Scala giù in 0.12 s
+            elapsed = 0f;
+            while (elapsed < 0.12f)
+            {
+                elapsed += Time.deltaTime;
+                t.localScale = Vector3.Lerp(original * 1.1f, original, elapsed / 0.12f);
+                yield return null;
+            }
+            t.localScale = original;
+            _animCoroutine = null;
+        }
+
+        // ----------------------------------------------------------
+        // Privato
+        // ----------------------------------------------------------
+
+        private Color GetCreatureColor()
+        {
+            if (evolutionConfig == null) return Color.white;
+            return selectedCreature switch
+            {
+                CreatureType.AstralWolf      => evolutionConfig.colorAstralWolf,
+                CreatureType.EtherealSerpent => evolutionConfig.colorEtherealSerpent,
+                _                            => evolutionConfig.colorMentalDragon,
+            };
         }
     }
 }
