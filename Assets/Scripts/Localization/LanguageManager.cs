@@ -53,6 +53,7 @@ namespace AppPuzz.Localization
                 return;
             }
             Instance = this;
+            transform.SetParent(null);     // assicura che sia un root object
             DontDestroyOnLoad(gameObject); // sopravvive al cambio scena
 
             CurrentLanguage = startLanguage;
