@@ -85,6 +85,17 @@ namespace AppPuzz.Gameplay
 
             _wordValidator = new WordValidator();
             LanguageManager.OnLanguageChanged += HandleLanguageChanged;
+
+            // Trova ResultsPanel anche se è disattivato nel hierarchy
+            if (resultsPanel == null)
+                resultsPanel = FindObjectOfType<ResultsPanel>(true);
+
+            // Crea WordSelector automaticamente se non è nella scena
+            if (WordSelector.Instance == null)
+            {
+                new GameObject("WordSelector").AddComponent<WordSelector>();
+                Debug.Log("[GameManager] WordSelector creato automaticamente.");
+            }
         }
 
         private void OnDestroy()
@@ -196,10 +207,8 @@ namespace AppPuzz.Gameplay
             int seconds = Mathf.CeilToInt(Mathf.Max(_timeRemaining, 0f));
             timerText.text = $"{seconds / 60:D2}:{seconds % 60:D2}";
 
-            // Colore rosso quando mancano meno di 10 secondi
-            timerText.color = (_timeRemaining <= 10f && _timeRemaining > 0f)
-                ? Color.red
-                : Color.white;
+            // Colore rosso quando mancano meno di 10 secondi (incluso 0)
+            timerText.color = _timeRemaining <= 10f ? Color.red : Color.white;
         }
     }
 }
