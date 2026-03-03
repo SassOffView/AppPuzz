@@ -92,8 +92,8 @@ namespace AppPuzz.Gameplay
             CurrentStreak++;
             if (CurrentStreak > MaxStreak) MaxStreak = CurrentStreak;
 
-            // Base: 20 punti per ogni lettera della parola
-            float baseScore = word.Length * 20f;
+            // Base: 2 punti per ogni lettera della parola
+            float baseScore = word.Length * 2f;
 
             // Bonus streak: +20% per ogni parola oltre la soglia (default: dalla 4ª), cap 2.5×
             int bonusStreak = Mathf.Max(0, CurrentStreak - streakBonusThreshold);
