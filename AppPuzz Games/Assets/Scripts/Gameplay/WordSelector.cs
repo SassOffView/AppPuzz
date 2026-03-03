@@ -7,6 +7,7 @@
 // compatibilità — niente più dipendenza dall'overlay EventSystem.
 // ============================================================
 
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
