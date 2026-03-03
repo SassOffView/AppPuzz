@@ -8,6 +8,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
+using AppPuzz.Creatures;
 
 namespace AppPuzz.Gameplay
 {
@@ -113,6 +114,8 @@ namespace AppPuzz.Gameplay
         {
             if (energyBar != null)
                 energyBar.value = CurrentEnergy / maxEnergy;
+
+            CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
         }
     }
 }

@@ -3,11 +3,11 @@
 // Orchestratore centrale del gioco: coordina Grid, Energy, Timer,
 // Creature e Validazione. Gestisce il flusso della partita.
 // ============================================================
-// STEP 1 : stub compilabile — flusso completo nello STEP 7.
+// STEP 7 : Timer countdown + schermata risultati.
 // ============================================================
 
 using UnityEngine;
-using AppPuzz.Gameplay;
+using TMPro;
 using AppPuzz.Grid;
 using AppPuzz.Localization;
 
@@ -40,8 +40,37 @@ namespace AppPuzz.Gameplay
         /// <summary>Stato corrente del flusso di gioco.</summary>
         public GameState CurrentState { get; private set; } = GameState.Idle;
 
+        /// <summary>Secondi rimanenti nella partita corrente.</summary>
+        public float TimeRemaining { get; private set; }
+
         // ----------------------------------------------------------
-        // Riferimenti ai sistemi (assegnati dall'Inspector o trovati in Awake)
+        // Configurazione
+        // ----------------------------------------------------------
+
+        [Header("Timer")]
+        [Tooltip("Durata di una partita in secondi.")]
+        public float gameDuration = 90f;
+
+        // ----------------------------------------------------------
+        // Riferimenti UI
+        // ----------------------------------------------------------
+
+        [Header("UI - Timer")]
+        [Tooltip("Testo che mostra i secondi rimanenti (es. '01:30').")]
+        public TextMeshProUGUI timerText;
+
+        [Header("UI - Risultati")]
+        [Tooltip("Pannello mostrato a fine partita.")]
+        public GameObject resultsPanel;
+
+        [Tooltip("Testo del punteggio finale nel pannello risultati.")]
+        public TextMeshProUGUI finalScoreText;
+
+        [Tooltip("Testo del livello creatura raggiunto nel pannello risultati.")]
+        public TextMeshProUGUI finalLevelText;
+
+        // ----------------------------------------------------------
+        // Riferimenti ai sistemi
         // ----------------------------------------------------------
 
         [Header("Sistemi di gioco")]
@@ -77,7 +106,21 @@ namespace AppPuzz.Gameplay
 
         private void Start()
         {
-            StartGame(); // test — verrà gestito meglio allo STEP 7
+            if (resultsPanel != null)
+                resultsPanel.SetActive(false);
+
+            StartGame();
+        }
+
+        private void Update()
+        {
+            if (CurrentState != GameState.Playing) return;
+
+            TimeRemaining -= Time.deltaTime;
+            UpdateTimerUI();
+
+            if (TimeRemaining <= 0f)
+                EndGame();
         }
 
         // ----------------------------------------------------------
@@ -88,6 +131,11 @@ namespace AppPuzz.Gameplay
         public void StartGame()
         {
             CurrentState = GameState.Playing;
+            TimeRemaining = gameDuration;
+
+            // Nascondi pannello risultati
+            if (resultsPanel != null)
+                resultsPanel.SetActive(false);
 
             // Carica dizionari in base alla lingua corrente
             if (LanguageManager.Instance != null)
@@ -101,6 +149,7 @@ namespace AppPuzz.Gameplay
             if (energyManager != null)
                 energyManager.ResetEnergy();
 
+            UpdateTimerUI();
             Debug.Log("[GameManager] Partita avviata.");
         }
 
@@ -124,12 +173,61 @@ namespace AppPuzz.Gameplay
             }
         }
 
-        /// <summary>Termina la partita (time-up o trigger esterno).</summary>
+        /// <summary>Termina la partita e mostra i risultati.</summary>
         public void EndGame()
         {
+            if (CurrentState == GameState.GameOver) return;
+
             CurrentState = GameState.GameOver;
-            Debug.Log($"[GameManager] Partita terminata. Energia finale: {energyManager?.CurrentEnergy}");
-            // TODO (STEP 7): mostrare schermata risultati
+            TimeRemaining = 0f;
+            UpdateTimerUI();
+
+            float finalEnergy = energyManager != null ? energyManager.CurrentEnergy : 0f;
+            Debug.Log($"[GameManager] Partita terminata. Energia finale: {finalEnergy:F0}");
+
+            ShowResults(finalEnergy);
+        }
+
+        /// <summary>Riavvia la partita — collegare al bottone "Gioca ancora".</summary>
+        public void RestartGame()
+        {
+            StartGame();
+        }
+
+        // ----------------------------------------------------------
+        // Privato
+        // ----------------------------------------------------------
+
+        private void UpdateTimerUI()
+        {
+            if (timerText == null) return;
+            int seconds = Mathf.CeilToInt(Mathf.Max(TimeRemaining, 0f));
+            int mm = seconds / 60;
+            int ss = seconds % 60;
+            timerText.text = $"{mm:D2}:{ss:D2}";
+
+            // Colore rosso quando mancano meno di 10 secondi
+            timerText.color = (TimeRemaining <= 10f && TimeRemaining > 0f)
+                ? Color.red
+                : Color.white;
+        }
+
+        private void ShowResults(float finalEnergy)
+        {
+            if (resultsPanel != null)
+                resultsPanel.SetActive(true);
+
+            if (finalScoreText != null)
+                finalScoreText.text = $"{finalEnergy:F0}";
+
+            if (finalLevelText != null && energyManager != null)
+            {
+                // Livello leggibile in base all'energia
+                string levelLabel = finalEnergy >= 120f ? "Leggendario" :
+                                    finalEnergy >=  50f ? "Evoluto"     :
+                                                          "Base";
+                finalLevelText.text = levelLabel;
+            }
         }
     }
 }
