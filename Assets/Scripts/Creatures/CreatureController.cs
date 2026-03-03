@@ -103,12 +103,13 @@ namespace AppPuzz.Creatures
             if (evolutionConfig == null || creatureImage == null) return;
 
             // Seleziona lo sprite corrispondente al livello
-            Sprite targetSprite = level switch
-            {
-                2 => evolutionConfig.spriteLevel2,
-                3 => evolutionConfig.spriteLevel3,
-                _ => evolutionConfig.spriteLevel1
-            };
+            Sprite targetSprite;
+            if (level == 2)
+                targetSprite = evolutionConfig.spriteLevel2;
+            else if (level == 3)
+                targetSprite = evolutionConfig.spriteLevel3;
+            else
+                targetSprite = evolutionConfig.spriteLevel1;
 
             if (targetSprite != null)
                 creatureImage.sprite = targetSprite;

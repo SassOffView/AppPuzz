@@ -6,11 +6,17 @@
 // STEP 1 : stub compilabile — caricamento JSON e logica nello STEP 4.
 // ============================================================
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace AppPuzz.Gameplay
 {
+    [Serializable]
+    internal class WordList
+    {
+        public string[] words;
+    }
     /// <summary>Risultato della validazione di una parola.</summary>
     public enum ValidationResult
     {
@@ -42,28 +48,51 @@ namespace AppPuzz.Gameplay
 
         /// <summary>
         /// Valida la parola fornita.
-        /// Ordine di controllo: 1) dizionario standard, 2) dizionario fantasy.
+        /// Ordine: 1) fantasy (Legendary), 2) standard (Valid), 3) Invalid.
         /// </summary>
-        /// <param name="word">Parola da controllare (in minuscolo).</param>
-        /// <returns><see cref="ValidationResult"/> corrispondente.</returns>
+        /// <param name="word">Parola da controllare (già in minuscolo).</param>
         public ValidationResult Validate(string word)
         {
-            // TODO (STEP 4): implementare la ricerca nei HashSet caricati da JSON
-            // Per ora sempre Invalid — il progetto compila comunque.
-            Debug.Log($"[WordValidator] Validate('{word}') — da implementare nello STEP 4.");
+            if (_fantasyWords.Contains(word))  return ValidationResult.Legendary;
+            if (_standardWords.Contains(word)) return ValidationResult.Valid;
             return ValidationResult.Invalid;
         }
 
         /// <summary>
-        /// Carica i dizionari JSON dalla cartella Resources.
-        /// Da chiamare all'avvio del gioco (es. da GameManager.Start).
+        /// Carica i dizionari JSON da Assets/Resources/Dictionaries/.
+        /// Da chiamare all'avvio tramite GameManager.StartGame().
         /// </summary>
-        /// <param name="standardFileName">Es. "italian" o "english".</param>
+        /// <param name="standardFileName">Nome file senza estensione: "italian" o "english".</param>
         public void LoadDictionaries(string standardFileName)
         {
-            // TODO (STEP 4): leggere Assets/Dictionaries via Resources.Load<TextAsset>
-            // e popolare _standardWords e _fantasyWords
-            Debug.Log($"[WordValidator] LoadDictionaries('{standardFileName}') — da implementare nello STEP 4.");
+            _standardWords.Clear();
+            _fantasyWords.Clear();
+
+            LoadInto($"Dictionaries/{standardFileName}", _standardWords);
+            LoadInto("Dictionaries/fantasy_shared", _fantasyWords);
+        }
+
+        // ----------------------------------------------------------
+        // Privato
+        // ----------------------------------------------------------
+
+        private static void LoadInto(string resourcePath, HashSet<string> target)
+        {
+            TextAsset asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset == null)
+            {
+                Debug.LogError($"[WordValidator] File non trovato: Resources/{resourcePath}.json");
+                return;
+            }
+
+            WordList list = JsonUtility.FromJson<WordList>(asset.text);
+            if (list?.words == null) return;
+
+            foreach (string w in list.words)
+                if (!string.IsNullOrEmpty(w))
+                    target.Add(w.ToLower());
+
+            Debug.Log($"[WordValidator] Caricato '{resourcePath}': {target.Count} parole.");
         }
     }
 }
