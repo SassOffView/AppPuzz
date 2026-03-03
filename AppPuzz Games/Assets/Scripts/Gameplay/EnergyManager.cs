@@ -70,11 +70,23 @@ namespace AppPuzz.Gameplay
         /// <param name="isLegendary">True se è una parola fantasy.</param>
         public void AddEnergy(string word, bool isLegendary = false)
         {
-            // TODO (STEP 5): implementare la formula completa
-            // Per ora aggiunge 1 per far compilare
-            CurrentEnergy = Mathf.Clamp(CurrentEnergy + 1f, 0f, maxEnergy);
+            CurrentStreak++;
+
+            // Base: 2 punti per ogni lettera della parola
+            float baseScore = word.Length * 2f;
+
+            // Bonus streak: +20% per ogni parola consecutiva, massimo 2.5×
+            float streakMultiplier = Mathf.Min(1f + CurrentStreak * 0.2f, 2.5f);
+
+            // Bonus leggendario: punteggio triplicato
+            float legendaryMultiplier = isLegendary ? 3f : 1f;
+
+            float gained = baseScore * streakMultiplier * legendaryMultiplier;
+            CurrentEnergy = Mathf.Clamp(CurrentEnergy + gained, 0f, maxEnergy);
             UpdateUI();
-            Debug.Log($"[EnergyManager] AddEnergy('{word}', legendary={isLegendary}) — formula nello STEP 5.");
+
+            Debug.Log($"[EnergyManager] +{gained:F1} energia " +
+                      $"(parola='{word}', streak={CurrentStreak}, legendary={isLegendary})");
         }
 
         /// <summary>

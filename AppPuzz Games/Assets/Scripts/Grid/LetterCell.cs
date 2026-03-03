@@ -55,6 +55,12 @@ namespace AppPuzz.Grid
         /// <summary>True se la cella è attualmente selezionata dal giocatore.</summary>
         public bool IsSelected { get; private set; }
 
+        /// <summary>
+        /// Invocato quando la cella viene cliccata direttamente (tap senza drag).
+        /// Sottoscrivi da GridManager o WordSelector per reagire al tocco singolo.
+        /// </summary>
+        public System.Action<LetterCell> OnCellClicked;
+
         // Colori di default e di selezione (verranno spostati in un config nello STEP 3)
         private Color _normalColor  = Color.white;
         private Color _selectedColor = new Color(0.4f, 0.8f, 1f); // azzurro chiaro
@@ -100,7 +106,8 @@ namespace AppPuzz.Grid
 
         private void Start()
         {
-            // TODO (STEP 3): registrare il callback del click su cellButton
+            if (cellButton != null)
+                cellButton.onClick.AddListener(() => OnCellClicked?.Invoke(this));
         }
     }
 }

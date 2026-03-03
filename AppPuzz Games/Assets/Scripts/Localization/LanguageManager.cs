@@ -40,6 +40,18 @@ namespace AppPuzz.Localization
         /// <summary>Lingua corrente accessibile da tutti gli script.</summary>
         public Language CurrentLanguage { get; private set; }
 
+        /// <summary>
+        /// Evento statico: viene invocato ogni volta che la lingua cambia.
+        /// Chiunque dipenda dalla lingua (es. GameManager) si sottoscrive qui.
+        /// </summary>
+        public static event System.Action<Language> OnLanguageChanged;
+
+        /// <summary>
+        /// Evento lanciato ogni volta che la lingua cambia.
+        /// Sottoscrivi per ricaricare dizionari o aggiornare testi.
+        /// </summary>
+        public static event System.Action<Language> OnLanguageChanged;
+
         // ----------------------------------------------------------
         // Unity lifecycle
         // ----------------------------------------------------------
@@ -70,7 +82,7 @@ namespace AppPuzz.Localization
         {
             CurrentLanguage = newLanguage;
             Debug.Log($"[LanguageManager] Lingua cambiata a: {newLanguage}");
-            // TODO (STEP 4): notificare WordValidator di ricaricare il dizionario
+            OnLanguageChanged?.Invoke(newLanguage);
         }
 
         /// <summary>

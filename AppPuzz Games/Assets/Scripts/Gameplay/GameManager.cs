@@ -61,6 +61,18 @@ namespace AppPuzz.Gameplay
             Instance = this;
 
             _wordValidator = new WordValidator();
+            LanguageManager.OnLanguageChanged += HandleLanguageChanged;
+        }
+
+        private void OnDestroy()
+        {
+            LanguageManager.OnLanguageChanged -= HandleLanguageChanged;
+        }
+
+        private void HandleLanguageChanged(Language _)
+        {
+            if (LanguageManager.Instance != null)
+                _wordValidator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
         }
 
         private void Start()
