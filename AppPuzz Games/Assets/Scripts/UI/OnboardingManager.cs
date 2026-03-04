@@ -87,6 +87,12 @@ namespace AppPuzz.UI
 
             italianLangBtn?.onClick.AddListener(() => ChooseLanguage(Language.Italian));
             englishLangBtn?.onClick.AddListener(() => ChooseLanguage(Language.English));
+
+            // Testo senza emoji (il font di default non le supporta)
+            var itLabel = italianLangBtn?.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            var enLabel = englishLangBtn?.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (itLabel != null) itLabel.text = "ITALIANO";
+            if (enLabel != null) enLabel.text = "ENGLISH";
             tutorialNextBtn?.onClick.AddListener(OnTutorialNext);
             startAdventureBtn?.onClick.AddListener(FinishOnboarding);
         }
