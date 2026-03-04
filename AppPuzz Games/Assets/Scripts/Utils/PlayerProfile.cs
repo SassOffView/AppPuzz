@@ -197,12 +197,4 @@ namespace AppPuzz.Utils
         /// <summary>Nome rango arena corrente.</summary>
         public string ArenaRankName => ARENA_RANK_NAMES[Mathf.Clamp(ArenaRank, 0, ARENA_RANK_NAMES.Length - 1)];
     }
-
-    /// <summary>Enum tipi di creatura (rispecchia CreatureController).</summary>
-    public enum CreatureType
-    {
-        MentalDragon    = 0,
-        AstralWolf      = 1,
-        EtherealSerpent = 2
-    }
 }
