@@ -10,13 +10,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Gameplay;
+// AppNavigator è nello stesso namespace AppPuzz.UI — nessun using aggiuntivo necessario
 
 namespace AppPuzz.UI
 {
     /// <summary>
     /// Singleton MonoBehaviour che gestisce il pannello risultati.
-    /// Il GameObject deve essere inizialmente disattivato nella scena.
-    /// Assegna dall'Inspector: energyText, levelText, streakText, playAgainButton.
+    /// Il GameObject deve essere ATTIVO nella scena (Hide() lo nasconde all'avvio).
+    /// Assegna dall'Inspector: energyText, levelText, streakText, playAgainButton, menuButton.
     /// </summary>
     public class ResultsPanel : MonoBehaviour
     {
@@ -43,6 +44,9 @@ namespace AppPuzz.UI
         [Tooltip("Pulsante per avviare una nuova partita.")]
         public Button playAgainButton;
 
+        [Tooltip("Pulsante per tornare al menu principale.")]
+        public Button menuButton;
+
         // ----------------------------------------------------------
         // Unity lifecycle
         // ----------------------------------------------------------
@@ -51,13 +55,17 @@ namespace AppPuzz.UI
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
-            gameObject.SetActive(false); // nascosto finché EndGame() non lo chiama
+            // NON chiamare SetActive(false) qui: se il panel parte inattivo in scena,
+            // Awake verrebbe invocato al primo Show() e nasconderebbe subito il panel.
+            // GameManager.StartGame() chiama Hide() all'avvio — è sufficiente.
         }
 
         private void Start()
         {
             if (playAgainButton != null)
                 playAgainButton.onClick.AddListener(() => GameManager.Instance?.StartGame());
+            if (menuButton != null)
+                menuButton.onClick.AddListener(() => AppNavigator.Instance?.ShowHome());
         }
 
         // ----------------------------------------------------------
