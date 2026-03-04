@@ -55,17 +55,23 @@ namespace AppPuzz.UI
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
-            // NON chiamare SetActive(false) qui: se il panel parte inattivo in scena,
-            // Awake verrebbe invocato al primo Show() e nasconderebbe subito il panel.
-            // GameManager.StartGame() chiama Hide() all'avvio — è sufficiente.
+
+            // Collegare i listener in Awake (non Start) per garantire
+            // che funzionino anche se il panel parte inattivo nella scena.
+            if (playAgainButton != null)
+                playAgainButton.onClick.AddListener(OnPlayAgainClicked);
+            if (menuButton != null)
+                menuButton.onClick.AddListener(OnMenuClicked);
         }
 
-        private void Start()
+        private void OnPlayAgainClicked()
         {
-            if (playAgainButton != null)
-                playAgainButton.onClick.AddListener(() => GameManager.Instance?.StartGame());
-            if (menuButton != null)
-                menuButton.onClick.AddListener(() => AppNavigator.Instance?.ShowHome());
+            GameManager.Instance?.StartGame();
+        }
+
+        private void OnMenuClicked()
+        {
+            AppNavigator.Instance?.ShowHome();
         }
 
         // ----------------------------------------------------------

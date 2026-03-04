@@ -12,6 +12,7 @@ using AppPuzz.Grid;
 using AppPuzz.Localization;
 using AppPuzz.Creatures;
 using AppPuzz.UI;
+using AppPuzz.Utils;
 
 namespace AppPuzz.Gameplay
 {
@@ -88,7 +89,7 @@ namespace AppPuzz.Gameplay
 
             // Trova ResultsPanel anche se è disattivato nel hierarchy
             if (resultsPanel == null)
-                resultsPanel = FindObjectOfType<ResultsPanel>(true);
+                resultsPanel = FindFirstObjectByType<ResultsPanel>(FindObjectsInactive.Include);
 
             // Crea WordSelector automaticamente se non è nella scena
             if (WordSelector.Instance == null)
@@ -188,6 +189,10 @@ namespace AppPuzz.Gameplay
             int   maxStreak   = energyManager?.MaxStreak ?? 0;
 
             Debug.Log($"[GameManager] Partita terminata. Energia={finalEnergy:F0}, Livello={finalLevel}, MaxStreak={maxStreak}");
+
+            // Salva risultato nel profilo giocatore
+            PlayerProfile.Instance?.RecordMatchResult(finalEnergy, maxStreak, false);
+
             resultsPanel?.Show(finalEnergy, finalLevel, maxStreak);
         }
 
