@@ -55,7 +55,7 @@ namespace AppPuzz.Gameplay
         private const float   MAX_ENERGY  = 500f;
 
         private static readonly string[] FEEDBACK_VALID     = { "Ottimo!", "Bravo!", "Perfetto!", "Fantastico!" };
-        private static readonly string[] FEEDBACK_LEGENDARY = { "✦ LEGGENDARIO! ✦", "✦ INCREDIBILE! ✦", "✦ EPICO! ✦" };
+        private static readonly string[] FEEDBACK_LEGENDARY = { "*** LEGGENDARIO! ***", "*** INCREDIBILE! ***", "*** EPICO! ***" };
         private static readonly string[] FEEDBACK_INVALID   = { "Non trovata", "Riprova!", "Non è nel dizionario" };
 
         // ----------------------------------------------------------

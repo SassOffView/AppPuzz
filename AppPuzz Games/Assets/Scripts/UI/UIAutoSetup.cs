@@ -527,7 +527,7 @@ namespace AppPuzz.UI
                     new Vector2(0.35f, 0.28f), new Vector2(0.95f, 0.34f), Vector2.zero, Vector2.zero);
                 endurs[i].value = 0.7f;
 
-                specs[i] = MakeText(card.transform, "SpecText", "✦ Bonus speciale", 15,
+                specs[i] = MakeText(card.transform, "SpecText", "* Bonus speciale", 15,
                     UITheme.Colors.Gold, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.18f), new Vector2(0.95f, 0.27f), Vector2.zero, Vector2.zero);
 

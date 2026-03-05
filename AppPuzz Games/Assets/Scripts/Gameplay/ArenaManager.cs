@@ -221,7 +221,7 @@ namespace AppPuzz.Gameplay
         private void ShowResults(bool won)
         {
             if (resultsOverlay != null) resultsOverlay.SetActive(true);
-            if (resultTitle   != null) resultTitle.text    = won ? "✦ VITTORIA! ✦" : "SCONFITTA";
+            if (resultTitle   != null) resultTitle.text    = won ? "*** VITTORIA! ***" : "SCONFITTA";
             if (resultTitle   != null) resultTitle.color   = won ? UITheme.Colors.Gold : UITheme.Colors.TextDanger;
             if (resultScoreText!= null) resultScoreText.text = $"Energia: {_score:F0}";
             if (resultRankText!= null) resultRankText.text  = $"Rango: {PlayerProfile.Instance?.ArenaRankName ?? "Bronzo"}";

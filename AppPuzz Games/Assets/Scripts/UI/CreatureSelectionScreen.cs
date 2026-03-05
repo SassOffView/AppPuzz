@@ -131,7 +131,7 @@ namespace AppPuzz.UI
                 SetText(nameTexts,      i, d.name);
                 SetText(typeTexts,      i, d.typeName);
                 SetText(descTexts,      i, d.description);
-                SetText(specialtyTexts, i, $"✦ {d.specialty}");
+                SetText(specialtyTexts, i, $"* {d.specialty}");
                 SetSlider(powerBars,      i, d.powerStat / 10f);
                 SetSlider(speedBars,      i, d.speedStat / 10f);
                 SetSlider(enduranceBars,  i, d.enduranceStat / 10f);
