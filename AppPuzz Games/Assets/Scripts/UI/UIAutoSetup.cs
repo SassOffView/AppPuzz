@@ -30,6 +30,7 @@ namespace AppPuzz.UI
 
             EnsureManagers();
             EnsureEventSystem();
+            EnsureCanvasInput(canvas);
 
             BuildHomePanel(canvas);
             BuildOnboardingPanel(canvas);
@@ -79,6 +80,31 @@ namespace AppPuzz.UI
                 Debug.LogWarning("[UIAutoSetup] EventSystem mancante — creato automaticamente. " +
                                  "Senza EventSystem i click UI non funzionano!");
             }
+        }
+
+        // -------------------------------------------------------
+        // GraphicRaycaster + Canvas render mode
+        // -------------------------------------------------------
+        private static void EnsureCanvasInput(Canvas canvas)
+        {
+            // GraphicRaycaster obbligatorio per i click UI
+            if (canvas.GetComponent<GraphicRaycaster>() == null)
+            {
+                canvas.gameObject.AddComponent<GraphicRaycaster>();
+                Debug.LogWarning("[UIAutoSetup] GraphicRaycaster mancante sul Canvas — aggiunto. " +
+                                 "Senza di esso nessun click UI viene processato!");
+            }
+
+            // Forza Screen Space Overlay: non richiede Camera ed è il più affidabile
+            if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                Debug.LogWarning($"[UIAutoSetup] Canvas renderMode={canvas.renderMode}. " +
+                                 $"Impostato su ScreenSpaceOverlay per garantire il funzionamento dei click.");
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            }
+
+            Debug.Log($"[UIAutoSetup] Canvas OK — renderMode={canvas.renderMode}, " +
+                      $"GraphicRaycaster presente={canvas.GetComponent<GraphicRaycaster>() != null}");
         }
 
         // -------------------------------------------------------
@@ -781,13 +807,28 @@ namespace AppPuzz.UI
         private void BuildTransitionOverlay(Canvas canvas)
         {
             var go = canvas.transform.Find("TransitionOverlay");
-            if (go != null) return;
+            if (go != null)
+            {
+                // Assicura che anche un overlay già esistente non blocchi i click
+                var existingImg = go.GetComponent<Image>();
+                if (existingImg != null) existingImg.raycastTarget = false;
+                var existingCg = go.GetComponent<CanvasGroup>();
+                if (existingCg != null) existingCg.blocksRaycasts = false;
+                return;
+            }
 
             var overlay = MakePanel(canvas.transform, "TransitionOverlay",
                 Color.black, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            // Disabilita ENTRAMBI i meccanismi di blocco raycast
+            var img = overlay.GetComponent<Image>();
+            if (img != null) img.raycastTarget = false;
+
             var cg = overlay.AddComponent<CanvasGroup>();
             cg.alpha = 0f;
-            cg.blocksRaycasts = false; // non blocca mai i click UI
+            cg.blocksRaycasts = false;
+            cg.interactable    = false;
+
             overlay.SetActive(false);
         }
 
@@ -813,7 +854,9 @@ namespace AppPuzz.UI
             if (overlayGo != null)
                 sm.transitionOverlay = overlayGo.GetComponent<CanvasGroup>();
 
-            sm.useTransitions    = true;
+            // Transizioni temporaneamente disabilitate per garantire click immediati.
+            // Riabilitare (true) dopo aver verificato che i click funzionino.
+            sm.useTransitions    = false;
             sm.transitionDuration = 0.2f;
         }
     }
