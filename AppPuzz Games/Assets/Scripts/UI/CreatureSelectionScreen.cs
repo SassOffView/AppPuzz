@@ -244,6 +244,11 @@ namespace AppPuzz.UI
             if (arr == null || i >= arr.Length || arr[i] == null || go == null) return false;
             return go == arr[i].gameObject || go.transform.IsChildOf(arr[i].transform);
         }
+        private static bool IsUnder(GameObject go, GameObject[] arr, int i)
+        {
+            if (arr == null || i >= arr.Length || arr[i] == null || go == null) return false;
+            return go == arr[i] || go.transform.IsChildOf(arr[i].transform);
+        }
 
         private static void SetText(TextMeshProUGUI[] arr, int i, string v)
         {
