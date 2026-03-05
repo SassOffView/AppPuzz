@@ -391,11 +391,9 @@ namespace AppPuzz.UI
                 TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.45f), new Vector2(0.95f, 0.6f), Vector2.zero, Vector2.zero);
             // Il pulsante "Scegli" porta a CreatureSelection
-            var chooseBtn = MakeButton(om.stepCreature.transform, "GoChooseBtn", "SCEGLI CREATURA",
+            om.creatureChooseBtn = MakeButton(om.stepCreature.transform, "GoChooseBtn", "SCEGLI CREATURA",
                 UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 34,
                 new Vector2(0.15f, 0.3f), new Vector2(0.85f, 0.4f), Vector2.zero, Vector2.zero);
-            chooseBtn.onClick.AddListener(() =>
-                ScreenManager.Instance?.ShowScreen(ScreenID.CreatureSelection));
             om.stepCreature.SetActive(false);
 
             // --- Step Tutorial ---

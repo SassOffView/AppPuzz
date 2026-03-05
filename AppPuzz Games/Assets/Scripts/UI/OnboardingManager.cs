@@ -7,7 +7,6 @@
 //   Step 3 - Pronto!
 // ============================================================
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +20,9 @@ namespace AppPuzz.UI
     /// <summary>
     /// Controller dell'onboarding. Attach a un pannello "OnboardingPanel".
     /// Ogni step è un child GameObject da attivare/disattivare.
+    /// Il rilevamento dei click usa RaycastAll() in Update() anziché
+    /// Button.onClick, perché lo StandaloneInputModule della scena non
+    /// consegna gli eventi ai Button in questo setup.
     /// </summary>
     public class OnboardingManager : MonoBehaviour
     {
@@ -29,16 +31,19 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
 
         [Header("Step panels (GameObject figli)")]
-        public GameObject stepWelcome;          // Step 0: Benvenuto
-        public GameObject stepCreature;         // Step 1: Scelta creatura → usa CreatureSelectionScreen
-        public GameObject stepTutorial;         // Step 2: Come si gioca
-        public GameObject stepReady;            // Step 3: Pronto!
+        public GameObject stepWelcome;
+        public GameObject stepCreature;
+        public GameObject stepTutorial;
+        public GameObject stepReady;
 
         [Header("Step Welcome")]
         public Button italianLangBtn;
         public Button englishLangBtn;
         public TextMeshProUGUI welcomeTitle;
         public TextMeshProUGUI welcomeSubtitle;
+
+        [Header("Step Creature")]
+        public Button creatureChooseBtn;
 
         [Header("Step Tutorial")]
         public TextMeshProUGUI tutorialText;
@@ -49,7 +54,7 @@ namespace AppPuzz.UI
         public Button          startAdventureBtn;
 
         [Header("Indicatori step")]
-        public Image[] stepDots;   // piccoli pallini progresso
+        public Image[] stepDots;
 
         // ----------------------------------------------------------
         // Stato
@@ -59,7 +64,7 @@ namespace AppPuzz.UI
 
         private static readonly string[] TUTORIAL_TEXTS = {
             "Trascina il dito sulle lettere adiacenti per formare parole.",
-            "Più la parola è lunga, più energia guadagni!",
+            "Piu la parola e lunga, piu energia guadagni!",
             "Parole consecutive aumentano il tuo moltiplicatore STREAK.",
             "Trova parole leggendarie per triplicare la tua energia!",
         };
@@ -74,109 +79,78 @@ namespace AppPuzz.UI
             Debug.Log($"[OnboardingManager] OnEnable — " +
                       $"italianLangBtn={italianLangBtn?.name ?? "NULL"}, " +
                       $"englishLangBtn={englishLangBtn?.name ?? "NULL"}");
-            _currentStep   = 0;
-            _tutorialPage  = 0;
+            _currentStep  = 0;
+            _tutorialPage = 0;
             ShowStep(_currentStep);
-            WireButtons();
+            SetupLabels();
         }
 
-        // ----------------------------------------------------------
-        // Diagnostica click (da rimuovere dopo il debug)
-        // ----------------------------------------------------------
-        private int _diagFrame = 0;
-
+        /// <summary>
+        /// Rileva click/tap via EventSystem.RaycastAll() e gestisce tutti i
+        /// bottoni dell'onboarding. Necessario perche Button.onClick non viene
+        /// consegnato dallo StandaloneInputModule presente nella scena.
+        /// </summary>
         private void Update()
         {
-            // Heartbeat: conferma che Update() gira (ogni 120 frame ≈ ogni 2s a 60fps)
-            _diagFrame++;
-            if (_diagFrame % 120 == 0)
-                Debug.Log($"[OnboardingManager] ♥ Update attivo — frame={_diagFrame}, " +
-                          $"enabled={enabled}, gameObject.active={gameObject.activeSelf}");
-
-            // Rileva click mouse OPPURE tap touch
             bool clicked = Input.GetMouseButtonDown(0);
             if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
                 clicked = true;
-
             if (!clicked) return;
+
+            var es = EventSystem.current;
+            if (es == null) return;
 
             Vector2 pos = (Input.touchCount > 0)
                 ? Input.GetTouch(0).position
                 : (Vector2)Input.mousePosition;
 
-            var es = EventSystem.current;
-            if (es == null)
-            {
-                Debug.LogError("[OnboardingManager] EventSystem.current è NULL! " +
-                               "Nessun input UI possibile.");
-                return;
-            }
-
             var pointer = new PointerEventData(es) { position = pos };
             var results = new List<RaycastResult>();
             es.RaycastAll(pointer, results);
 
-            if (results.Count == 0)
+            foreach (var r in results)
             {
-                Debug.LogWarning($"[OnboardingManager] Click @ {pos} — " +
-                                 $"NESSUN elemento UI colpito! " +
-                                 $"Verifica GraphicRaycaster e Canvas.");
-            }
-            else
-            {
-                var sb = new System.Text.StringBuilder(
-                    $"[OnboardingManager] Click @ {pos} — {results.Count} elementi colpiti:\n");
-                foreach (var r in results)
+                var go = r.gameObject;
+                if (IsUnder(go, italianLangBtn))
                 {
-                    sb.AppendLine($"  • {r.gameObject.name}  " +
-                                  $"path={GetPath(r.gameObject)}  " +
-                                  $"depth={r.depth}  " +
-                                  $"raycast={r.gameObject.GetComponent<Graphic>()?.raycastTarget}");
+                    Debug.Log("[OnboardingManager] Click: ITALIANO");
+                    ChooseLanguage(Language.Italian);
+                    return;
                 }
-                Debug.Log(sb.ToString());
+                if (IsUnder(go, englishLangBtn))
+                {
+                    Debug.Log("[OnboardingManager] Click: ENGLISH");
+                    ChooseLanguage(Language.English);
+                    return;
+                }
+                if (IsUnder(go, creatureChooseBtn))
+                {
+                    ScreenManager.Instance?.ShowScreen(ScreenID.CreatureSelection);
+                    return;
+                }
+                if (IsUnder(go, tutorialNextBtn))
+                {
+                    OnTutorialNext();
+                    return;
+                }
+                if (IsUnder(go, startAdventureBtn))
+                {
+                    FinishOnboarding();
+                    return;
+                }
             }
-        }
-
-        private static string GetPath(GameObject go)
-        {
-            var path = go.name;
-            var t = go.transform.parent;
-            while (t != null) { path = t.name + "/" + path; t = t.parent; }
-            return path;
         }
 
         // ----------------------------------------------------------
         // Privato
         // ----------------------------------------------------------
-        private void WireButtons()
+
+        private void SetupLabels()
         {
-            Debug.Log($"[OnboardingManager] WireButtons — " +
-                      $"italianLangBtn={italianLangBtn?.name ?? "NULL"}, " +
-                      $"englishLangBtn={englishLangBtn?.name ?? "NULL"}");
-
-            italianLangBtn?.onClick.RemoveAllListeners();
-            englishLangBtn?.onClick.RemoveAllListeners();
-            tutorialNextBtn?.onClick.RemoveAllListeners();
-            startAdventureBtn?.onClick.RemoveAllListeners();
-
-            italianLangBtn?.onClick.AddListener(() =>
-            {
-                Debug.Log("[OnboardingManager] Click: ITALIANO");
-                ChooseLanguage(Language.Italian);
-            });
-            englishLangBtn?.onClick.AddListener(() =>
-            {
-                Debug.Log("[OnboardingManager] Click: ENGLISH");
-                ChooseLanguage(Language.English);
-            });
-
-            // Testo senza emoji (il font di default non le supporta)
-            var itLabel = italianLangBtn?.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            var enLabel = englishLangBtn?.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            var itLabel = italianLangBtn?.GetComponentInChildren<TextMeshProUGUI>();
+            var enLabel = englishLangBtn?.GetComponentInChildren<TextMeshProUGUI>();
             if (itLabel != null) itLabel.text = "ITALIANO";
             if (enLabel != null) enLabel.text = "ENGLISH";
-            tutorialNextBtn?.onClick.AddListener(OnTutorialNext);
-            startAdventureBtn?.onClick.AddListener(FinishOnboarding);
         }
 
         private void ShowStep(int step)
@@ -188,11 +162,10 @@ namespace AppPuzz.UI
 
             UpdateStepDots(step);
 
-            // Popola contenuti specifici
             if (step == 0)
             {
-                if (welcomeTitle   != null) welcomeTitle.text   = "Benvenuto in\nWORD LEGEND!";
-                if (welcomeSubtitle!= null) welcomeSubtitle.text = "Scegli la tua lingua";
+                if (welcomeTitle    != null) welcomeTitle.text    = "Benvenuto in\nWORD LEGEND!";
+                if (welcomeSubtitle != null) welcomeSubtitle.text = "Scegli la tua lingua";
             }
             else if (step == 2)
             {
@@ -213,7 +186,7 @@ namespace AppPuzz.UI
             {
                 var label = tutorialNextBtn.GetComponentInChildren<TextMeshProUGUI>();
                 if (label != null)
-                    label.text = (_tutorialPage < TUTORIAL_TEXTS.Length - 1) ? "AVANTI →" : "CAPITO!";
+                    label.text = (_tutorialPage < TUTORIAL_TEXTS.Length - 1) ? "AVANTI ->" : "CAPITO!";
             }
         }
 
@@ -258,6 +231,13 @@ namespace AppPuzz.UI
                 PlayerProfile.Instance.OnboardingComplete = true;
 
             ScreenManager.Instance?.ShowScreen(ScreenID.Home);
+        }
+
+        // ---- Utilita ----
+        private static bool IsUnder(GameObject go, Component owner)
+        {
+            if (owner == null || go == null) return false;
+            return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
         }
 
         private static void SetActive(GameObject go, bool active)
