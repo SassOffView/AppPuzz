@@ -42,6 +42,10 @@ namespace AppPuzz.Gameplay
         public Button newGridButton;
         public Button exitButton;
 
+        [Header("Griglia")]
+        [Tooltip("Container dove GridManager spawna le celle (assegnato da UIAutoSetup).")]
+        public Transform gridContainer;
+
         [Header("Configurazione")]
         public int   hintsPerSession  = 3;
         public float xpMultiplier     = 0.5f;   // XP ridotto in allenamento
@@ -97,7 +101,9 @@ namespace AppPuzz.Gameplay
             if (LanguageManager.Instance != null)
                 _validator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
 
-            // Genera griglia
+            // Imposta container griglia e genera
+            if (gridContainer != null && GridManager.Instance != null)
+                GridManager.Instance.gridContainer = gridContainer;
             GridManager.Instance?.GenerateGrid();
 
             UpdateUI();

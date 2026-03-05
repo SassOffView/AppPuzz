@@ -91,6 +91,12 @@ namespace AppPuzz.Gameplay
             if (resultsPanel == null)
                 resultsPanel = FindFirstObjectByType<ResultsPanel>(FindObjectsInactive.Include);
 
+            // Auto-find EnergyManager / GridManager se non assegnati dall'Inspector
+            if (energyManager == null)
+                energyManager = FindFirstObjectByType<EnergyManager>(FindObjectsInactive.Include);
+            if (gridManager == null)
+                gridManager = FindFirstObjectByType<AppPuzz.Grid.GridManager>(FindObjectsInactive.Include);
+
             // Crea WordSelector automaticamente se non è nella scena
             if (WordSelector.Instance == null)
             {

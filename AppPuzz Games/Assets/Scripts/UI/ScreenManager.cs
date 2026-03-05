@@ -53,6 +53,10 @@ namespace AppPuzz.UI
         public GameObject settingsPanel;
         public GameObject resultsPanel;
 
+        [Header("Grid condivisa")]
+        [Tooltip("Container originale del GridManager (GameplayPanel). Ripristinato quando si mostra Gameplay.")]
+        public Transform gameplayGridContainer;
+
         [Header("Overlay transizione")]
         [Tooltip("CanvasGroup nero per fade tra schermate (opzionale).")]
         public CanvasGroup transitionOverlay;
@@ -134,9 +138,14 @@ namespace AppPuzz.UI
             else
                 Debug.LogWarning($"[ScreenManager] Nessun pannello assegnato per {id}");
 
-            // Quando si mostra il gameplay, avvia la partita
+            // Quando si mostra il gameplay, ripristina gridContainer originale e avvia la partita
             if (id == ScreenID.Gameplay)
             {
+                if (gameplayGridContainer != null)
+                {
+                    var grid = AppPuzz.Grid.GridManager.Instance;
+                    if (grid != null) grid.gridContainer = gameplayGridContainer;
+                }
                 var gm = AppPuzz.Gameplay.GameManager.Instance;
                 if (gm != null && gm.CurrentState != AppPuzz.Gameplay.GameState.Playing)
                     gm.StartGame();

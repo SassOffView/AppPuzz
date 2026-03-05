@@ -210,7 +210,15 @@ namespace AppPuzz.Gameplay
             _selectedCells.Clear();
 
             if (word.Length >= 3)
-                GameManager.Instance?.SubmitWord(word);
+            {
+                var screen = AppPuzz.UI.ScreenManager.Instance?.Current;
+                if (screen == AppPuzz.UI.ScreenID.Training)
+                    TrainingManager.Instance?.SubmitWord(word);
+                else if (screen == AppPuzz.UI.ScreenID.Arena)
+                    ArenaManager.Instance?.SubmitWord(word);
+                else
+                    GameManager.Instance?.SubmitWord(word);
+            }
 
             if (currentWordText != null)
                 currentWordText.text = string.Empty;

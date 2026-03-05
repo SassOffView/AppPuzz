@@ -38,6 +38,7 @@ namespace AppPuzz.UI
             BuildTrainingPanel(canvas);
             BuildArenaPanel(canvas);
             BuildEvolutionPanel(canvas);
+            BuildSettingsPanel(canvas);
             BuildTransitionOverlay(canvas);
             WireScreenManager(canvas);
             DisableStrayBlockers(canvas);
@@ -598,6 +599,23 @@ namespace AppPuzz.UI
                 26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.58f), new Vector2(0.95f, 0.64f), Vector2.zero, Vector2.zero);
 
+            // Grid area — GridManager spawna le celle qui
+            {
+                var gridArea = new GameObject("GridArea");
+                gridArea.transform.SetParent(panel.transform, false);
+                var rt = gridArea.AddComponent<RectTransform>();
+                rt.anchorMin = new Vector2(0.02f, 0.19f);
+                rt.anchorMax = new Vector2(0.98f, 0.60f);
+                rt.offsetMin = rt.offsetMax = Vector2.zero;
+                // Aggiungi GridLayoutGroup per le celle
+                var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
+                glg.childAlignment = TextAnchor.MiddleCenter;
+                glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                glg.constraintCount = 5;
+                glg.spacing = new Vector2(4, 4);
+                tm.gridContainer = gridArea.transform;
+            }
+
             tm.hintButton = MakeButton(panel.transform, "HintButton", "Suggerimento (3)",
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 28,
                 new Vector2(0.05f, 0.10f), new Vector2(0.48f, 0.18f), Vector2.zero, Vector2.zero);
@@ -666,6 +684,22 @@ namespace AppPuzz.UI
             am.opponentHealthBar = MakeSlider(panel.transform, "OpponentHP", UITheme.Colors.TextDanger,
                 new Vector2(0.05f, 0.44f), new Vector2(0.95f, 0.47f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar.value = 1f;
+
+            // Grid area — GridManager spawna le celle qui
+            {
+                var gridArea = new GameObject("GridArea");
+                gridArea.transform.SetParent(panel.transform, false);
+                var rt = gridArea.AddComponent<RectTransform>();
+                rt.anchorMin = new Vector2(0.02f, 0.19f);
+                rt.anchorMax = new Vector2(0.98f, 0.43f);
+                rt.offsetMin = rt.offsetMax = Vector2.zero;
+                var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
+                glg.childAlignment = TextAnchor.MiddleCenter;
+                glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                glg.constraintCount = 5;
+                glg.spacing = new Vector2(4, 4);
+                am.gridContainer = gridArea.transform;
+            }
 
             // Results overlay
             var resultsOverlay = MakePanel(panel.transform, "ResultsOverlay",
@@ -831,6 +865,35 @@ namespace AppPuzz.UI
         }
 
         // -------------------------------------------------------
+        // SETTINGS PANEL
+        // -------------------------------------------------------
+        private void BuildSettingsPanel(Canvas canvas)
+        {
+            var panel = FindOrCreatePanel(canvas, "SettingsPanel");
+            if (panel.GetComponent<SettingsScreen>() != null) return;
+
+            panel.SetActive(false);
+            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
+
+            var ss = panel.AddComponent<SettingsScreen>();
+
+            MakeText(panel.transform, "SettingsTitle", "IMPOSTAZIONI",
+                52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            MakeText(panel.transform, "SettingsInfo", "Versione 1.0",
+                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.1f, 0.70f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
+
+            ss.backButton = MakeButton(panel.transform, "BackButton", "INDIETRO",
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 32,
+                new Vector2(0.25f, 0.05f), new Vector2(0.75f, 0.13f), Vector2.zero, Vector2.zero);
+
+            panel.SetActive(false);
+        }
+
+        // -------------------------------------------------------
         // WIRE SCREEN MANAGER
         // -------------------------------------------------------
         private void WireScreenManager(Canvas canvas)
@@ -844,9 +907,47 @@ namespace AppPuzz.UI
             sm.trainingPanel          = canvas.transform.Find("TrainingPanel")?.gameObject;
             sm.arenaPanel             = canvas.transform.Find("ArenaPanel")?.gameObject;
             sm.evolutionPanel         = canvas.transform.Find("EvolutionPanel")?.gameObject;
+            sm.settingsPanel          = canvas.transform.Find("SettingsPanel")?.gameObject;
 
             // GameplayPanel = il contenitore degli elementi di gioco esistenti
             sm.gameplayPanel = canvas.transform.Find("GameplayPanel")?.gameObject;
+
+            // Salva il container griglia originale (GameplayPanel) per ripristinarlo
+            var gm = FindFirstObjectByType<AppPuzz.Grid.GridManager>(FindObjectsInactive.Include);
+            if (gm != null)
+                sm.gameplayGridContainer = gm.gridContainer;
+
+            // Wire training/arena gridContainer
+            var trainingPanel = canvas.transform.Find("TrainingPanel");
+            if (trainingPanel != null)
+            {
+                var tm = trainingPanel.GetComponent<AppPuzz.Gameplay.TrainingManager>();
+                if (tm != null)
+                {
+                    var gridArea = trainingPanel.Find("GridArea");
+                    if (gridArea != null) tm.gridContainer = gridArea;
+                }
+            }
+            var arenaPanel = canvas.transform.Find("ArenaPanel");
+            if (arenaPanel != null)
+            {
+                var am = arenaPanel.GetComponent<AppPuzz.Gameplay.ArenaManager>();
+                if (am != null)
+                {
+                    var gridArea = arenaPanel.Find("GridArea");
+                    if (gridArea != null) am.gridContainer = gridArea;
+                }
+            }
+
+            // Wire GameManager references
+            var gameManager = FindFirstObjectByType<AppPuzz.Gameplay.GameManager>(FindObjectsInactive.Include);
+            if (gameManager != null)
+            {
+                if (gameManager.energyManager == null)
+                    gameManager.energyManager = FindFirstObjectByType<AppPuzz.Gameplay.EnergyManager>(FindObjectsInactive.Include);
+                if (gameManager.gridManager == null)
+                    gameManager.gridManager = gm;
+            }
 
             var overlayGo = canvas.transform.Find("TransitionOverlay");
             if (overlayGo != null)

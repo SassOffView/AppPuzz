@@ -61,6 +61,10 @@ namespace AppPuzz.Gameplay
         public Button          playAgainBtn;
         public Button          exitBtn;
 
+        [Header("Griglia")]
+        [Tooltip("Container dove GridManager spawna le celle (assegnato da UIAutoSetup).")]
+        public Transform gridContainer;
+
         [Header("Configurazione")]
         public float baseDuration   = 90f;
         public float maxEnergy      = 3000f;
@@ -131,6 +135,8 @@ namespace AppPuzz.Gameplay
             if (LanguageManager.Instance != null)
                 _validator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
 
+            if (gridContainer != null && GridManager.Instance != null)
+                GridManager.Instance.gridContainer = gridContainer;
             GridManager.Instance?.GenerateGrid();
 
             if (resultsOverlay != null) resultsOverlay.SetActive(false);
