@@ -7,6 +7,7 @@
 // ============================================================
 
 using UnityEngine;
+using UnityEngine.UI;
 using AppPuzz.Utils;
 using AppPuzz.Localization;
 
@@ -98,6 +99,12 @@ namespace AppPuzz.Grid
                     _cells[r, c] = cell;
                 }
             }
+
+            // Forza il GridLayoutGroup a ricalcolare le posizioni subito.
+            // Senza questo le celle rimangono ad anchoredPos=(0,0) finche
+            // il Canvas non esegue il suo prossimo layout pass.
+            if (gridContainer is RectTransform gridRt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
 
             Debug.Log("[GridManager] Griglia 5×5 generata.");
         }

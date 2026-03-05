@@ -112,7 +112,13 @@ namespace AppPuzz.Gameplay
 
         private void Start()
         {
-            StartGame();
+            // Se ScreenManager esiste, non avviare la partita automaticamente:
+            // sara ScreenManager a chiamare StartGame() quando mostra il GameplayPanel.
+            // Se ScreenManager NON esiste (scena di sola gameplay) avvia subito.
+            if (ScreenManager.Instance == null)
+                StartGame();
+            else
+                Debug.Log("[GameManager] ScreenManager attivo. StartGame() verra chiamato dallo ScreenManager.");
         }
 
         private void Update()

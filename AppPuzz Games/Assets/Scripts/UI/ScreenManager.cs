@@ -133,6 +133,14 @@ namespace AppPuzz.UI
                 panel.SetActive(true);
             else
                 Debug.LogWarning($"[ScreenManager] Nessun pannello assegnato per {id}");
+
+            // Quando si mostra il gameplay, avvia la partita
+            if (id == ScreenID.Gameplay)
+            {
+                var gm = AppPuzz.Gameplay.GameManager.Instance;
+                if (gm != null && gm.CurrentState != AppPuzz.Gameplay.GameState.Playing)
+                    gm.StartGame();
+            }
         }
 
         private IEnumerator TransitionTo(ScreenID id)
