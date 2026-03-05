@@ -8,8 +8,10 @@
 // ============================================================
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using AppPuzz.Utils;
 using AppPuzz.Localization;
@@ -76,6 +78,53 @@ namespace AppPuzz.UI
             _tutorialPage  = 0;
             ShowStep(_currentStep);
             WireButtons();
+        }
+
+        // ----------------------------------------------------------
+        // Diagnostica click (da rimuovere dopo il debug)
+        // ----------------------------------------------------------
+        private void Update()
+        {
+            if (!Input.GetMouseButtonDown(0)) return;
+
+            var es = EventSystem.current;
+            if (es == null)
+            {
+                Debug.LogError("[OnboardingManager] EventSystem.current è NULL! " +
+                               "Nessun input UI possibile.");
+                return;
+            }
+
+            var pointer = new PointerEventData(es) { position = Input.mousePosition };
+            var results = new List<RaycastResult>();
+            es.RaycastAll(pointer, results);
+
+            if (results.Count == 0)
+            {
+                Debug.LogWarning($"[OnboardingManager] Click {Input.mousePosition} — " +
+                                 $"NESSUN elemento UI colpito! " +
+                                 $"Verifica GraphicRaycaster e Canvas.");
+            }
+            else
+            {
+                var sb = new System.Text.StringBuilder(
+                    $"[OnboardingManager] Click {Input.mousePosition} — elementi colpiti:\n");
+                foreach (var r in results)
+                {
+                    sb.AppendLine($"  • {r.gameObject.name}  " +
+                                  $"(path: {GetPath(r.gameObject)})  " +
+                                  $"depth={r.depth}");
+                }
+                Debug.Log(sb.ToString());
+            }
+        }
+
+        private static string GetPath(GameObject go)
+        {
+            var path = go.name;
+            var t = go.transform.parent;
+            while (t != null) { path = t.name + "/" + path; t = t.parent; }
+            return path;
         }
 
         // ----------------------------------------------------------
