@@ -193,6 +193,7 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "HomePanel");
             if (panel.GetComponent<HomeScreen>() != null) return; // già configurato
 
+            panel.SetActive(false);
             var hs = panel.AddComponent<HomeScreen>();
 
             // Titolo
@@ -264,6 +265,9 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "OnboardingPanel");
             if (panel.GetComponent<OnboardingManager>() != null) return;
 
+            // Disattiva prima di aggiungere il componente per evitare che OnEnable
+            // scatti prima che i riferimenti ai bottoni siano stati assegnati.
+            panel.SetActive(false);
             var om = panel.AddComponent<OnboardingManager>();
 
             // --- Step Welcome ---
@@ -347,6 +351,7 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "CreatureSelectionPanel");
             if (panel.GetComponent<CreatureSelectionScreen>() != null) return;
 
+            panel.SetActive(false);
             var css = panel.AddComponent<CreatureSelectionScreen>();
 
             // Titolo
@@ -479,6 +484,7 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "TrainingPanel");
             if (panel.GetComponent<TrainingManager>() != null) return;
 
+            panel.SetActive(false);
             var tm = panel.AddComponent<TrainingManager>();
             panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
 
@@ -529,6 +535,7 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "ArenaPanel");
             if (panel.GetComponent<ArenaManager>() != null) return;
 
+            panel.SetActive(false);
             var am = panel.AddComponent<ArenaManager>();
 
             MakeText(panel.transform, "ArenaTitle", "ARENA",
@@ -612,6 +619,7 @@ namespace AppPuzz.UI
             var panel = FindOrCreatePanel(canvas, "EvolutionPanel");
             if (panel.GetComponent<EvolutionScreen>() != null) return;
 
+            panel.SetActive(false);
             var es = panel.AddComponent<EvolutionScreen>();
 
             MakeText(panel.transform, "EvolutionTitle", "EVOLUZIONE",
@@ -717,6 +725,7 @@ namespace AppPuzz.UI
                 Color.black, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var cg = overlay.AddComponent<CanvasGroup>();
             cg.alpha = 0f;
+            cg.blocksRaycasts = false; // non blocca mai i click UI
             overlay.SetActive(false);
         }
 

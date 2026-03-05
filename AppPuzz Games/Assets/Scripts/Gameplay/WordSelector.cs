@@ -69,6 +69,13 @@ namespace AppPuzz.Gameplay
 
         private void Update()
         {
+            // Ignora input se non siamo nella schermata di gioco
+            if (AppPuzz.UI.ScreenManager.Instance != null &&
+                AppPuzz.UI.ScreenManager.Instance.Current != AppPuzz.UI.ScreenID.Gameplay &&
+                AppPuzz.UI.ScreenManager.Instance.Current != AppPuzz.UI.ScreenID.Training &&
+                AppPuzz.UI.ScreenManager.Instance.Current != AppPuzz.UI.ScreenID.Arena)
+                return;
+
             // ---- MOUSE (editor / PC) ----
             if (Input.GetMouseButtonDown(0))
             {
