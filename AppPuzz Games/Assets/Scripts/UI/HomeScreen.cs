@@ -8,6 +8,8 @@
 // ============================================================
 
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using System;
@@ -96,15 +98,36 @@ namespace AppPuzz.UI
         // Privato
         // ----------------------------------------------------------
 
-        private void WireButtons()
+        private void WireButtons() { /* click handled in Update() */ }
+        private void Update()
         {
-            playButton?.onClick.AddListener(OnPlay);
-            trainingButton?.onClick.AddListener(OnTraining);
-            arenaButton?.onClick.AddListener(OnArena);
-            evolutionButton?.onClick.AddListener(OnEvolution);
-            settingsButton?.onClick.AddListener(OnSettings);
-            dailyChallengeButton?.onClick.AddListener(OnDailyChallenge);
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) clicked = true;
+            if (!clicked) return;
+            var es = EventSystem.current;
+            if (es == null) return;
+            Vector2 pos = (Input.touchCount > 0) ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var pointer = new PointerEventData(es) { position = pos };
+            var results = new List<RaycastResult>();
+            es.RaycastAll(pointer, results);
+            foreach (var r in results)
+            {
+                var go = r.gameObject;
+                if (IsUnder(go, playButton))           { OnPlay();            return; }
+                if (IsUnder(go, trainingButton))       { OnTraining();        return; }
+                if (IsUnder(go, arenaButton))          { OnArena();           return; }
+                if (IsUnder(go, evolutionButton))      { OnEvolution();       return; }
+                if (IsUnder(go, settingsButton))       { OnSettings();        return; }
+                if (IsUnder(go, dailyChallengeButton)) { OnDailyChallenge();  return; }
+            }
         }
+        private static bool IsUnder(GameObject go, Component owner)
+        {
+            if (owner == null || go == null) return false;
+            return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
+        }
+
+
 
         /// <summary>Aggiorna tutti i valori UI dal PlayerProfile.</summary>
         private void RefreshUI()

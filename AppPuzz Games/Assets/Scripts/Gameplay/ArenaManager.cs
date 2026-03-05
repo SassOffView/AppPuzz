@@ -7,6 +7,8 @@
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Grid;
@@ -98,6 +100,7 @@ namespace AppPuzz.Gameplay
 
         private void Update()
         {
+            HandleClickInput();
             if (!_isPlaying) return;
 
             _timeLeft -= Time.deltaTime;
@@ -190,14 +193,35 @@ namespace AppPuzz.Gameplay
         // ----------------------------------------------------------
         // Privato
         // ----------------------------------------------------------
-        private void WireButtons()
+        private void WireButtons() { /* click handled in Update() */ }
+
+        private void HandleClickInput()
         {
-            playAgainBtn?.onClick.AddListener(() => StartArena(_difficulty));
-            exitBtn?.onClick.AddListener(() =>
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) clicked = true;
+            if (!clicked) return;
+            var es = EventSystem.current;
+            if (es == null) return;
+            Vector2 pos = (Input.touchCount > 0) ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var pointer = new PointerEventData(es) { position = pos };
+            var results = new List<RaycastResult>();
+            es.RaycastAll(pointer, results);
+            foreach (var r in results)
             {
-                _isPlaying = false;
-                ScreenManager.Instance?.ShowScreen(ScreenID.Home);
-            });
+                var go = r.gameObject;
+                if (IsUnder(go, playAgainBtn)) { StartArena(_difficulty); return; }
+                if (IsUnder(go, exitBtn))
+                {
+                    _isPlaying = false;
+                    ScreenManager.Instance?.ShowScreen(ScreenID.Home);
+                    return;
+                }
+            }
+        }
+        private static bool IsUnder(GameObject go, Component owner)
+        {
+            if (owner == null || go == null) return false;
+            return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
         }
 
         private void EndArena()

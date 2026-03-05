@@ -1,14 +1,16 @@
 // ============================================================
 // CreatureSelectionScreen.cs
-// Schermata di selezione creatura stile Pokémon:
+// Schermata di selezione creatura stile Pokemon:
 // - 3 carte con nome, tipo, descrizione, stats
 // - Selezione con highlight animato
 // - Bottone conferma
 // ============================================================
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using AppPuzz.Utils;
 using AppPuzz.Creatures;
@@ -31,7 +33,8 @@ namespace AppPuzz.UI
 
     /// <summary>
     /// Controller dello screen "Scegli la tua creatura".
-    /// Attach al pannello CreatureSelectionPanel.
+    /// I click sono gestiti via RaycastAll() in Update() (stessa
+    /// soluzione adottata in OnboardingManager).
     /// </summary>
     public class CreatureSelectionScreen : MonoBehaviour
     {
@@ -40,14 +43,14 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
 
         [Header("Cards (3 creature)")]
-        public GameObject[] creatureCards;       // 3 card GameObjects
+        public GameObject[] creatureCards;
 
-        [Header("Elementi dentro ogni card (stessa struttura)")]
+        [Header("Elementi dentro ogni card")]
         public TextMeshProUGUI[] nameTexts;
         public TextMeshProUGUI[] typeTexts;
         public TextMeshProUGUI[] descTexts;
         public TextMeshProUGUI[] specialtyTexts;
-        public Image[]           cardBorders;    // bordo colorato per tipo
+        public Image[]           cardBorders;
         public Image[]           creatureImages;
         public Slider[]          powerBars;
         public Slider[]          speedBars;
@@ -67,15 +70,14 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
         private int _selectedIndex = 0;
 
-        // Dati di default se non configurati dall'Inspector
         private static readonly CreatureCardData[] DEFAULT_DATA =
         {
             new CreatureCardData
             {
                 name = "Mental Dragon",
                 typeName = "DRAGO MENTALE",
-                description = "Un drago nato dall'energia pura della mente. Potenzia le parole più rare.",
-                specialty = "Bonus LEGGENDARIO ×4",
+                description = "Un drago nato dall'energia pura della mente. Potenzia le parole piu rare.",
+                specialty = "Bonus LEGGENDARIO x4",
                 typeColor = new Color(0.435f, 0.208f, 0.988f),
                 powerStat = 9, speedStat = 6, enduranceStat = 7
             },
@@ -84,7 +86,7 @@ namespace AppPuzz.UI
                 name = "Astral Wolf",
                 typeName = "LUPO ASTRALE",
                 description = "Il lupo delle stelle. Veloce e instancabile, potenzia gli streak.",
-                specialty = "Streak Bonus ×3",
+                specialty = "Streak Bonus x3",
                 typeColor = new Color(0.310f, 0.580f, 1f),
                 powerStat = 7, speedStat = 10, enduranceStat = 6
             },
@@ -92,8 +94,8 @@ namespace AppPuzz.UI
             {
                 name = "Ethereal Serpent",
                 typeName = "SERPENTE ETEREO",
-                description = "Il serpente dell'eternità. Parole lunghe diventano devastanti.",
-                specialty = "Bonus lunghezza ×2.5",
+                description = "Il serpente dell'eternita. Parole lunghe diventano devastanti.",
+                specialty = "Bonus lunghezza x2.5",
                 typeColor = new Color(0.180f, 0.800f, 0.443f),
                 powerStat = 8, speedStat = 5, enduranceStat = 10
             }
@@ -108,7 +110,6 @@ namespace AppPuzz.UI
                 creatures = DEFAULT_DATA;
 
             PopulateCards();
-            WireButtons();
             SelectCard(PlayerProfile.Instance != null ? (int)PlayerProfile.Instance.SelectedCreature : 0);
         }
 
@@ -116,6 +117,52 @@ namespace AppPuzz.UI
         {
             if (creatures != null && creatures.Length > 0)
                 SelectCard(_selectedIndex);
+        }
+
+        /// <summary>
+        /// Gestisce click/tap sulle card e sui bottoni via RaycastAll(),
+        /// bypassando Button.onClick che non viene consegnato in questa scena.
+        /// </summary>
+        private void Update()
+        {
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+                clicked = true;
+            if (!clicked) return;
+
+            var es = EventSystem.current;
+            if (es == null) return;
+
+            Vector2 pos = (Input.touchCount > 0)
+                ? Input.GetTouch(0).position
+                : (Vector2)Input.mousePosition;
+
+            var pointer = new PointerEventData(es) { position = pos };
+            var results = new List<RaycastResult>();
+            es.RaycastAll(pointer, results);
+
+            foreach (var r in results)
+            {
+                var go = r.gameObject;
+
+                // Bottone SCEGLI o click sull'intera card
+                for (int i = 0; i < 3; i++)
+                {
+                    if (IsUnder(go, selectButtons, i) || IsUnder(go, creatureCards, i))
+                    {
+                        SelectCard(i);
+                        return;
+                    }
+                }
+
+                // Bottone conferma
+                if (confirmButton != null &&
+                    (go == confirmButton.gameObject || go.transform.IsChildOf(confirmButton.transform)))
+                {
+                    OnConfirm();
+                    return;
+                }
+            }
         }
 
         // ----------------------------------------------------------
@@ -140,29 +187,10 @@ namespace AppPuzz.UI
             }
         }
 
-        private void WireButtons()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                int idx = i;
-                if (selectButtons != null && i < selectButtons.Length && selectButtons[i] != null)
-                    selectButtons[i].onClick.AddListener(() => SelectCard(idx));
-                // Clic sulla card intera
-                if (creatureCards != null && i < creatureCards.Length && creatureCards[i] != null)
-                {
-                    var btn = creatureCards[i].GetComponent<Button>();
-                    if (btn == null) btn = creatureCards[i].AddComponent<Button>();
-                    btn.onClick.AddListener(() => SelectCard(idx));
-                }
-            }
-            confirmButton?.onClick.AddListener(OnConfirm);
-        }
-
         private void SelectCard(int index)
         {
             _selectedIndex = index;
 
-            // Highlight selezionato
             for (int i = 0; i < 3; i++)
             {
                 if (creatureCards != null && i < creatureCards.Length && creatureCards[i] != null)
@@ -179,11 +207,9 @@ namespace AppPuzz.UI
                 }
             }
 
-            // Label e conferma
             if (selectedCreatureLabel != null && creatures != null && index < creatures.Length)
                 selectedCreatureLabel.text = creatures[index].name.ToUpper();
 
-            // Scale bounce sul card selezionato
             if (creatureCards != null && index < creatureCards.Length && creatureCards[index] != null)
                 StartCoroutine(BounceCard(creatureCards[index].transform));
         }
@@ -193,15 +219,10 @@ namespace AppPuzz.UI
             if (PlayerProfile.Instance != null)
                 PlayerProfile.Instance.SelectedCreature = (CreatureType)_selectedIndex;
 
-            // Se siamo nell'onboarding, andiamo al passo successivo
-            // Se siamo dalla Home, torniamo alla Home
-            if (ScreenManager.Instance != null)
-            {
-                bool fromOnboarding = ScreenManager.Instance.Current == ScreenID.Onboarding;
-                ScreenManager.Instance.ShowScreen(fromOnboarding ? ScreenID.Onboarding : ScreenID.Home);
-            }
-
             Debug.Log($"[CreatureSelection] Creatura scelta: {(CreatureType)_selectedIndex}");
+
+            if (ScreenManager.Instance != null)
+                ScreenManager.Instance.ShowScreen(ScreenID.Home);
         }
 
         private IEnumerator BounceCard(Transform t)
@@ -218,10 +239,17 @@ namespace AppPuzz.UI
         }
 
         // ---- Helpers ----
+        private static bool IsUnder(GameObject go, Component[] arr, int i)
+        {
+            if (arr == null || i >= arr.Length || arr[i] == null || go == null) return false;
+            return go == arr[i].gameObject || go.transform.IsChildOf(arr[i].transform);
+        }
+
         private static void SetText(TextMeshProUGUI[] arr, int i, string v)
         {
             if (arr != null && i < arr.Length && arr[i] != null) arr[i].text = v;
         }
+
         private static void SetSlider(Slider[] arr, int i, float v)
         {
             if (arr != null && i < arr.Length && arr[i] != null) arr[i].value = v;

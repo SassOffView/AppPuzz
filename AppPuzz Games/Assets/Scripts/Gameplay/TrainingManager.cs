@@ -6,6 +6,8 @@
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Grid;
@@ -76,6 +78,8 @@ namespace AppPuzz.Gameplay
         {
             StartTraining();
         }
+        private void Update() { HandleClickInput(); }
+
 
         // ----------------------------------------------------------
         // API pubblica
@@ -136,12 +140,32 @@ namespace AppPuzz.Gameplay
         // Privato
         // ----------------------------------------------------------
 
-        private void WireButtons()
+        private void WireButtons() { /* click handled via HandleClickInput() */ }
+        private void HandleClickInput()
         {
-            hintButton?.onClick.AddListener(ShowHint);
-            newGridButton?.onClick.AddListener(OnNewGrid);
-            exitButton?.onClick.AddListener(OnExit);
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) clicked = true;
+            if (!clicked) return;
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return;
+            Vector2 pos = (Input.touchCount > 0) ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var pointer = new UnityEngine.EventSystems.PointerEventData(es) { position = pos };
+            var results = new List<UnityEngine.EventSystems.RaycastResult>();
+            es.RaycastAll(pointer, results);
+            foreach (var r in results)
+            {
+                var go = r.gameObject;
+                if (IsUnder(go, hintButton))    { ShowHint();   return; }
+                if (IsUnder(go, newGridButton)) { OnNewGrid();  return; }
+                if (IsUnder(go, exitButton))    { OnExit();     return; }
+            }
         }
+        private static bool IsUnder(GameObject go, Component owner)
+        {
+            if (owner == null || go == null) return false;
+            return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
+        }
+
 
         private void ShowHint()
         {

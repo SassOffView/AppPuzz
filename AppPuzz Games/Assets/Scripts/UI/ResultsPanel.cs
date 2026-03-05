@@ -7,6 +7,8 @@
 // ============================================================
 
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Gameplay;
@@ -64,6 +66,30 @@ namespace AppPuzz.UI
                 menuButton.onClick.AddListener(OnMenuClicked);
         }
 
+
+        private void Update()
+        {
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) clicked = true;
+            if (!clicked) return;
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return;
+            Vector2 pos = (Input.touchCount > 0) ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var pointer = new UnityEngine.EventSystems.PointerEventData(es) { position = pos };
+            var results = new List<UnityEngine.EventSystems.RaycastResult>();
+            es.RaycastAll(pointer, results);
+            foreach (var r in results)
+            {
+                var go = r.gameObject;
+                if (IsUnder(go, playAgainButton)) { OnPlayAgainClicked(); return; }
+                if (IsUnder(go, menuButton))      { OnMenuClicked();      return; }
+            }
+        }
+        private static bool IsUnder(GameObject go, Component owner)
+        {
+            if (owner == null || go == null) return false;
+            return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
+        }
         private void OnPlayAgainClicked()
         {
             GameManager.Instance?.StartGame();
