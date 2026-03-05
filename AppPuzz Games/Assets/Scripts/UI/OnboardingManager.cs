@@ -69,6 +69,9 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
         private void OnEnable()
         {
+            Debug.Log($"[OnboardingManager] OnEnable — " +
+                      $"italianLangBtn={italianLangBtn?.name ?? "NULL"}, " +
+                      $"englishLangBtn={englishLangBtn?.name ?? "NULL"}");
             _currentStep   = 0;
             _tutorialPage  = 0;
             ShowStep(_currentStep);
@@ -80,13 +83,25 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
         private void WireButtons()
         {
+            Debug.Log($"[OnboardingManager] WireButtons — " +
+                      $"italianLangBtn={italianLangBtn?.name ?? "NULL"}, " +
+                      $"englishLangBtn={englishLangBtn?.name ?? "NULL"}");
+
             italianLangBtn?.onClick.RemoveAllListeners();
             englishLangBtn?.onClick.RemoveAllListeners();
             tutorialNextBtn?.onClick.RemoveAllListeners();
             startAdventureBtn?.onClick.RemoveAllListeners();
 
-            italianLangBtn?.onClick.AddListener(() => ChooseLanguage(Language.Italian));
-            englishLangBtn?.onClick.AddListener(() => ChooseLanguage(Language.English));
+            italianLangBtn?.onClick.AddListener(() =>
+            {
+                Debug.Log("[OnboardingManager] Click: ITALIANO");
+                ChooseLanguage(Language.Italian);
+            });
+            englishLangBtn?.onClick.AddListener(() =>
+            {
+                Debug.Log("[OnboardingManager] Click: ENGLISH");
+                ChooseLanguage(Language.English);
+            });
 
             // Testo senza emoji (il font di default non le supporta)
             var itLabel = italianLangBtn?.GetComponentInChildren<TMPro.TextMeshProUGUI>();

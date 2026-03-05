@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using AppPuzz.Utils;
 using AppPuzz.Creatures;
@@ -28,6 +29,7 @@ namespace AppPuzz.UI
             if (canvas == null) { Debug.LogError("[UIAutoSetup] Canvas non trovato!"); return; }
 
             EnsureManagers();
+            EnsureEventSystem();
 
             BuildHomePanel(canvas);
             BuildOnboardingPanel(canvas);
@@ -37,6 +39,7 @@ namespace AppPuzz.UI
             BuildEvolutionPanel(canvas);
             BuildTransitionOverlay(canvas);
             WireScreenManager(canvas);
+            DisableStrayBlockers(canvas);
 
             Debug.Log("[UIAutoSetup] UI costruita automaticamente.");
         }
@@ -61,6 +64,65 @@ namespace AppPuzz.UI
                 var go = new GameObject("AppNavigator");
                 go.AddComponent<AppNavigator>();
             }
+        }
+
+        // -------------------------------------------------------
+        // EventSystem
+        // -------------------------------------------------------
+        private static void EnsureEventSystem()
+        {
+            if (FindFirstObjectByType<EventSystem>() == null)
+            {
+                var esGo = new GameObject("EventSystem");
+                esGo.AddComponent<EventSystem>();
+                esGo.AddComponent<StandaloneInputModule>();
+                Debug.LogWarning("[UIAutoSetup] EventSystem mancante — creato automaticamente. " +
+                                 "Senza EventSystem i click UI non funzionano!");
+            }
+        }
+
+        // -------------------------------------------------------
+        // Pannelli "trasparenti" non gestiti che bloccano i click
+        // -------------------------------------------------------
+        private static void DisableStrayBlockers(Canvas canvas)
+        {
+            var managed = new HashSet<string>
+            {
+                "HomePanel", "OnboardingPanel", "CreatureSelectionPanel",
+                "TrainingPanel", "ArenaPanel", "EvolutionPanel",
+                "GameplayPanel", "TransitionOverlay"
+            };
+
+            var log = new System.Text.StringBuilder("[UIAutoSetup] Gerarchia Canvas:\n");
+            foreach (Transform child in canvas.transform)
+            {
+                log.AppendLine($"  • {child.name}  active={child.gameObject.activeSelf}");
+
+                if (managed.Contains(child.name)) continue;
+                if (!child.gameObject.activeSelf) continue;
+
+                // Cerca Image fullscreen con raycastTarget=true → può bloccare i click
+                var img = child.GetComponent<Image>();
+                if (img == null || !img.raycastTarget) continue;
+
+                var rt = child.GetComponent<RectTransform>();
+                if (rt == null) continue;
+
+                bool isFullScreen =
+                    rt.anchorMin == Vector2.zero  &&
+                    rt.anchorMax == Vector2.one   &&
+                    rt.offsetMin == Vector2.zero  &&
+                    rt.offsetMax == Vector2.zero;
+
+                if (isFullScreen)
+                {
+                    img.raycastTarget = false;
+                    Debug.LogWarning($"[UIAutoSetup] Pannello NON GESTITO '{child.name}' copriva " +
+                                     $"l'intera schermata con raycastTarget=true. " +
+                                     $"Disabilitato. Verifica se puoi eliminarlo dalla scena.");
+                }
+            }
+            Debug.Log(log.ToString());
         }
 
         // -------------------------------------------------------
