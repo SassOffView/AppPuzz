@@ -83,9 +83,26 @@ namespace AppPuzz.UI
         // ----------------------------------------------------------
         // Diagnostica click (da rimuovere dopo il debug)
         // ----------------------------------------------------------
+        private int _diagFrame = 0;
+
         private void Update()
         {
-            if (!Input.GetMouseButtonDown(0)) return;
+            // Heartbeat: conferma che Update() gira (ogni 120 frame ≈ ogni 2s a 60fps)
+            _diagFrame++;
+            if (_diagFrame % 120 == 0)
+                Debug.Log($"[OnboardingManager] ♥ Update attivo — frame={_diagFrame}, " +
+                          $"enabled={enabled}, gameObject.active={gameObject.activeSelf}");
+
+            // Rileva click mouse OPPURE tap touch
+            bool clicked = Input.GetMouseButtonDown(0);
+            if (!clicked && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+                clicked = true;
+
+            if (!clicked) return;
+
+            Vector2 pos = (Input.touchCount > 0)
+                ? Input.GetTouch(0).position
+                : (Vector2)Input.mousePosition;
 
             var es = EventSystem.current;
             if (es == null)
@@ -95,25 +112,26 @@ namespace AppPuzz.UI
                 return;
             }
 
-            var pointer = new PointerEventData(es) { position = Input.mousePosition };
+            var pointer = new PointerEventData(es) { position = pos };
             var results = new List<RaycastResult>();
             es.RaycastAll(pointer, results);
 
             if (results.Count == 0)
             {
-                Debug.LogWarning($"[OnboardingManager] Click {Input.mousePosition} — " +
+                Debug.LogWarning($"[OnboardingManager] Click @ {pos} — " +
                                  $"NESSUN elemento UI colpito! " +
                                  $"Verifica GraphicRaycaster e Canvas.");
             }
             else
             {
                 var sb = new System.Text.StringBuilder(
-                    $"[OnboardingManager] Click {Input.mousePosition} — elementi colpiti:\n");
+                    $"[OnboardingManager] Click @ {pos} — {results.Count} elementi colpiti:\n");
                 foreach (var r in results)
                 {
                     sb.AppendLine($"  • {r.gameObject.name}  " +
-                                  $"(path: {GetPath(r.gameObject)})  " +
-                                  $"depth={r.depth}");
+                                  $"path={GetPath(r.gameObject)}  " +
+                                  $"depth={r.depth}  " +
+                                  $"raycast={r.gameObject.GetComponent<Graphic>()?.raycastTarget}");
                 }
                 Debug.Log(sb.ToString());
             }
