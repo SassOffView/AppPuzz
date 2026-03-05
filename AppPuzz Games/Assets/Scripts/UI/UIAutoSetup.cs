@@ -12,6 +12,7 @@ using TMPro;
 using AppPuzz.Utils;
 using AppPuzz.Creatures;
 using AppPuzz.Localization;
+using AppPuzz.Gameplay;
 
 namespace AppPuzz.UI
 {
