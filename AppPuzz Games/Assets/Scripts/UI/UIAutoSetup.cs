@@ -198,7 +198,7 @@ namespace AppPuzz.UI
             var tmp = go.AddComponent<TextMeshProUGUI>();
             tmp.text = text; tmp.fontSize = fontSize; tmp.color = color;
             tmp.alignment = align;
-            tmp.enableWordWrapping = true;
+            tmp.textWrappingMode = TextWrappingModes.Normal;
             return tmp;
         }
 
@@ -293,7 +293,7 @@ namespace AppPuzz.UI
 
             // Livello giocatore
             hs.playerLevelText = MakeText(panel.transform, "PlayerLevelText", "LV. 1",
-                32, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                40, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.75f), new Vector2(0.4f, 0.82f), Vector2.zero, Vector2.zero);
 
             // Barra XP
@@ -302,24 +302,24 @@ namespace AppPuzz.UI
             hs.xpBar.value = 0.3f;
 
             hs.xpText = MakeText(panel.transform, "XPText", "350 XP al prossimo livello",
-                22, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.695f), new Vector2(0.95f, 0.72f), Vector2.zero, Vector2.zero);
 
             // Nome creatura
             hs.creatureNameText = MakeText(panel.transform, "CreatureNameText", "Mental Dragon",
-                36, UITheme.Colors.TypeDragon, TextAlignmentOptions.Center,
+                46, UITheme.Colors.TypeDragon, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.60f), new Vector2(0.9f, 0.69f), Vector2.zero, Vector2.zero);
             hs.creatureNameText.fontStyle = FontStyles.Bold;
 
             // Stats
             hs.bestScoreText = MakeText(panel.transform, "BestScoreText", "Record: 0",
-                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
+                36, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.54f), new Vector2(0.5f, 0.60f), Vector2.zero, Vector2.zero);
             hs.totalMatchesText = MakeText(panel.transform, "TotalMatchesText", "Partite: 0",
-                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                36, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
                 new Vector2(0.5f, 0.54f), new Vector2(0.95f, 0.60f), Vector2.zero, Vector2.zero);
             hs.arenaRankText = MakeText(panel.transform, "ArenaRankText", "BRONZO",
-                28, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                36, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.49f), new Vector2(0.9f, 0.54f), Vector2.zero, Vector2.zero);
 
             // Bottoni (5 in colonna)
@@ -328,19 +328,19 @@ namespace AppPuzz.UI
             float gap = 0.082f;
 
             hs.playButton = MakeButton(panel.transform, "PlayButton", UITheme.Strings.PlayBtn,
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 48,
                 new Vector2(0.1f, startY), new Vector2(0.9f, startY + btnH), Vector2.zero, Vector2.zero);
             hs.trainingButton = MakeButton(panel.transform, "TrainingButton", UITheme.Strings.TrainingBtn,
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 30,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
                 new Vector2(0.1f, startY - gap), new Vector2(0.9f, startY - gap + btnH), Vector2.zero, Vector2.zero);
             hs.arenaButton = MakeButton(panel.transform, "ArenaButton", UITheme.Strings.ArenaBtn,
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 30,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
                 new Vector2(0.1f, startY - gap * 2), new Vector2(0.9f, startY - gap * 2 + btnH), Vector2.zero, Vector2.zero);
             hs.evolutionButton = MakeButton(panel.transform, "EvolutionButton", UITheme.Strings.EvolutionBtn,
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 30,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
                 new Vector2(0.1f, startY - gap * 3), new Vector2(0.9f, startY - gap * 3 + btnH), Vector2.zero, Vector2.zero);
             hs.settingsButton = MakeButton(panel.transform, "SettingsButton", UITheme.Strings.SettingsBtn,
-                new Color(0.2f, 0.2f, 0.35f), UITheme.Colors.TextSecondary, 26,
+                new Color(0.2f, 0.2f, 0.35f), UITheme.Colors.TextSecondary, 32,
                 new Vector2(0.25f, startY - gap * 4), new Vector2(0.75f, startY - gap * 4 + btnH), Vector2.zero, Vector2.zero);
 
             panel.SetActive(false);
@@ -365,22 +365,22 @@ namespace AppPuzz.UI
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.welcomeTitle = MakeText(om.stepWelcome.transform, "WelcomeTitle",
-                "Benvenuto in\nWORD LEGEND!", 62, UITheme.Colors.Gold,
+                "Benvenuto in\nWORD LEGEND!", 76, UITheme.Colors.Gold,
                 TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.55f), new Vector2(0.95f, 0.85f), Vector2.zero, Vector2.zero);
             om.welcomeTitle.fontStyle = FontStyles.Bold;
 
             om.welcomeSubtitle = MakeText(om.stepWelcome.transform, "WelcomeSubtitle",
-                "Scegli la tua lingua", 34, UITheme.Colors.TextSecondary,
+                "Scegli la tua lingua", 44, UITheme.Colors.TextSecondary,
                 TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.47f), new Vector2(0.9f, 0.55f), Vector2.zero, Vector2.zero);
 
             om.italianLangBtn = MakeButton(om.stepWelcome.transform, "ItalianLangBtn", "ITALIANO",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 36,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 46,
                 new Vector2(0.1f, 0.34f), new Vector2(0.9f, 0.44f), Vector2.zero, Vector2.zero);
 
             om.englishLangBtn = MakeButton(om.stepWelcome.transform, "EnglishLangBtn", "ENGLISH",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 36,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 46,
                 new Vector2(0.1f, 0.22f), new Vector2(0.9f, 0.32f), Vector2.zero, Vector2.zero);
 
             // --- Step Profile: nickname + avatar ---
@@ -391,14 +391,14 @@ namespace AppPuzz.UI
             om.profileSetupScreen = pss;
 
             MakeText(om.stepCreature.transform, "ProfileTitle",
-                "CREA IL TUO PROFILO", 52, UITheme.Colors.Gold,
+                "CREA IL TUO PROFILO", 64, UITheme.Colors.Gold,
                 TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             // Nickname input
             MakeText(om.stepCreature.transform, "NickLabel",
-                "NOME EVOCATORE", 28, UITheme.Colors.TextSecondary,
+                "NOME EVOCATORE", 36, UITheme.Colors.TextSecondary,
                 TextAlignmentOptions.Left,
                 new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.86f), Vector2.zero, Vector2.zero);
             {
@@ -417,7 +417,7 @@ namespace AppPuzz.UI
                 trt2.anchorMin = new Vector2(0.02f, 0.05f); trt2.anchorMax = new Vector2(0.98f, 0.95f);
                 trt2.offsetMin = trt2.offsetMax = Vector2.zero;
                 var tmp2 = txtGo.AddComponent<TMPro.TextMeshProUGUI>();
-                tmp2.fontSize = 32; tmp2.color = UITheme.Colors.TextPrimary;
+                tmp2.fontSize = 40; tmp2.color = UITheme.Colors.TextPrimary;
                 tmp2.alignment = TextAlignmentOptions.MidlineLeft;
                 field.textComponent = tmp2;
                 field.characterLimit = 16;
@@ -426,7 +426,7 @@ namespace AppPuzz.UI
 
             // 10 Avatar buttons (5x2 grid)
             MakeText(om.stepCreature.transform, "AvatarLabel",
-                "SCEGLI IL TUO AVATAR", 28, UITheme.Colors.TextSecondary,
+                "SCEGLI IL TUO AVATAR", 36, UITheme.Colors.TextSecondary,
                 TextAlignmentOptions.Left,
                 new Vector2(0.08f, 0.65f), new Vector2(0.92f, 0.71f), Vector2.zero, Vector2.zero);
             {
@@ -462,7 +462,7 @@ namespace AppPuzz.UI
                     avHighlights[i] = hlImg;
                     // Label
                     var lbl = MakeText(avGo.transform, "AvatarLabel", ProfileSetupScreen.AVATAR_NAMES[i],
-                        16, UITheme.Colors.BackgroundDeep, TextAlignmentOptions.Center,
+                        20, UITheme.Colors.BackgroundDeep, TextAlignmentOptions.Center,
                         new Vector2(0.02f, 0.05f), new Vector2(0.98f, 0.45f), Vector2.zero, Vector2.zero);
                     lbl.fontStyle = FontStyles.Bold;
                     avLabels[i] = lbl;
@@ -474,7 +474,7 @@ namespace AppPuzz.UI
 
             // Confirm button
             pss.confirmButton = MakeButton(om.stepCreature.transform, "ConfirmProfileBtn",
-                "CONFERMA", UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
+                "CONFERMA", UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 48,
                 new Vector2(0.15f, 0.27f), new Vector2(0.85f, 0.37f), Vector2.zero, Vector2.zero);
             om.stepCreature.SetActive(false);
 
@@ -484,12 +484,12 @@ namespace AppPuzz.UI
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.tutorialText = MakeText(om.stepTutorial.transform, "TutorialText",
-                "Trascina le lettere per formare parole!", 38, UITheme.Colors.TextPrimary,
+                "Trascina le lettere per formare parole!", 48, UITheme.Colors.TextPrimary,
                 TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.4f), new Vector2(0.95f, 0.7f), Vector2.zero, Vector2.zero);
 
             om.tutorialNextBtn = MakeButton(om.stepTutorial.transform, "TutorialNextBtn", "AVANTI",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 34,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 44,
                 new Vector2(0.2f, 0.25f), new Vector2(0.8f, 0.35f), Vector2.zero, Vector2.zero);
             om.stepTutorial.SetActive(false);
 
@@ -499,12 +499,12 @@ namespace AppPuzz.UI
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.readyTitle = MakeText(om.stepReady.transform, "ReadyTitle",
-                "Sei pronto,\nLeggendario!", 56, UITheme.Colors.Gold,
+                "Sei pronto,\nLeggendario!", 70, UITheme.Colors.Gold,
                 TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.5f), new Vector2(0.95f, 0.8f), Vector2.zero, Vector2.zero);
 
             om.startAdventureBtn = MakeButton(om.stepReady.transform, "StartAdventureBtn",
-                "INIZIA L'AVVENTURA!", UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 36,
+                "INIZIA L'AVVENTURA!", UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 46,
                 new Vector2(0.1f, 0.3f), new Vector2(0.9f, 0.42f), Vector2.zero, Vector2.zero);
             om.stepReady.SetActive(false);
 
@@ -524,7 +524,7 @@ namespace AppPuzz.UI
 
             // Titolo
             MakeText(panel.transform, "Title", UITheme.Strings.SelectCreature,
-                48, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.02f, 0.87f), new Vector2(0.98f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
@@ -574,42 +574,42 @@ namespace AppPuzz.UI
                 borders[i] = bImg;
 
                 // Testi dentro la card (coordinate relative alla card)
-                names[i] = MakeText(card.transform, "NameText", cardNames[i], 24,
+                names[i] = MakeText(card.transform, "NameText", cardNames[i], 30,
                     cardColors[i], TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.82f), new Vector2(0.95f, 0.93f), Vector2.zero, Vector2.zero);
                 names[i].fontStyle = FontStyles.Bold;
 
-                types[i] = MakeText(card.transform, "TypeText", cardTypes[i], 16,
+                types[i] = MakeText(card.transform, "TypeText", cardTypes[i], 20,
                     UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.74f), new Vector2(0.95f, 0.82f), Vector2.zero, Vector2.zero);
 
-                descs[i] = MakeText(card.transform, "DescText", cardDescs[i], 18,
+                descs[i] = MakeText(card.transform, "DescText", cardDescs[i], 24,
                     UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.52f), new Vector2(0.95f, 0.74f), Vector2.zero, Vector2.zero);
 
                 // Label stat
-                MakeText(card.transform, "LabelPow", "POT", 14, UITheme.Colors.TextSecondary,
+                MakeText(card.transform, "LabelPow", "POT", 18, UITheme.Colors.TextSecondary,
                     TextAlignmentOptions.Left,
                     new Vector2(0.05f, 0.44f), new Vector2(0.35f, 0.50f), Vector2.zero, Vector2.zero);
                 powers[i] = MakeSlider(card.transform, "PowerBar", cardColors[i],
                     new Vector2(0.35f, 0.44f), new Vector2(0.95f, 0.50f), Vector2.zero, Vector2.zero);
                 powers[i].value = 0.8f;
 
-                MakeText(card.transform, "LabelSpd", "VEL", 14, UITheme.Colors.TextSecondary,
+                MakeText(card.transform, "LabelSpd", "VEL", 18, UITheme.Colors.TextSecondary,
                     TextAlignmentOptions.Left,
                     new Vector2(0.05f, 0.36f), new Vector2(0.35f, 0.42f), Vector2.zero, Vector2.zero);
                 speeds[i] = MakeSlider(card.transform, "SpeedBar", cardColors[i],
                     new Vector2(0.35f, 0.36f), new Vector2(0.95f, 0.42f), Vector2.zero, Vector2.zero);
                 speeds[i].value = 0.6f;
 
-                MakeText(card.transform, "LabelEnd", "RES", 14, UITheme.Colors.TextSecondary,
+                MakeText(card.transform, "LabelEnd", "RES", 18, UITheme.Colors.TextSecondary,
                     TextAlignmentOptions.Left,
                     new Vector2(0.05f, 0.28f), new Vector2(0.35f, 0.34f), Vector2.zero, Vector2.zero);
                 endurs[i] = MakeSlider(card.transform, "EnduranceBar", cardColors[i],
                     new Vector2(0.35f, 0.28f), new Vector2(0.95f, 0.34f), Vector2.zero, Vector2.zero);
                 endurs[i].value = 0.7f;
 
-                specs[i] = MakeText(card.transform, "SpecText", "* Bonus speciale", 15,
+                specs[i] = MakeText(card.transform, "SpecText", "* Bonus speciale", 20,
                     UITheme.Colors.Gold, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.18f), new Vector2(0.95f, 0.27f), Vector2.zero, Vector2.zero);
 
@@ -619,7 +619,7 @@ namespace AppPuzz.UI
 
             // Bottone conferma in basso
             var confirmBtn = MakeButton(panel.transform, "ConfirmButton", "CONFERMA SELEZIONE",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 32,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 42,
                 new Vector2(0.1f, 0.01f), new Vector2(0.9f, 0.09f), Vector2.zero, Vector2.zero);
 
             var confirmLbl = MakeText(panel.transform, "SelectedLabel", "",
@@ -676,7 +676,7 @@ namespace AppPuzz.UI
                 new Vector2(0.05f, 0.64f), new Vector2(0.95f, 0.68f), Vector2.zero, Vector2.zero);
 
             tm.hintText = MakeText(panel.transform, "HintText", "",
-                26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                32, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.58f), new Vector2(0.95f, 0.64f), Vector2.zero, Vector2.zero);
 
             // Grid area — GridManager spawna le celle qui
@@ -697,15 +697,15 @@ namespace AppPuzz.UI
             }
 
             tm.hintButton = MakeButton(panel.transform, "HintButton", "Suggerimento (3)",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 28,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 36,
                 new Vector2(0.05f, 0.10f), new Vector2(0.48f, 0.18f), Vector2.zero, Vector2.zero);
 
             tm.newGridButton = MakeButton(panel.transform, "NewGridButton", "Nuova Griglia",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 28,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 36,
                 new Vector2(0.52f, 0.10f), new Vector2(0.95f, 0.18f), Vector2.zero, Vector2.zero);
 
             tm.exitButton = MakeButton(panel.transform, "ExitButton", "ESCI",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 30,
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 38,
                 new Vector2(0.25f, 0.02f), new Vector2(0.75f, 0.09f), Vector2.zero, Vector2.zero);
 
             panel.SetActive(false);
@@ -723,12 +723,12 @@ namespace AppPuzz.UI
             var am = panel.AddComponent<ArenaManager>();
 
             MakeText(panel.transform, "ArenaTitle", "ARENA",
-                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                72, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             am.rankText = MakeText(panel.transform, "RankText", "Rango: Bronzo",
-                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                36, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.83f), new Vector2(0.95f, 0.88f), Vector2.zero, Vector2.zero);
 
             // Timer
@@ -742,16 +742,16 @@ namespace AppPuzz.UI
             am.timerBarFill = am.timerBar.fillRect?.GetComponent<Image>();
 
             am.scoreText = MakeText(panel.transform, "ScoreText", "0",
-                52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.64f), new Vector2(0.9f, 0.72f), Vector2.zero, Vector2.zero);
             am.scoreText.fontStyle = FontStyles.Bold;
 
             am.streakText = MakeText(panel.transform, "StreakText", "Streak x0",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.59f), new Vector2(0.9f, 0.64f), Vector2.zero, Vector2.zero);
 
             am.objectiveText = MakeText(panel.transform, "ObjectiveText", "Obiettivo: 1500",
-                26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                32, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.55f), new Vector2(0.9f, 0.59f), Vector2.zero, Vector2.zero);
 
             am.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.Gold,
@@ -759,7 +759,7 @@ namespace AppPuzz.UI
 
             // Pannello avversario
             am.opponentNameText = MakeText(panel.transform, "OpponentName", "Lupo Grigio",
-                32, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
+                40, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.47f), new Vector2(0.95f, 0.52f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar = MakeSlider(panel.transform, "OpponentHP", UITheme.Colors.TextDanger,
                 new Vector2(0.05f, 0.44f), new Vector2(0.95f, 0.47f), Vector2.zero, Vector2.zero);
@@ -792,26 +792,26 @@ namespace AppPuzz.UI
                 new Vector2(0.05f, 0.6f), new Vector2(0.95f, 0.8f), Vector2.zero, Vector2.zero);
 
             am.resultScoreText = MakeText(resultsOverlay.transform, "ResultScore", "Energia: 0",
-                40, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                52, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.6f), Vector2.zero, Vector2.zero);
 
             am.resultRankText = MakeText(resultsOverlay.transform, "ResultRank", "Rango: Bronzo",
-                32, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                40, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.43f), new Vector2(0.9f, 0.5f), Vector2.zero, Vector2.zero);
 
             am.playAgainBtn = MakeButton(resultsOverlay.transform, "PlayAgainBtn", "GIOCA ANCORA",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 34,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 44,
                 new Vector2(0.1f, 0.28f), new Vector2(0.9f, 0.38f), Vector2.zero, Vector2.zero);
 
             am.exitBtn = MakeButton(resultsOverlay.transform, "ExitBtn", "MENU",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 30,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
                 new Vector2(0.2f, 0.17f), new Vector2(0.8f, 0.26f), Vector2.zero, Vector2.zero);
 
             resultsOverlay.SetActive(false);
 
             // Bottone "CONCLUDI BATTAGLIA" (visibile durante la partita)
             am.quitButton = MakeButton(panel.transform, "QuitButton", "CONCLUDI BATTAGLIA",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 24,
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 32,
                 new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.18f), Vector2.zero, Vector2.zero);
 
             // Popup conferma uscita
@@ -819,17 +819,17 @@ namespace AppPuzz.UI
                 new Color(0f, 0f, 0f, 0.92f),
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             MakeText(quitPopup.transform, "QuitTitle", "VUOI USCIRE?",
-                52, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
+                64, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.60f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
             MakeText(quitPopup.transform, "QuitWarning",
                 "Perderai tutti i punti guadagnati in questa battaglia!",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.48f), new Vector2(0.95f, 0.60f), Vector2.zero, Vector2.zero);
             am.confirmQuitBtn = MakeButton(quitPopup.transform, "ConfirmQuit", "SI, ESCI",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 34,
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 44,
                 new Vector2(0.1f, 0.30f), new Vector2(0.9f, 0.43f), Vector2.zero, Vector2.zero);
             am.cancelQuitBtn = MakeButton(quitPopup.transform, "CancelQuit", "NO, CONTINUA",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 30,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
                 new Vector2(0.15f, 0.16f), new Vector2(0.85f, 0.27f), Vector2.zero, Vector2.zero);
             am.quitPopup = quitPopup;
             quitPopup.SetActive(false);
@@ -849,36 +849,36 @@ namespace AppPuzz.UI
             var es = panel.AddComponent<EvolutionScreen>();
 
             MakeText(panel.transform, "EvolutionTitle", "EVOLUZIONE",
-                56, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                70, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             es.creatureNameText = MakeText(panel.transform, "CreatureNameText", "Mental Dragon",
-                42, UITheme.Colors.TypeDragon, TextAlignmentOptions.Center,
+                52, UITheme.Colors.TypeDragon, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.79f), new Vector2(0.95f, 0.88f), Vector2.zero, Vector2.zero);
 
             es.creatureLevelText = MakeText(panel.transform, "CreatureLevelText", "Livello 1",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.74f), new Vector2(0.9f, 0.79f), Vector2.zero, Vector2.zero);
 
             es.creatureTypeText = MakeText(panel.transform, "CreatureTypeText", "TIPO: DRAGO MENTALE",
-                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.70f), new Vector2(0.9f, 0.74f), Vector2.zero, Vector2.zero);
 
             // XP Bar
             MakeText(panel.transform, "XPLabel", "ENERGIA EVOLUZIONE",
-                22, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.645f), new Vector2(0.95f, 0.68f), Vector2.zero, Vector2.zero);
 
             es.evolutionXPBar = MakeSlider(panel.transform, "EvolutionXPBar", UITheme.Colors.TypeDragon,
                 new Vector2(0.05f, 0.61f), new Vector2(0.95f, 0.645f), Vector2.zero, Vector2.zero);
 
             es.evolutionXPText = MakeText(panel.transform, "EvolutionXPText", "0 XP",
-                28, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                36, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.565f), new Vector2(0.9f, 0.61f), Vector2.zero, Vector2.zero);
 
             es.evolutionRequirementText = MakeText(panel.transform, "RequirementText",
-                "Richiesti: 50 XP", 26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                "Richiesti: 50 XP", 32, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.525f), new Vector2(0.9f, 0.565f), Vector2.zero, Vector2.zero);
 
             // Forme (3 mini-card)
@@ -893,12 +893,12 @@ namespace AppPuzz.UI
                     UITheme.Colors.BackgroundCard,
                     new Vector2(fx[i], 0.32f), new Vector2(fx[i] + 0.26f, 0.50f), Vector2.zero, Vector2.zero);
                 formLabels[i] = MakeText(forms[i].transform, "FormLabel", fNames[i],
-                    18, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                    22, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.35f), Vector2.zero, Vector2.zero);
                 // Lock icon (panel scuro)
                 var lockGo = MakePanel(forms[i].transform, "LockOverlay",
                     new Color(0, 0, 0, 0.6f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                MakeText(lockGo.transform, "LockIcon", "BLOCCATA", 16, UITheme.Colors.TextSecondary,
+                MakeText(lockGo.transform, "LockIcon", "BLOCCATA", 20, UITheme.Colors.TextSecondary,
                     TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.3f), new Vector2(0.95f, 0.7f), Vector2.zero, Vector2.zero);
                 formLocks[i] = lockGo.GetComponent<Image>();
@@ -909,18 +909,18 @@ namespace AppPuzz.UI
 
             // Stats
             es.statPowerText = MakeText(panel.transform, "StatPower", "",
-                24, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                30, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.24f), new Vector2(0.95f, 0.30f), Vector2.zero, Vector2.zero);
             es.statSpeedText = MakeText(panel.transform, "StatSpeed", "",
-                24, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                30, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.18f), new Vector2(0.95f, 0.24f), Vector2.zero, Vector2.zero);
             es.statEnduranceText = MakeText(panel.transform, "StatEndurance", "",
-                24, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                30, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
                 new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.18f), Vector2.zero, Vector2.zero);
 
             // Bottone evolvi
             es.evolveButton = MakeButton(panel.transform, "EvolveButton", UITheme.Strings.EvolveBtn,
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 40,
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 50,
                 new Vector2(0.1f, 0.02f), new Vector2(0.9f, 0.11f), Vector2.zero, Vector2.zero);
 
             // Flash overlay
@@ -933,7 +933,7 @@ namespace AppPuzz.UI
 
             // Back button
             es.backButton = MakeButton(panel.transform, "BackButton", "INDIETRO",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextSecondary, 24,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextSecondary, 30,
                 new Vector2(0.0f, 0.92f), new Vector2(0.3f, 0.99f), Vector2.zero, Vector2.zero);
 
             panel.SetActive(false);
@@ -984,16 +984,16 @@ namespace AppPuzz.UI
             var ss = panel.AddComponent<SettingsScreen>();
 
             MakeText(panel.transform, "SettingsTitle", "IMPOSTAZIONI",
-                52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             MakeText(panel.transform, "SettingsInfo", "Versione 1.0",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.70f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
 
             ss.backButton = MakeButton(panel.transform, "BackButton", "INDIETRO",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 32,
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 40,
                 new Vector2(0.25f, 0.05f), new Vector2(0.75f, 0.13f), Vector2.zero, Vector2.zero);
 
             panel.SetActive(false);
