@@ -274,6 +274,59 @@ namespace AppPuzz.UI
             return slider;
         }
 
+        /// <summary>Crea un TMP_InputField con struttura corretta (viewport + placeholder).</summary>
+        private static TMPro.TMP_InputField MakeTMPInputField(Transform parent, string name,
+            float fontSize, Color textColor, Color bgColor,
+            Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var root = new GameObject(name);
+            root.transform.SetParent(parent, false);
+            var rootRt = root.AddComponent<RectTransform>();
+            rootRt.anchorMin = anchorMin; rootRt.anchorMax = anchorMax;
+            rootRt.offsetMin = rootRt.offsetMax = Vector2.zero;
+            root.AddComponent<Image>().color = bgColor;
+            var field = root.AddComponent<TMPro.TMP_InputField>();
+
+            // Text Area (viewport con clipping)
+            var areaGo = new GameObject("Text Area");
+            areaGo.transform.SetParent(root.transform, false);
+            var areaRt = areaGo.AddComponent<RectTransform>();
+            areaRt.anchorMin = Vector2.zero; areaRt.anchorMax = Vector2.one;
+            areaRt.offsetMin = new Vector2(8, 4); areaRt.offsetMax = new Vector2(-8, -4);
+            areaGo.AddComponent<RectMask2D>();
+
+            // Placeholder
+            var phGo = new GameObject("Placeholder");
+            phGo.transform.SetParent(areaGo.transform, false);
+            var phRt = phGo.AddComponent<RectTransform>();
+            phRt.anchorMin = Vector2.zero; phRt.anchorMax = Vector2.one;
+            phRt.offsetMin = phRt.offsetMax = Vector2.zero;
+            var phTxt = phGo.AddComponent<TMPro.TextMeshProUGUI>();
+            phTxt.text = "Inserisci nome...";
+            phTxt.fontSize = fontSize;
+            phTxt.color = new Color(textColor.r, textColor.g, textColor.b, 0.4f);
+            phTxt.alignment = TextAlignmentOptions.MidlineLeft;
+            phTxt.fontStyle = FontStyles.Italic;
+
+            // Input Text
+            var txtGo = new GameObject("Text");
+            txtGo.transform.SetParent(areaGo.transform, false);
+            var txtRt = txtGo.AddComponent<RectTransform>();
+            txtRt.anchorMin = Vector2.zero; txtRt.anchorMax = Vector2.one;
+            txtRt.offsetMin = txtRt.offsetMax = Vector2.zero;
+            var inputTxt = txtGo.AddComponent<TMPro.TextMeshProUGUI>();
+            inputTxt.fontSize = fontSize;
+            inputTxt.color = textColor;
+            inputTxt.alignment = TextAlignmentOptions.MidlineLeft;
+
+            field.textViewport   = areaRt;
+            field.textComponent  = inputTxt;
+            field.placeholder    = phTxt;
+            field.characterLimit = 16;
+
+            return field;
+        }
+
         // -------------------------------------------------------
         // HOME PANEL
         // -------------------------------------------------------
@@ -401,28 +454,9 @@ namespace AppPuzz.UI
                 "NOME EVOCATORE", 36, UITheme.Colors.TextSecondary,
                 TextAlignmentOptions.Left,
                 new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.86f), Vector2.zero, Vector2.zero);
-            {
-                var inputGo = new GameObject("NicknameInput");
-                inputGo.transform.SetParent(om.stepCreature.transform, false);
-                var inputRt = inputGo.AddComponent<RectTransform>();
-                inputRt.anchorMin = new Vector2(0.08f, 0.72f);
-                inputRt.anchorMax = new Vector2(0.92f, 0.79f);
-                inputRt.offsetMin = inputRt.offsetMax = Vector2.zero;
-                var bg = inputGo.AddComponent<Image>();
-                bg.color = UITheme.Colors.BackgroundPanel;
-                var field = inputGo.AddComponent<TMPro.TMP_InputField>();
-                var txtGo = new GameObject("Text");
-                txtGo.transform.SetParent(inputGo.transform, false);
-                var trt2 = txtGo.AddComponent<RectTransform>();
-                trt2.anchorMin = new Vector2(0.02f, 0.05f); trt2.anchorMax = new Vector2(0.98f, 0.95f);
-                trt2.offsetMin = trt2.offsetMax = Vector2.zero;
-                var tmp2 = txtGo.AddComponent<TMPro.TextMeshProUGUI>();
-                tmp2.fontSize = 40; tmp2.color = UITheme.Colors.TextPrimary;
-                tmp2.alignment = TextAlignmentOptions.MidlineLeft;
-                field.textComponent = tmp2;
-                field.characterLimit = 16;
-                pss.nicknameInput = field;
-            }
+            pss.nicknameInput = MakeTMPInputField(om.stepCreature.transform, "NicknameInput",
+                36, UITheme.Colors.TextPrimary, UITheme.Colors.BackgroundPanel,
+                new Vector2(0.08f, 0.71f), new Vector2(0.92f, 0.79f));
 
             // 10 Avatar buttons (5x2 grid)
             MakeText(om.stepCreature.transform, "AvatarLabel",
@@ -655,58 +689,129 @@ namespace AppPuzz.UI
             var tm = panel.AddComponent<TrainingManager>();
             panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
 
+            // Titolo
             MakeText(panel.transform, "TrainingTitle", "ALLENAMENTO",
                 64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
+                new Vector2(0.05f, 0.90f), new Vector2(0.95f, 0.99f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
+            // Timer
+            tm.timerText = MakeText(panel.transform, "TimerText", "02:00",
+                56, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.25f, 0.82f), new Vector2(0.75f, 0.90f), Vector2.zero, Vector2.zero);
+            tm.timerText.fontStyle = FontStyles.Bold;
+            tm.timerBar = MakeSlider(panel.transform, "TimerBar", UITheme.Colors.EnergyFull,
+                new Vector2(0.05f, 0.80f), new Vector2(0.95f, 0.825f), Vector2.zero, Vector2.zero);
+
+            // Punteggio e parole
             tm.scoreText = MakeText(panel.transform, "ScoreText", "Energia: 0",
-                46, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.80f), new Vector2(0.95f, 0.88f), Vector2.zero, Vector2.zero);
-
+                40, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.02f, 0.74f), new Vector2(0.55f, 0.80f), Vector2.zero, Vector2.zero);
             tm.wordsFoundText = MakeText(panel.transform, "WordsFoundText", "Parole: 0",
-                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.74f), new Vector2(0.95f, 0.80f), Vector2.zero, Vector2.zero);
+                36, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.55f, 0.74f), new Vector2(0.98f, 0.80f), Vector2.zero, Vector2.zero);
 
+            // Feedback
             tm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
-                42, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.68f), new Vector2(0.95f, 0.74f), Vector2.zero, Vector2.zero);
+                38, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.70f), new Vector2(0.95f, 0.75f), Vector2.zero, Vector2.zero);
 
+            // Energia
             tm.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.EnergyFull,
-                new Vector2(0.05f, 0.64f), new Vector2(0.95f, 0.68f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.67f), new Vector2(0.95f, 0.70f), Vector2.zero, Vector2.zero);
 
+            // Parola corrente (sopra la griglia)
+            tm.currentWordText = MakeText(panel.transform, "CurrentWordText", "",
+                46, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.62f), new Vector2(0.95f, 0.68f), Vector2.zero, Vector2.zero);
+            tm.currentWordText.fontStyle = FontStyles.Bold;
+
+            // Hint text
             tm.hintText = MakeText(panel.transform, "HintText", "",
-                32, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.58f), new Vector2(0.95f, 0.64f), Vector2.zero, Vector2.zero);
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.59f), new Vector2(0.95f, 0.63f), Vector2.zero, Vector2.zero);
 
-            // Grid area — GridManager spawna le celle qui
+            // Cornice griglia
+            {
+                var frameBg = new GameObject("GridFrame");
+                frameBg.transform.SetParent(panel.transform, false);
+                var frt = frameBg.AddComponent<RectTransform>();
+                frt.anchorMin = new Vector2(0.01f, 0.12f);
+                frt.anchorMax = new Vector2(0.99f, 0.59f);
+                frt.offsetMin = frt.offsetMax = Vector2.zero;
+                var fImg = frameBg.AddComponent<Image>();
+                fImg.color = new Color(0.15f, 0.15f, 0.30f, 1f);
+            }
+
+            // Grid area
             {
                 var gridArea = new GameObject("GridArea");
                 gridArea.transform.SetParent(panel.transform, false);
                 var rt = gridArea.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0.02f, 0.19f);
-                rt.anchorMax = new Vector2(0.98f, 0.60f);
+                rt.anchorMin = new Vector2(0.03f, 0.13f);
+                rt.anchorMax = new Vector2(0.97f, 0.58f);
                 rt.offsetMin = rt.offsetMax = Vector2.zero;
-                // Aggiungi GridLayoutGroup per le celle
                 var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
                 glg.childAlignment = TextAnchor.MiddleCenter;
-                glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                glg.constraint     = GridLayoutGroup.Constraint.FixedColumnCount;
                 glg.constraintCount = 5;
-                glg.spacing = new Vector2(4, 4);
-                tm.gridContainer = gridArea.transform;
+                glg.spacing        = new Vector2(10, 10);
+                glg.padding        = new RectOffset(8, 8, 8, 8);
+                tm.gridContainer   = gridArea.transform;
             }
 
+            // Pulsanti inferiori
             tm.hintButton = MakeButton(panel.transform, "HintButton", "Suggerimento (3)",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 36,
-                new Vector2(0.05f, 0.10f), new Vector2(0.48f, 0.18f), Vector2.zero, Vector2.zero);
-
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 32,
+                new Vector2(0.05f, 0.06f), new Vector2(0.48f, 0.12f), Vector2.zero, Vector2.zero);
             tm.newGridButton = MakeButton(panel.transform, "NewGridButton", "Nuova Griglia",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 36,
-                new Vector2(0.52f, 0.10f), new Vector2(0.95f, 0.18f), Vector2.zero, Vector2.zero);
-
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 32,
+                new Vector2(0.52f, 0.06f), new Vector2(0.95f, 0.12f), Vector2.zero, Vector2.zero);
             tm.exitButton = MakeButton(panel.transform, "ExitButton", "ESCI",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 38,
-                new Vector2(0.25f, 0.02f), new Vector2(0.75f, 0.09f), Vector2.zero, Vector2.zero);
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 34,
+                new Vector2(0.25f, 0.01f), new Vector2(0.75f, 0.06f), Vector2.zero, Vector2.zero);
+
+            // Overlay fine sessione
+            {
+                var ov = MakePanel(panel.transform, "EndSessionOverlay",
+                    new Color(0f, 0f, 0f, 0.93f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                tm.endSessionOverlay = ov;
+
+                tm.endSessionTitle = MakeText(ov.transform, "EndTitle", "Sessione terminata!",
+                    44, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                    new Vector2(0.05f, 0.78f), new Vector2(0.95f, 0.94f), Vector2.zero, Vector2.zero);
+                tm.endSessionTitle.fontStyle = FontStyles.Bold;
+
+                // Area testo scorrevole (usiamo un semplice TextMeshPro; per scroll reale serve ScrollRect)
+                var scrollBg = MakePanel(ov.transform, "ScrollBg",
+                    new Color(0.10f, 0.10f, 0.20f, 1f),
+                    new Vector2(0.03f, 0.18f), new Vector2(0.97f, 0.77f), Vector2.zero, Vector2.zero);
+                tm.endWordsScrollText = MakeText(scrollBg.transform, "WordsList", "",
+                    26, UITheme.Colors.TextPrimary, TextAlignmentOptions.TopLeft,
+                    new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.98f), Vector2.zero, Vector2.zero);
+                tm.endWordsScrollText.enableAutoSizing = true;
+                tm.endWordsScrollText.fontSizeMin = 18;
+                tm.endWordsScrollText.fontSizeMax = 28;
+
+                tm.endCloseButton = MakeButton(ov.transform, "EndCloseBtn", "CHIUDI",
+                    UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
+                    new Vector2(0.2f, 0.05f), new Vector2(0.8f, 0.16f), Vector2.zero, Vector2.zero);
+                ov.SetActive(false);
+            }
+
+            // Canvas per XP flottanti
+            {
+                var floatGo = new GameObject("FloatCanvas");
+                floatGo.transform.SetParent(panel.transform, false);
+                var fc = floatGo.AddComponent<Canvas>();
+                fc.overrideSorting = true;
+                fc.sortingOrder = 10;
+                floatGo.AddComponent<RectTransform>(); // già lì
+                var fcRt = floatGo.GetComponent<RectTransform>();
+                fcRt.anchorMin = Vector2.zero; fcRt.anchorMax = Vector2.one;
+                fcRt.offsetMin = fcRt.offsetMax = Vector2.zero;
+                tm.floatCanvas = fc;
+            }
 
             panel.SetActive(false);
         }
@@ -755,57 +860,98 @@ namespace AppPuzz.UI
                 new Vector2(0.1f, 0.55f), new Vector2(0.9f, 0.59f), Vector2.zero, Vector2.zero);
 
             am.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.Gold,
-                new Vector2(0.05f, 0.52f), new Vector2(0.95f, 0.555f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.52f), new Vector2(0.95f, 0.545f), Vector2.zero, Vector2.zero);
 
             // Pannello avversario
             am.opponentNameText = MakeText(panel.transform, "OpponentName", "Lupo Grigio",
                 40, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.47f), new Vector2(0.95f, 0.52f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.475f), new Vector2(0.95f, 0.52f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar = MakeSlider(panel.transform, "OpponentHP", UITheme.Colors.TextDanger,
-                new Vector2(0.05f, 0.44f), new Vector2(0.95f, 0.47f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.445f), new Vector2(0.95f, 0.475f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar.value = 1f;
+
+            // Parola corrente sopra la griglia
+            am.currentWordText = MakeText(panel.transform, "CurrentWordText", "",
+                52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.38f), new Vector2(0.95f, 0.445f), Vector2.zero, Vector2.zero);
+            am.currentWordText.fontStyle = FontStyles.Bold;
+
+            // Cornice griglia
+            {
+                var gridFrame = new GameObject("GridFrame");
+                gridFrame.transform.SetParent(panel.transform, false);
+                var frt = gridFrame.AddComponent<RectTransform>();
+                frt.anchorMin = new Vector2(0.01f, 0.12f);
+                frt.anchorMax = new Vector2(0.99f, 0.385f);
+                frt.offsetMin = frt.offsetMax = Vector2.zero;
+                var fImg = gridFrame.AddComponent<Image>();
+                fImg.color = new Color(0.15f, 0.15f, 0.30f, 1f);
+            }
 
             // Grid area — GridManager spawna le celle qui
             {
                 var gridArea = new GameObject("GridArea");
                 gridArea.transform.SetParent(panel.transform, false);
                 var rt = gridArea.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0.02f, 0.19f);
-                rt.anchorMax = new Vector2(0.98f, 0.43f);
+                rt.anchorMin = new Vector2(0.03f, 0.13f);
+                rt.anchorMax = new Vector2(0.97f, 0.375f);
                 rt.offsetMin = rt.offsetMax = Vector2.zero;
                 var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
                 glg.childAlignment = TextAnchor.MiddleCenter;
                 glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                 glg.constraintCount = 5;
-                glg.spacing = new Vector2(4, 4);
+                glg.spacing = new Vector2(10, 10);
+                glg.padding = new RectOffset(8, 8, 8, 8);
                 am.gridContainer = gridArea.transform;
+            }
+
+            // Float canvas for XP animations
+            {
+                var floatGo = new GameObject("FloatCanvas");
+                floatGo.transform.SetParent(panel.transform, false);
+                var fc = floatGo.AddComponent<Canvas>();
+                fc.overrideSorting = true;
+                fc.sortingOrder = 50;
+                floatGo.AddComponent<CanvasScaler>();
+                floatGo.AddComponent<GraphicRaycaster>();
+                var fcRt = floatGo.GetComponent<RectTransform>();
+                fcRt.anchorMin = Vector2.zero;
+                fcRt.anchorMax = Vector2.one;
+                fcRt.offsetMin = fcRt.offsetMax = Vector2.zero;
+                am.floatCanvas = fc;
             }
 
             // Results overlay
             var resultsOverlay = MakePanel(panel.transform, "ResultsOverlay",
-                new Color(0, 0, 0, 0.85f),
+                new Color(0, 0, 0, 0.92f),
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             am.resultsOverlay = resultsOverlay;
 
             am.resultTitle = MakeText(resultsOverlay.transform, "ResultTitle", "VITTORIA!",
                 72, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.6f), new Vector2(0.95f, 0.8f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.78f), new Vector2(0.95f, 0.93f), Vector2.zero, Vector2.zero);
 
             am.resultScoreText = MakeText(resultsOverlay.transform, "ResultScore", "Energia: 0",
                 52, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
-                new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.6f), Vector2.zero, Vector2.zero);
+                new Vector2(0.1f, 0.69f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
 
             am.resultRankText = MakeText(resultsOverlay.transform, "ResultRank", "Rango: Bronzo",
-                40, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.1f, 0.43f), new Vector2(0.9f, 0.5f), Vector2.zero, Vector2.zero);
+                36, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.1f, 0.63f), new Vector2(0.9f, 0.69f), Vector2.zero, Vector2.zero);
+
+            // Parole trovabili (scroll visivo)
+            am.resultWordsText = MakeText(resultsOverlay.transform, "ResultWordsText", "",
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.TopLeft,
+                new Vector2(0.05f, 0.30f), new Vector2(0.95f, 0.63f), Vector2.zero, Vector2.zero);
+            am.resultWordsText.textWrappingMode = TMPro.TextWrappingModes.Normal;
 
             am.playAgainBtn = MakeButton(resultsOverlay.transform, "PlayAgainBtn", "GIOCA ANCORA",
                 UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 44,
-                new Vector2(0.1f, 0.28f), new Vector2(0.9f, 0.38f), Vector2.zero, Vector2.zero);
+                new Vector2(0.1f, 0.17f), new Vector2(0.9f, 0.27f), Vector2.zero, Vector2.zero);
 
             am.exitBtn = MakeButton(resultsOverlay.transform, "ExitBtn", "MENU",
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
-                new Vector2(0.2f, 0.17f), new Vector2(0.8f, 0.26f), Vector2.zero, Vector2.zero);
+                new Vector2(0.2f, 0.06f), new Vector2(0.8f, 0.15f), Vector2.zero, Vector2.zero);
 
             resultsOverlay.SetActive(false);
 
@@ -989,9 +1135,42 @@ namespace AppPuzz.UI
                 .fontStyle = FontStyles.Bold;
 
             MakeText(panel.transform, "SettingsInfo", "Versione 1.0",
-                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.1f, 0.70f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
+                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.1f, 0.84f), new Vector2(0.9f, 0.89f), Vector2.zero, Vector2.zero);
 
+            // --- Sezione lingua ---
+            MakeText(panel.transform, "LangLabel", "LINGUA",
+                40, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                new Vector2(0.07f, 0.74f), new Vector2(0.93f, 0.81f), Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            ss.langItalianBtn = MakeButton(panel.transform, "LangItalianBtn", "ITALIANO",
+                UITheme.Colors.ButtonPrimary, UITheme.Colors.BackgroundDeep, 38,
+                new Vector2(0.07f, 0.65f), new Vector2(0.48f, 0.73f), Vector2.zero, Vector2.zero);
+
+            ss.langEnglishBtn = MakeButton(panel.transform, "LangEnglishBtn", "ENGLISH",
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 38,
+                new Vector2(0.52f, 0.65f), new Vector2(0.93f, 0.73f), Vector2.zero, Vector2.zero);
+
+            ss.langStatusText = MakeText(panel.transform, "LangStatusText", "Lingua attiva: Italiano",
+                32, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.07f, 0.59f), new Vector2(0.93f, 0.65f), Vector2.zero, Vector2.zero);
+
+            // --- Sezione nickname ---
+            MakeText(panel.transform, "NickLabel", "NOME EVOCATORE",
+                40, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                new Vector2(0.07f, 0.50f), new Vector2(0.93f, 0.57f), Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            ss.nicknameInput = MakeTMPInputField(panel.transform, "NicknameInput",
+                38, UITheme.Colors.TextPrimary, new Color(0.09f, 0.13f, 0.24f),
+                new Vector2(0.07f, 0.41f), new Vector2(0.93f, 0.49f));
+
+            ss.saveNicknameBtn = MakeButton(panel.transform, "SaveNicknameBtn", "SALVA NOME",
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 40,
+                new Vector2(0.15f, 0.31f), new Vector2(0.85f, 0.40f), Vector2.zero, Vector2.zero);
+
+            // --- Indietro ---
             ss.backButton = MakeButton(panel.transform, "BackButton", "INDIETRO",
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 40,
                 new Vector2(0.25f, 0.05f), new Vector2(0.75f, 0.13f), Vector2.zero, Vector2.zero);
