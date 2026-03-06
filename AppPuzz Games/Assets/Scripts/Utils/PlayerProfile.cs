@@ -36,6 +36,8 @@ namespace AppPuzz.Utils
         private const string KEY_WINS           = "player_wins";
         private const string KEY_ARENA_RANK     = "arena_rank";
         private const string KEY_LEVEL          = "player_level";
+        private const string KEY_NAME           = "player_name";
+        private const string KEY_AVATAR         = "player_avatar";
 
         // ----------------------------------------------------------
         // Proprietà (lettura da PlayerPrefs al primo accesso)
@@ -46,6 +48,20 @@ namespace AppPuzz.Utils
         {
             get => (CreatureType)PlayerPrefs.GetInt(KEY_CREATURE, 0);
             set => PlayerPrefs.SetInt(KEY_CREATURE, (int)value);
+        }
+
+        /// <summary>Nome (nickname) del giocatore.</summary>
+        public string PlayerName
+        {
+            get => PlayerPrefs.GetString(KEY_NAME, "Evocatore");
+            set => PlayerPrefs.SetString(KEY_NAME, value);
+        }
+
+        /// <summary>Avatar selezionato (0-9).</summary>
+        public int SelectedAvatarId
+        {
+            get => PlayerPrefs.GetInt(KEY_AVATAR, 0);
+            set => PlayerPrefs.SetInt(KEY_AVATAR, Mathf.Clamp(value, 0, 9));
         }
 
         /// <summary>XP corrente (per l'evoluzione della creatura).</summary>
@@ -116,6 +132,32 @@ namespace AppPuzz.Utils
         // ----------------------------------------------------------
         private static readonly float[] XP_PER_LEVEL = { 0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500 };
         public static readonly string[] ARENA_RANK_NAMES = { "Bronzo", "Argento", "Oro", "Platino", "Leggenda" };
+
+        public static readonly string[] EVOLUTION_TITLES = {
+            "Apprendista",   // lv 1-4
+            "Iniziato",      // lv 5-9
+            "Praticante",    // lv 10-19
+            "Esperto",       // lv 20-34
+            "Maestro",       // lv 35-49
+            "Arcimago",      // lv 50-74
+            "Stregone",      // lv 75+
+        };
+
+        /// <summary>Titolo evoluzione basato sul livello corrente.</summary>
+        public string EvolutionTitle
+        {
+            get
+            {
+                int lv = PlayerLevel;
+                if (lv >= 75) return EVOLUTION_TITLES[6];
+                if (lv >= 50) return EVOLUTION_TITLES[5];
+                if (lv >= 35) return EVOLUTION_TITLES[4];
+                if (lv >= 20) return EVOLUTION_TITLES[3];
+                if (lv >= 10) return EVOLUTION_TITLES[2];
+                if (lv >= 5)  return EVOLUTION_TITLES[1];
+                return EVOLUTION_TITLES[0];
+            }
+        }
 
         // ----------------------------------------------------------
         // Unity lifecycle

@@ -55,6 +55,9 @@ namespace AppPuzz.Gameplay
         /// <summary>Streak massimo raggiunto durante la partita.</summary>
         public int MaxStreak { get; private set; }
 
+        // Accumulatore streak in virgola mobile (parole 2 lettere = +0.5)
+        private float _streakValue = 0f;
+
         // Timestamp dell'ultima parola valida (per il controllo finestra temporale)
         private float _lastWordTime = float.NegativeInfinity;
 
@@ -86,10 +89,15 @@ namespace AppPuzz.Gameplay
         {
             // Reset streak se è passato troppo tempo dall'ultima parola valida
             if (Time.time - _lastWordTime > streakTimeWindow)
+            {
                 CurrentStreak = 0;
+                _streakValue = 0f;
+            }
 
             _lastWordTime = Time.time;
-            CurrentStreak++;
+            // Parole di 2 lettere contribuiscono 0.5 allo streak invece di 1
+            _streakValue += (word.Length <= 2) ? 0.5f : 1f;
+            CurrentStreak = (int)_streakValue;
             if (CurrentStreak > MaxStreak) MaxStreak = CurrentStreak;
 
             // Base: 2 punti per ogni lettera della parola
@@ -117,6 +125,7 @@ namespace AppPuzz.Gameplay
         public void ResetStreak()
         {
             CurrentStreak = 0;
+            _streakValue = 0f;
         }
 
         /// <summary>Azzera energia e streak a inizio partita.</summary>
@@ -124,6 +133,7 @@ namespace AppPuzz.Gameplay
         {
             CurrentEnergy  = 0f;
             CurrentStreak  = 0;
+            _streakValue   = 0f;
             MaxStreak      = 0;
             _lastWordTime  = float.NegativeInfinity;
             UpdateUI();

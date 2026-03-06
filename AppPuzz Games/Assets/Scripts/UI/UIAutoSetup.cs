@@ -383,18 +383,99 @@ namespace AppPuzz.UI
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 36,
                 new Vector2(0.1f, 0.22f), new Vector2(0.9f, 0.32f), Vector2.zero, Vector2.zero);
 
-            // --- Step Creature (placeholder, rimanda a CreatureSelection) ---
-            om.stepCreature = MakePanel(panel.transform, "StepCreature",
+            // --- Step Profile: nickname + avatar ---
+            om.stepCreature = MakePanel(panel.transform, "StepProfile",
                 UITheme.Colors.BackgroundDeep,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            MakeText(om.stepCreature.transform, "CreatureHint",
-                UITheme.Strings.SelectCreature, 40, UITheme.Colors.Gold,
+            var pss = om.stepCreature.AddComponent<ProfileSetupScreen>();
+            om.profileSetupScreen = pss;
+
+            MakeText(om.stepCreature.transform, "ProfileTitle",
+                "CREA IL TUO PROFILO", 52, UITheme.Colors.Gold,
                 TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.45f), new Vector2(0.95f, 0.6f), Vector2.zero, Vector2.zero);
-            // Il pulsante "Scegli" porta a CreatureSelection
-            om.creatureChooseBtn = MakeButton(om.stepCreature.transform, "GoChooseBtn", "SCEGLI CREATURA",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 34,
-                new Vector2(0.15f, 0.3f), new Vector2(0.85f, 0.4f), Vector2.zero, Vector2.zero);
+                new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            // Nickname input
+            MakeText(om.stepCreature.transform, "NickLabel",
+                "NOME EVOCATORE", 28, UITheme.Colors.TextSecondary,
+                TextAlignmentOptions.Left,
+                new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.86f), Vector2.zero, Vector2.zero);
+            {
+                var inputGo = new GameObject("NicknameInput");
+                inputGo.transform.SetParent(om.stepCreature.transform, false);
+                var inputRt = inputGo.AddComponent<RectTransform>();
+                inputRt.anchorMin = new Vector2(0.08f, 0.72f);
+                inputRt.anchorMax = new Vector2(0.92f, 0.79f);
+                inputRt.offsetMin = inputRt.offsetMax = Vector2.zero;
+                var bg = inputGo.AddComponent<Image>();
+                bg.color = UITheme.Colors.BackgroundPanel;
+                var field = inputGo.AddComponent<TMPro.TMP_InputField>();
+                var txtGo = new GameObject("Text");
+                txtGo.transform.SetParent(inputGo.transform, false);
+                var trt2 = txtGo.AddComponent<RectTransform>();
+                trt2.anchorMin = new Vector2(0.02f, 0.05f); trt2.anchorMax = new Vector2(0.98f, 0.95f);
+                trt2.offsetMin = trt2.offsetMax = Vector2.zero;
+                var tmp2 = txtGo.AddComponent<TMPro.TextMeshProUGUI>();
+                tmp2.fontSize = 32; tmp2.color = UITheme.Colors.TextPrimary;
+                tmp2.alignment = TextAlignmentOptions.MidlineLeft;
+                field.textComponent = tmp2;
+                field.characterLimit = 16;
+                pss.nicknameInput = field;
+            }
+
+            // 10 Avatar buttons (5x2 grid)
+            MakeText(om.stepCreature.transform, "AvatarLabel",
+                "SCEGLI IL TUO AVATAR", 28, UITheme.Colors.TextSecondary,
+                TextAlignmentOptions.Left,
+                new Vector2(0.08f, 0.65f), new Vector2(0.92f, 0.71f), Vector2.zero, Vector2.zero);
+            {
+                var avBtns      = new Button[10];
+                var avHighlights = new Image[10];
+                var avLabels    = new TMPro.TextMeshProUGUI[10];
+                float cellW = 0.17f, cellH = 0.11f, gapX = 0.02f, gapY = 0.015f;
+                float startX = 0.04f, row0Y = 0.52f, row1Y = row0Y - cellH - gapY;
+                for (int i = 0; i < 10; i++)
+                {
+                    int col = i % 5, row = i / 5;
+                    float ax = startX + col * (cellW + gapX);
+                    float ay = (row == 0) ? row0Y : row1Y;
+                    var avGo = new GameObject($"Avatar{i}");
+                    avGo.transform.SetParent(om.stepCreature.transform, false);
+                    var avRt = avGo.AddComponent<RectTransform>();
+                    avRt.anchorMin = new Vector2(ax, ay);
+                    avRt.anchorMax = new Vector2(ax + cellW, ay + cellH);
+                    avRt.offsetMin = avRt.offsetMax = Vector2.zero;
+                    var avImg = avGo.AddComponent<Image>();
+                    avImg.color = ProfileSetupScreen.AVATAR_COLORS[i];
+                    var avBtn = avGo.AddComponent<Button>();
+                    avBtns[i] = avBtn;
+                    // Highlight border (white outline)
+                    var hlGo = new GameObject("Highlight");
+                    hlGo.transform.SetParent(avGo.transform, false);
+                    var hlRt = hlGo.AddComponent<RectTransform>();
+                    hlRt.anchorMin = Vector2.zero; hlRt.anchorMax = Vector2.one;
+                    hlRt.offsetMin = new Vector2(-4,-4); hlRt.offsetMax = new Vector2(4,4);
+                    var hlImg = hlGo.AddComponent<Image>();
+                    hlImg.color = Color.white;
+                    hlImg.enabled = (i == 0);
+                    avHighlights[i] = hlImg;
+                    // Label
+                    var lbl = MakeText(avGo.transform, "AvatarLabel", ProfileSetupScreen.AVATAR_NAMES[i],
+                        16, UITheme.Colors.BackgroundDeep, TextAlignmentOptions.Center,
+                        new Vector2(0.02f, 0.05f), new Vector2(0.98f, 0.45f), Vector2.zero, Vector2.zero);
+                    lbl.fontStyle = FontStyles.Bold;
+                    avLabels[i] = lbl;
+                }
+                pss.avatarButtons   = avBtns;
+                pss.avatarHighlights = avHighlights;
+                pss.avatarLabels    = avLabels;
+            }
+
+            // Confirm button
+            pss.confirmButton = MakeButton(om.stepCreature.transform, "ConfirmProfileBtn",
+                "CONFERMA", UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
+                new Vector2(0.15f, 0.27f), new Vector2(0.85f, 0.37f), Vector2.zero, Vector2.zero);
             om.stepCreature.SetActive(false);
 
             // --- Step Tutorial ---
@@ -532,13 +613,12 @@ namespace AppPuzz.UI
                     UITheme.Colors.Gold, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.18f), new Vector2(0.95f, 0.27f), Vector2.zero, Vector2.zero);
 
-                selBtns[i] = MakeButton(card.transform, "SelectButton", "SCEGLI",
-                    cardColors[i], UITheme.Colors.BackgroundDeep, 22,
-                    new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.16f), Vector2.zero, Vector2.zero);
+                // No per-card select button — use the main confirm button
+                selBtns[i] = null;
             }
 
             // Bottone conferma in basso
-            var confirmBtn = MakeButton(panel.transform, "ConfirmButton", "SCEGLI QUESTA CREATURA!",
+            var confirmBtn = MakeButton(panel.transform, "ConfirmButton", "CONFERMA SELEZIONE",
                 UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 32,
                 new Vector2(0.1f, 0.01f), new Vector2(0.9f, 0.09f), Vector2.zero, Vector2.zero);
 
@@ -576,20 +656,20 @@ namespace AppPuzz.UI
             panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
 
             MakeText(panel.transform, "TrainingTitle", "ALLENAMENTO",
-                52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             tm.scoreText = MakeText(panel.transform, "ScoreText", "Energia: 0",
-                36, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                46, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.80f), new Vector2(0.95f, 0.88f), Vector2.zero, Vector2.zero);
 
             tm.wordsFoundText = MakeText(panel.transform, "WordsFoundText", "Parole: 0",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.74f), new Vector2(0.95f, 0.80f), Vector2.zero, Vector2.zero);
 
             tm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
-                34, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
+                42, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.68f), new Vector2(0.95f, 0.74f), Vector2.zero, Vector2.zero);
 
             tm.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.EnergyFull,
@@ -728,6 +808,32 @@ namespace AppPuzz.UI
                 new Vector2(0.2f, 0.17f), new Vector2(0.8f, 0.26f), Vector2.zero, Vector2.zero);
 
             resultsOverlay.SetActive(false);
+
+            // Bottone "CONCLUDI BATTAGLIA" (visibile durante la partita)
+            am.quitButton = MakeButton(panel.transform, "QuitButton", "CONCLUDI BATTAGLIA",
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 24,
+                new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.18f), Vector2.zero, Vector2.zero);
+
+            // Popup conferma uscita
+            var quitPopup = MakePanel(panel.transform, "QuitPopup",
+                new Color(0f, 0f, 0f, 0.92f),
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            MakeText(quitPopup.transform, "QuitTitle", "VUOI USCIRE?",
+                52, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
+                new Vector2(0.1f, 0.60f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
+            MakeText(quitPopup.transform, "QuitWarning",
+                "Perderai tutti i punti guadagnati in questa battaglia!",
+                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.48f), new Vector2(0.95f, 0.60f), Vector2.zero, Vector2.zero);
+            am.confirmQuitBtn = MakeButton(quitPopup.transform, "ConfirmQuit", "SI, ESCI",
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 34,
+                new Vector2(0.1f, 0.30f), new Vector2(0.9f, 0.43f), Vector2.zero, Vector2.zero);
+            am.cancelQuitBtn = MakeButton(quitPopup.transform, "CancelQuit", "NO, CONTINUA",
+                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 30,
+                new Vector2(0.15f, 0.16f), new Vector2(0.85f, 0.27f), Vector2.zero, Vector2.zero);
+            am.quitPopup = quitPopup;
+            quitPopup.SetActive(false);
+
             panel.SetActive(false);
         }
 

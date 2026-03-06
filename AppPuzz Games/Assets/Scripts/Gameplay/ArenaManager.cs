@@ -61,6 +61,12 @@ namespace AppPuzz.Gameplay
         public Button          playAgainBtn;
         public Button          exitBtn;
 
+        [Header("Uscita anticipata")]
+        public Button          quitButton;
+        public GameObject      quitPopup;
+        public Button          confirmQuitBtn;
+        public Button          cancelQuitBtn;
+
         [Header("Griglia")]
         [Tooltip("Container dove GridManager spawna le celle (assegnato da UIAutoSetup).")]
         public Transform gridContainer;
@@ -95,6 +101,8 @@ namespace AppPuzz.Gameplay
         {
             WireButtons();
             if (resultsOverlay != null) resultsOverlay.SetActive(false);
+            if (quitPopup != null) quitPopup.SetActive(false);
+            if (quitButton != null) quitButton.gameObject.SetActive(true);
         }
 
         private void OnEnable()
@@ -140,6 +148,8 @@ namespace AppPuzz.Gameplay
             GridManager.Instance?.GenerateGrid();
 
             if (resultsOverlay != null) resultsOverlay.SetActive(false);
+            if (quitPopup != null) quitPopup.SetActive(false);
+            if (quitButton != null) quitButton.gameObject.SetActive(true);
 
             UpdateTimerUI();
             UpdateScoreUI();
@@ -222,6 +232,23 @@ namespace AppPuzz.Gameplay
                     ScreenManager.Instance?.ShowScreen(ScreenID.Home);
                     return;
                 }
+                if (IsUnder(go, quitButton))
+                {
+                    ShowQuitPopup(true);
+                    return;
+                }
+                if (IsUnder(go, confirmQuitBtn))
+                {
+                    ShowQuitPopup(false);
+                    _isPlaying = false;
+                    ScreenManager.Instance?.ShowScreen(ScreenID.Home);
+                    return;
+                }
+                if (IsUnder(go, cancelQuitBtn))
+                {
+                    ShowQuitPopup(false);
+                    return;
+                }
             }
         }
         private static bool IsUnder(GameObject go, Component owner)
@@ -248,9 +275,16 @@ namespace AppPuzz.Gameplay
             Debug.Log($"[Arena] Fine. Score={_score:F0}, Won={won}");
         }
 
+        private void ShowQuitPopup(bool show)
+        {
+            if (quitPopup != null) quitPopup.SetActive(show);
+            if (quitButton != null) quitButton.gameObject.SetActive(!show);
+        }
+
         private void ShowResults(bool won)
         {
             if (resultsOverlay != null) resultsOverlay.SetActive(true);
+            if (quitButton != null) quitButton.gameObject.SetActive(false);
             if (resultTitle   != null) resultTitle.text    = won ? "*** VITTORIA! ***" : "SCONFITTA";
             if (resultTitle   != null) resultTitle.color   = won ? UITheme.Colors.Gold : UITheme.Colors.TextDanger;
             if (resultScoreText!= null) resultScoreText.text = $"Energia: {_score:F0}";

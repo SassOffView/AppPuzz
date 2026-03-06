@@ -42,8 +42,9 @@ namespace AppPuzz.UI
         public TextMeshProUGUI welcomeTitle;
         public TextMeshProUGUI welcomeSubtitle;
 
-        [Header("Step Creature")]
-        public Button creatureChooseBtn;
+        [Header("Step Profile")]
+        public ProfileSetupScreen profileSetupScreen;
+        public Button creatureChooseBtn; // legacy - non usato
 
         [Header("Step Tutorial")]
         public TextMeshProUGUI tutorialText;
@@ -123,11 +124,7 @@ namespace AppPuzz.UI
                     ChooseLanguage(Language.English);
                     return;
                 }
-                if (IsUnder(go, creatureChooseBtn))
-                {
-                    ScreenManager.Instance?.ShowScreen(ScreenID.CreatureSelection);
-                    return;
-                }
+                // creatureChooseBtn rimosso — il profilo si conferma da ProfileSetupScreen
                 if (IsUnder(go, tutorialNextBtn))
                 {
                     OnTutorialNext();
@@ -223,6 +220,12 @@ namespace AppPuzz.UI
             _currentStep++;
             if (_currentStep < TOTAL_STEPS)
                 ShowStep(_currentStep);
+        }
+
+        /// <summary>Chiamato da ProfileSetupScreen.ConfirmProfile() quando il giocatore conferma il profilo.</summary>
+        public void ProfileConfirmed()
+        {
+            NextStep();
         }
 
         private void FinishOnboarding()

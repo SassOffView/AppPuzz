@@ -209,7 +209,7 @@ namespace AppPuzz.Gameplay
             GridManager.Instance?.ResetAllCells();
             _selectedCells.Clear();
 
-            if (word.Length >= 3)
+            if (word.Length >= 2)
             {
                 var screen = AppPuzz.UI.ScreenManager.Instance?.Current;
                 if (screen == AppPuzz.UI.ScreenID.Training)
