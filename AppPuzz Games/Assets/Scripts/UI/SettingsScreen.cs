@@ -27,6 +27,12 @@ namespace AppPuzz.UI
 
         private void OnEnable()
         {
+            // Forza inizializzazione TMP_InputField (necessaria se creata su GO inattivo)
+            if (nicknameInput != null)
+            {
+                nicknameInput.interactable = true;
+                nicknameInput.enabled = true;
+            }
             RefreshUI();
         }
 

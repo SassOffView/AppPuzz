@@ -6,7 +6,9 @@
 // STEP 7 : Timer countdown + schermata risultati.
 // ============================================================
 
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using AppPuzz.Grid;
 using AppPuzz.Localization;
@@ -59,6 +61,12 @@ namespace AppPuzz.Gameplay
         [Tooltip("Testo che mostra il conto alla rovescia (es. '02:00').")]
         public TextMeshProUGUI timerText;
 
+        [Header("UI - Parola corrente")]
+        public TextMeshProUGUI currentWordText;
+
+        [Header("UI - XP Float")]
+        public Canvas floatCanvas;
+
         [Header("UI - Risultati")]
         [Tooltip("Pannello risultati mostrato al termine della partita.")]
         public ResultsPanel resultsPanel;
@@ -86,6 +94,8 @@ namespace AppPuzz.Gameplay
 
             _wordValidator = new WordValidator();
             LanguageManager.OnLanguageChanged += HandleLanguageChanged;
+            WordSelector.OnCurrentWordChanged  += OnWordChanged;
+            EnergyManager.OnEnergyGained       += OnEnergyGained;
 
             // Trova ResultsPanel anche se è disattivato nel hierarchy
             if (resultsPanel == null)
@@ -108,6 +118,53 @@ namespace AppPuzz.Gameplay
         private void OnDestroy()
         {
             LanguageManager.OnLanguageChanged -= HandleLanguageChanged;
+            WordSelector.OnCurrentWordChanged  -= OnWordChanged;
+            EnergyManager.OnEnergyGained       -= OnEnergyGained;
+        }
+
+        private void OnWordChanged(string word)
+        {
+            if (currentWordText != null) currentWordText.text = word;
+        }
+
+        private void OnEnergyGained(float amount)
+        {
+            SpawnXPFloat(amount);
+        }
+
+        private void SpawnXPFloat(float xp)
+        {
+            if (floatCanvas == null) return;
+            var go = new GameObject("XPFloat");
+            go.transform.SetParent(floatCanvas.transform, false);
+            var rt = go.AddComponent<RectTransform>();
+            float rx = UnityEngine.Random.Range(0.2f, 0.8f);
+            float ry = UnityEngine.Random.Range(0.3f, 0.6f);
+            rt.anchorMin = rt.anchorMax = new Vector2(rx, ry);
+            rt.sizeDelta = new Vector2(240, 80);
+            var txt = go.AddComponent<TextMeshProUGUI>();
+            txt.text = $"+{xp:F0} XP";
+            txt.fontSize = 56;
+            txt.fontStyle = FontStyles.Bold;
+            txt.color = UITheme.Colors.Gold;
+            txt.alignment = TextAlignmentOptions.Center;
+            StartCoroutine(AnimateXPFloat(go, txt));
+        }
+
+        private static IEnumerator AnimateXPFloat(GameObject go, TextMeshProUGUI txt)
+        {
+            float elapsed = 0f, duration = 1.4f;
+            Vector2 startPos = go.GetComponent<RectTransform>().anchoredPosition;
+            Color startColor = txt.color;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                go.GetComponent<RectTransform>().anchoredPosition = startPos + Vector2.up * (55f * t);
+                txt.color = new Color(startColor.r, startColor.g, startColor.b, 1f - t);
+                yield return null;
+            }
+            Destroy(go);
         }
 
         private void HandleLanguageChanged(Language _)

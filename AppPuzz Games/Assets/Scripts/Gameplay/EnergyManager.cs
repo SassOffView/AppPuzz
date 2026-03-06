@@ -46,6 +46,9 @@ namespace AppPuzz.Gameplay
         // Stato
         // ----------------------------------------------------------
 
+        /// <summary>Fires whenever energy is gained: argument = amount gained.</summary>
+        public static event System.Action<float> OnEnergyGained;
+
         /// <summary>Energia corrente (0 … maxEnergy).</summary>
         public float CurrentEnergy { get; private set; }
 
@@ -112,6 +115,7 @@ namespace AppPuzz.Gameplay
 
             float gained = baseScore * streakMultiplier * legendaryMultiplier;
             CurrentEnergy = Mathf.Clamp(CurrentEnergy + gained, 0f, maxEnergy);
+            OnEnergyGained?.Invoke(gained);
             UpdateUI();
             CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
 

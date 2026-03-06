@@ -83,6 +83,17 @@ namespace AppPuzz.Gameplay
         {
             LetterCell cell = GetCellAtScreenPos(screenPos);
             if (cell == null) return;
+
+            // Backtrack: se la cella è il penultimo elemento, rimuovi l'ultimo
+            if (_selectedCells.Count >= 2 && _selectedCells[_selectedCells.Count - 2] == cell)
+            {
+                LetterCell last = _selectedCells[_selectedCells.Count - 1];
+                last.SetSelected(false);
+                _selectedCells.RemoveAt(_selectedCells.Count - 1);
+                BroadcastWord(BuildCurrentWord());
+                return;
+            }
+
             if (_selectedCells.Contains(cell)) return;
 
             bool isFirst  = _selectedCells.Count == 0;
