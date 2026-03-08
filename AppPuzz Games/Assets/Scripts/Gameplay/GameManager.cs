@@ -3,10 +3,12 @@
 // Orchestratore centrale del gioco: coordina Grid, Energy, Timer,
 // Creature e Validazione. Gestisce il flusso della partita.
 // ============================================================
-// STEP 7 : Timer countdown + schermata risultati.
+// Include: preview punteggio real-time, fulmine sulla creatura,
+//          sistema danno tessere a 6 livelli, meccanica ghiaccio.
 // ============================================================
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -21,10 +23,10 @@ namespace AppPuzz.Gameplay
     /// <summary>Fasi del ciclo di vita di una partita.</summary>
     public enum GameState
     {
-        Idle,       // Prima dell'avvio (es. menu)
-        Playing,    // Partita in corso
-        Paused,     // Pausa (futuro)
-        GameOver    // Tempo scaduto, mostra risultati
+        Idle,
+        Playing,
+        Paused,
+        GameOver
     }
 
     /// <summary>
@@ -41,8 +43,6 @@ namespace AppPuzz.Gameplay
         // ----------------------------------------------------------
         // Stato della partita
         // ----------------------------------------------------------
-
-        /// <summary>Stato corrente del flusso di gioco.</summary>
         public GameState CurrentState { get; private set; } = GameState.Idle;
 
         /// <summary>Fires when the player submits an invalid word.</summary>
@@ -53,7 +53,6 @@ namespace AppPuzz.Gameplay
         // ----------------------------------------------------------
 
         [Header("Timer")]
-        [Tooltip("Durata della partita in secondi.")]
         public float gameDuration = 120f;
 
         // ----------------------------------------------------------
@@ -61,17 +60,19 @@ namespace AppPuzz.Gameplay
         // ----------------------------------------------------------
 
         [Header("UI - Timer")]
-        [Tooltip("Testo che mostra il conto alla rovescia (es. '02:00').")]
         public TextMeshProUGUI timerText;
 
         [Header("UI - Parola corrente")]
         public TextMeshProUGUI currentWordText;
 
+        [Header("UI - Preview Punteggio")]
+        [Tooltip("Mostra il punteggio potenziale durante la selezione delle lettere.")]
+        public TextMeshProUGUI scorePreviewText;
+
         [Header("UI - XP Float")]
         public Canvas floatCanvas;
 
         [Header("UI - Risultati")]
-        [Tooltip("Pannello risultati mostrato al termine della partita.")]
         public ResultsPanel resultsPanel;
 
         // ----------------------------------------------------------
@@ -82,7 +83,9 @@ namespace AppPuzz.Gameplay
         public GridManager   gridManager;
         public EnergyManager energyManager;
 
-        // WordValidator viene creato via codice (non MonoBehaviour)
+        // ----------------------------------------------------------
+        // Privato
+        // ----------------------------------------------------------
         private WordValidator _wordValidator;
         private float _timeRemaining;
 
@@ -100,17 +103,13 @@ namespace AppPuzz.Gameplay
             WordSelector.OnCurrentWordChanged  += OnWordChanged;
             EnergyManager.OnEnergyGained       += OnEnergyGained;
 
-            // Trova ResultsPanel anche se è disattivato nel hierarchy
             if (resultsPanel == null)
                 resultsPanel = FindFirstObjectByType<ResultsPanel>(FindObjectsInactive.Include);
-
-            // Auto-find EnergyManager / GridManager se non assegnati dall'Inspector
             if (energyManager == null)
                 energyManager = FindFirstObjectByType<EnergyManager>(FindObjectsInactive.Include);
             if (gridManager == null)
                 gridManager = FindFirstObjectByType<AppPuzz.Grid.GridManager>(FindObjectsInactive.Include);
 
-            // Crea WordSelector automaticamente se non è nella scena
             if (WordSelector.Instance == null)
             {
                 new GameObject("WordSelector").AddComponent<WordSelector>();
@@ -125,9 +124,34 @@ namespace AppPuzz.Gameplay
             EnergyManager.OnEnergyGained       -= OnEnergyGained;
         }
 
+        // ── Aggiornamento word + preview punteggio ─────────────────
         private void OnWordChanged(string word)
         {
             if (currentWordText != null) currentWordText.text = word;
+            UpdateScorePreview(word);
+        }
+
+        private void UpdateScorePreview(string word)
+        {
+            if (scorePreviewText == null) return;
+
+            if (word.Length < 2)
+            {
+                scorePreviewText.text = "";
+                return;
+            }
+
+            bool isItalian = LanguageManager.Instance == null ||
+                             LanguageManager.Instance.CurrentLanguage == Language.Italian;
+
+            float baseScore  = LetterScoring.CalculateBaseScore(word, isItalian);
+            float lengthMult = LetterScoring.GetLengthMultiplier(word.Length);
+            int   letterSum  = LetterScoring.CalculateLetterSum(word, isItalian);
+
+            // Mostra: somma-lettere × moltiplicatore-lunghezza
+            string multStr = lengthMult > 1f ? $" ×{lengthMult:F2}" : "";
+            scorePreviewText.text = $"{letterSum}{multStr} = {baseScore:F0} pt";
+            scorePreviewText.color = word.Length >= 7 ? UITheme.Colors.Gold : UITheme.Colors.TextSecondary;
         }
 
         private void OnEnergyGained(float amount)
@@ -135,65 +159,29 @@ namespace AppPuzz.Gameplay
             SpawnXPFloat(amount);
         }
 
-        private void SpawnXPFloat(float xp)
-        {
-            if (floatCanvas == null) return;
-            var go = new GameObject("XPFloat");
-            go.transform.SetParent(floatCanvas.transform, false);
-            var rt = go.AddComponent<RectTransform>();
-            float rx = UnityEngine.Random.Range(0.2f, 0.8f);
-            float ry = UnityEngine.Random.Range(0.3f, 0.6f);
-            rt.anchorMin = rt.anchorMax = new Vector2(rx, ry);
-            rt.sizeDelta = new Vector2(240, 80);
-            var txt = go.AddComponent<TextMeshProUGUI>();
-            txt.text = $"+{xp:F0} XP";
-            txt.fontSize = 56;
-            txt.fontStyle = FontStyles.Bold;
-            txt.color = UITheme.Colors.Gold;
-            txt.alignment = TextAlignmentOptions.Center;
-            StartCoroutine(AnimateXPFloat(go, txt));
-        }
-
-        private static IEnumerator AnimateXPFloat(GameObject go, TextMeshProUGUI txt)
-        {
-            float elapsed = 0f, duration = 1.4f;
-            Vector2 startPos = go.GetComponent<RectTransform>().anchoredPosition;
-            Color startColor = txt.color;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = elapsed / duration;
-                go.GetComponent<RectTransform>().anchoredPosition = startPos + Vector2.up * (55f * t);
-                txt.color = new Color(startColor.r, startColor.g, startColor.b, 1f - t);
-                yield return null;
-            }
-            Destroy(go);
-        }
-
         private void HandleLanguageChanged(Language _)
         {
             if (LanguageManager.Instance != null)
                 _wordValidator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
+            // Aggiorna i valori punti su tutte le celle
+            if (gridManager != null)
+                foreach (var cell in gridManager.GetAllCells())
+                    cell.RefreshPointValue();
         }
 
         private void Start()
         {
-            // Se ScreenManager esiste, non avviare la partita automaticamente:
-            // sara ScreenManager a chiamare StartGame() quando mostra il GameplayPanel.
-            // Se ScreenManager NON esiste (scena di sola gameplay) avvia subito.
             if (ScreenManager.Instance == null)
                 StartGame();
             else
-                Debug.Log("[GameManager] ScreenManager attivo. StartGame() verra chiamato dallo ScreenManager.");
+                Debug.Log("[GameManager] ScreenManager attivo. StartGame() verrà chiamato dallo ScreenManager.");
         }
 
         private void Update()
         {
             if (CurrentState != GameState.Playing) return;
-
             _timeRemaining -= Time.deltaTime;
             UpdateTimerUI();
-
             if (_timeRemaining <= 0f)
             {
                 _timeRemaining = 0f;
@@ -205,7 +193,6 @@ namespace AppPuzz.Gameplay
         // API pubblica
         // ----------------------------------------------------------
 
-        /// <summary>Avvia una nuova partita (reset griglia, energia, timer).</summary>
         public void StartGame()
         {
             CurrentState   = GameState.Playing;
@@ -213,82 +200,195 @@ namespace AppPuzz.Gameplay
 
             resultsPanel?.Hide();
 
-            // Carica dizionari in base alla lingua corrente
             if (LanguageManager.Instance != null)
                 _wordValidator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
 
-            // Passa validator a GridManager (per requisiti minimi garantiti)
             gridManager?.SetValidator(_wordValidator);
 
-            // Genera la griglia
             if (gridManager != null)
                 gridManager.GenerateGrid();
 
-            // Azzera energia
             if (energyManager != null)
                 energyManager.ResetEnergy();
+
+            if (scorePreviewText != null) scorePreviewText.text = "";
 
             UpdateTimerUI();
             Debug.Log("[GameManager] Partita avviata.");
         }
 
-        /// <summary>Chiamato quando il giocatore conferma la parola selezionata.</summary>
-        public void SubmitWord(string word)
+        /// <summary>
+        /// Chiamato da WordSelector con la parola e le celle selezionate.
+        /// Gestisce scoring, fulmine, danno e ghiaccio.
+        /// </summary>
+        public void SubmitWord(string word, List<LetterCell> cells)
         {
             if (CurrentState != GameState.Playing) return;
 
-            ValidationResult result = _wordValidator.Validate(word.ToLower());
-            bool legendary = result == ValidationResult.Legendary;
+            ValidationResult result    = _wordValidator.Validate(word.ToLower());
+            bool             legendary = result == ValidationResult.Legendary;
 
             if (result != ValidationResult.Invalid)
             {
                 energyManager?.AddEnergy(word, legendary);
-                Debug.Log($"[GameManager] Parola '{word}' valida. Legendary={legendary}");
+                Debug.Log($"[GameManager] '{word}' valida. Legendary={legendary}");
+
+                // Fulmine + danno corretto + sblocco freeze
+                string creatureType = CreatureController.Instance?.CreatureType ?? "MentalDragon";
+                Color  lightColor   = UITheme.LightningColor(creatureType);
+                StartCoroutine(LightningAndDamageSequence(cells, lightColor, correct: true));
             }
             else
             {
                 energyManager?.ResetStreak();
                 OnWordInvalid?.Invoke();
-                Debug.Log($"[GameManager] Parola '{word}' non valida.");
+                Debug.Log($"[GameManager] '{word}' non valida.");
+
+                // Flash rosso + danno errato
+                StartCoroutine(WrongWordEffect(cells));
             }
         }
 
-        /// <summary>Termina la partita e mostra i risultati.</summary>
         public void EndGame()
         {
             if (CurrentState == GameState.GameOver) return;
-
             CurrentState = GameState.GameOver;
 
             float finalEnergy = energyManager?.CurrentEnergy ?? 0f;
             int   finalLevel  = CreatureController.Instance?.CurrentLevel ?? 1;
             int   maxStreak   = energyManager?.MaxStreak ?? 0;
 
-            Debug.Log($"[GameManager] Partita terminata. Energia={finalEnergy:F0}, Livello={finalLevel}, MaxStreak={maxStreak}");
-
-            // Salva risultato nel profilo giocatore
             PlayerProfile.Instance?.RecordMatchResult(finalEnergy, maxStreak, false);
-
             resultsPanel?.Show(finalEnergy, finalLevel, maxStreak);
+            Debug.Log($"[GameManager] Partita terminata. Energia={finalEnergy:F0}");
         }
 
-        /// <summary>Riavvia la partita — collegare al bottone "Gioca ancora".</summary>
-        public void RestartGame()
+        public void RestartGame() => StartGame();
+
+        // ----------------------------------------------------------
+        // Effetto fulmine e danno (parola corretta)
+        // ----------------------------------------------------------
+
+        private IEnumerator LightningAndDamageSequence(List<LetterCell> cells, Color lightColor, bool correct)
         {
-            StartGame();
+            if (cells == null || cells.Count == 0) yield break;
+
+            // Colpisci le lettere in sequenza con il flash fulmine
+            foreach (var cell in cells)
+            {
+                if (cell != null)
+                    yield return StartCoroutine(cell.FlashLightning(lightColor, 0.09f));
+                yield return new WaitForSeconds(0.04f);
+            }
+
+            // Applica danno + verifica rottura e sblocco freeze
+            yield return new WaitForSeconds(0.05f);
+
+            List<(int row, int col)> broken = new List<(int, int)>();
+            foreach (var cell in cells)
+            {
+                if (cell == null) continue;
+                bool isBroken = cell.ApplyCorrectHit();
+                if (isBroken)
+                    broken.Add((cell.Row, cell.Col));
+            }
+
+            // Decrementa il freeze su tutte le celle ghiacciate (1 parola corretta = 1 turno)
+            gridManager?.DecrementAllFrozenCells();
+
+            // Sostituisci le celle rotte (breve pausa per mostrare lo stato finale)
+            if (broken.Count > 0)
+            {
+                yield return new WaitForSeconds(0.3f);
+                foreach (var (row, col) in broken)
+                    gridManager?.ReplaceCell(row, col);
+            }
         }
 
         // ----------------------------------------------------------
-        // Privato
+        // Effetto parola errata (flash rosso + danno ×2)
+        // ----------------------------------------------------------
+
+        private IEnumerator WrongWordEffect(List<LetterCell> cells)
+        {
+            if (cells == null || cells.Count == 0) yield break;
+
+            // Flash rosso simultaneo su tutte le celle
+            var flashes = new List<Coroutine>();
+            foreach (var cell in cells)
+            {
+                if (cell != null)
+                    flashes.Add(StartCoroutine(cell.FlashWrong(0.14f)));
+            }
+            foreach (var f in flashes) yield return f;
+
+            // Applica danno da parola errata (2 hit) e controlla freeze
+            List<(int row, int col)> broken = new List<(int, int)>();
+            foreach (var cell in cells)
+            {
+                if (cell == null) continue;
+                cell.ApplyWrongHit(); // gestisce anche il freeze interno
+                if (cell.IsLetterBroken)
+                    broken.Add((cell.Row, cell.Col));
+            }
+
+            // Sostituisci eventuali celle rotte
+            if (broken.Count > 0)
+            {
+                yield return new WaitForSeconds(0.3f);
+                foreach (var (row, col) in broken)
+                    gridManager?.ReplaceCell(row, col);
+            }
+        }
+
+        // ----------------------------------------------------------
+        // XP float
+        // ----------------------------------------------------------
+
+        private void SpawnXPFloat(float xp)
+        {
+            if (floatCanvas == null) return;
+            var go = new GameObject("XPFloat");
+            go.transform.SetParent(floatCanvas.transform, false);
+            var rt = go.AddComponent<RectTransform>();
+            float rx = Random.Range(0.2f, 0.8f);
+            float ry = Random.Range(0.3f, 0.6f);
+            rt.anchorMin = rt.anchorMax = new Vector2(rx, ry);
+            rt.sizeDelta = new Vector2(240, 80);
+            var txt = go.AddComponent<TextMeshProUGUI>();
+            txt.text      = $"+{xp:F0} pt";
+            txt.fontSize  = 56;
+            txt.fontStyle = FontStyles.Bold;
+            txt.color     = UITheme.Colors.Gold;
+            txt.alignment = TextAlignmentOptions.Center;
+            StartCoroutine(AnimateXPFloat(go, txt));
+        }
+
+        private static IEnumerator AnimateXPFloat(GameObject go, TextMeshProUGUI txt)
+        {
+            float elapsed = 0f, duration = 1.4f;
+            Vector2 startPos   = go.GetComponent<RectTransform>().anchoredPosition;
+            Color   startColor = txt.color;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                go.GetComponent<RectTransform>().anchoredPosition = startPos + Vector2.up * (55f * t);
+                txt.color = new Color(startColor.r, startColor.g, startColor.b, 1f - t);
+                yield return null;
+            }
+            Destroy(go);
+        }
+
+        // ----------------------------------------------------------
+        // Timer UI
         // ----------------------------------------------------------
 
         private void UpdateTimerUI()
         {
             if (timerText == null) return;
             int seconds = Mathf.CeilToInt(Mathf.Max(_timeRemaining, 0f));
-            timerText.text = $"{seconds / 60:D2}:{seconds % 60:D2}";
-
-            // Colore rosso quando mancano meno di 10 secondi (incluso 0)
+            timerText.text  = $"{seconds / 60:D2}:{seconds % 60:D2}";
             timerText.color = _timeRemaining <= 10f ? Color.red : Color.white;
         }
     }

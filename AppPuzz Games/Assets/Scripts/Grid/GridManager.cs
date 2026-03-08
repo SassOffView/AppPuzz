@@ -160,5 +160,52 @@ namespace AppPuzz.Grid
             foreach (var cell in _cells)
                 cell?.SetSelected(false);
         }
+
+        /// <summary>
+        /// Sostituisce la lettera in una cella rotta con una nuova casuale.
+        /// Resetta il contatore di colpi e lo stato ghiaccio.
+        /// </summary>
+        public void ReplaceCell(int row, int col)
+        {
+            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return;
+            LetterCell cell = _cells[row, col];
+            if (cell == null) return;
+
+            var weights = (AppPuzz.Localization.LanguageManager.Instance?.CurrentLanguage
+                           == AppPuzz.Localization.Language.English)
+                ? WeightedRandom.EnglishWeights
+                : WeightedRandom.ItalianWeights;
+
+            char newLetter = WeightedRandom.GetLetter(weights);
+            cell.Initialize(newLetter, row, col);
+
+            // Animazione breve: scala da 0 → 1 per segnalare la sostituzione
+            StartCoroutine(ReplacePop(cell));
+            Debug.Log($"[GridManager] Cella ({row},{col}) sostituita con '{newLetter}'.");
+        }
+
+        private System.Collections.IEnumerator ReplacePop(LetterCell cell)
+        {
+            if (cell == null) yield break;
+            cell.transform.localScale = Vector3.zero;
+            float t = 0f;
+            while (t < 1f)
+            {
+                t += Time.deltaTime / 0.25f;
+                cell.transform.localScale = Vector3.one * Mathf.SmoothStep(0f, 1f, t);
+                yield return null;
+            }
+            cell.transform.localScale = Vector3.one;
+        }
+
+        /// <summary>
+        /// Decrementa il counter di freeze su tutte le celle ghiacciate.
+        /// Va chiamato dopo ogni parola corretta trovata (globalmente).
+        /// </summary>
+        public void DecrementAllFrozenCells()
+        {
+            foreach (var cell in _cells)
+                cell?.DecrementFrozenTurn();
+        }
     }
 }

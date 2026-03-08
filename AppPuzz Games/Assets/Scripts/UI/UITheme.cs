@@ -109,6 +109,30 @@ namespace AppPuzz.UI
             public static readonly Color LegendaryGlow  = HEX("#FFD700");
             public static readonly Color Shiny          = HEX("#F0E68C");
 
+            // ── Danno tessera (6 livelli: 1=lieve → 5=critico) ────
+            public static readonly Color Damage1        = new Color(0.30f, 0.10f, 0.00f, 0.15f);
+            public static readonly Color Damage2        = new Color(0.35f, 0.12f, 0.00f, 0.30f);
+            public static readonly Color Damage3        = new Color(0.45f, 0.10f, 0.00f, 0.45f);
+            public static readonly Color Damage4        = new Color(0.55f, 0.08f, 0.00f, 0.60f);
+            public static readonly Color Damage5        = new Color(0.65f, 0.04f, 0.00f, 0.75f);
+
+            // Colori superficie interna per livello danno
+            public static readonly Color TileDamage1   = HEX("#FFF4E0");
+            public static readonly Color TileDamage2   = HEX("#FFE0B0");
+            public static readonly Color TileDamage3   = HEX("#FFC070");
+            public static readonly Color TileDamage4   = HEX("#FF9040");
+            public static readonly Color TileDamage5   = HEX("#FF5018");
+
+            // ── Ghiaccio (freeze) ──────────────────────────────────
+            public static readonly Color FreezeOverlay = new Color(0.50f, 0.85f, 1.00f, 0.60f);
+            public static readonly Color FreezeBorder  = HEX("#A0E8FF");
+
+            // ── Fulmini per tipo creatura ──────────────────────────
+            public static readonly Color LightningFire  = HEX("#FF6000"); // fuoco  → arancio
+            public static readonly Color LightningWater = HEX("#00BFFF"); // acqua  → azzurro
+            public static readonly Color LightningEarth = HEX("#80FF00"); // terra  → verde lime
+            public static readonly Color LightningAir   = HEX("#FFFF80"); // aria   → giallo chiaro
+
             private static Color HEX(string hex)
             {
                 ColorUtility.TryParseHtmlString(hex, out Color c);
@@ -177,6 +201,40 @@ namespace AppPuzz.UI
             "AstralWolf"      => Colors.TypeWolf,
             "EtherealSerpent" => Colors.TypeSerpent,
             _                 => Colors.Gold,
+        };
+
+        /// <summary>Restituisce il colore del fulmine per tipo creatura.</summary>
+        public static Color LightningColor(string creatureType) => creatureType switch
+        {
+            "MentalDragon"    => Colors.LightningFire,
+            "AstralWolf"      => Colors.LightningWater,
+            "EtherealSerpent" => Colors.LightningEarth,
+            _                 => Colors.LightningAir,
+        };
+
+        /// <summary>
+        /// Restituisce il colore overlay danno per livello (1–5).
+        /// Livello 0 = nessun overlay.
+        /// </summary>
+        public static Color DamageOverlayColor(int level) => level switch
+        {
+            1 => Colors.Damage1,
+            2 => Colors.Damage2,
+            3 => Colors.Damage3,
+            4 => Colors.Damage4,
+            5 => Colors.Damage5,
+            _ => Color.clear,
+        };
+
+        /// <summary>Restituisce il colore della superficie interna per livello danno.</summary>
+        public static Color TileSurfaceColor(int level) => level switch
+        {
+            1 => Colors.TileDamage1,
+            2 => Colors.TileDamage2,
+            3 => Colors.TileDamage3,
+            4 => Colors.TileDamage4,
+            5 => Colors.TileDamage5,
+            _ => Colors.TileNormal,
         };
 
         /// <summary>Calcola il colore della barra energia (verde→giallo→rosso).</summary>

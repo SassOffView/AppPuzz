@@ -9,6 +9,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using AppPuzz.Creatures;
+using AppPuzz.Localization;
 
 namespace AppPuzz.Gameplay
 {
@@ -103,8 +104,10 @@ namespace AppPuzz.Gameplay
             CurrentStreak = (int)_streakValue;
             if (CurrentStreak > MaxStreak) MaxStreak = CurrentStreak;
 
-            // Base: 2 punti per ogni lettera della parola
-            float baseScore = word.Length * 2f;
+            // Punteggio base: somma valori lettere × moltiplicatore lunghezza
+            bool isItalian = LanguageManager.Instance == null ||
+                             LanguageManager.Instance.CurrentLanguage == Language.Italian;
+            float baseScore = LetterScoring.CalculateBaseScore(word, isItalian);
 
             // Bonus streak: +20% per ogni parola oltre la soglia (default: dalla 4ª), cap 2.5×
             int bonusStreak = Mathf.Max(0, CurrentStreak - streakBonusThreshold);
@@ -120,7 +123,7 @@ namespace AppPuzz.Gameplay
             CreatureController.Instance?.OnEnergyChanged(CurrentEnergy);
 
             Debug.Log($"[EnergyManager] +{gained:F1} energia " +
-                      $"(parola='{word}', streak={CurrentStreak}, legendary={isLegendary})");
+                      $"(parola='{word}', base={baseScore:F1}, streak={CurrentStreak}, legendary={isLegendary})");
         }
 
         /// <summary>

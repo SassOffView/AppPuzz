@@ -12,6 +12,7 @@ using AppPuzz.Grid;
 using AppPuzz.Localization;
 using AppPuzz.UI;
 using AppPuzz.Utils;
+using AppPuzz.Creatures;
 
 namespace AppPuzz.Gameplay
 {
@@ -123,15 +124,18 @@ namespace AppPuzz.Gameplay
             if (currentWordText != null) currentWordText.text = "";
         }
 
-        public void SubmitWord(string word)
+        public void SubmitWord(string word, List<LetterCell> cells = null)
         {
             if (!_isActive) return;
             var result = _validator.Validate(word.ToLower());
             bool legendary = result == ValidationResult.Legendary;
 
+            bool isItalian = LanguageManager.Instance == null ||
+                             LanguageManager.Instance.CurrentLanguage == Language.Italian;
+
             if (result != ValidationResult.Invalid)
             {
-                float baseScore = word.Length * 2f;
+                float baseScore = LetterScoring.CalculateBaseScore(word, isItalian);
                 if (legendary) baseScore *= 3f;
                 _score += baseScore;
                 _wordsFound++;
@@ -142,12 +146,67 @@ namespace AppPuzz.Gameplay
                     legendary ? UITheme.Colors.Legendary : UITheme.Colors.TextSuccess);
 
                 SpawnXPFloat(baseScore);
+
+                // Fulmine + danno corretto
+                if (cells != null && cells.Count > 0)
+                {
+                    string creatureType = CreatureController.Instance?.CreatureType ?? "MentalDragon";
+                    Color  lightColor   = UITheme.LightningColor(creatureType);
+                    StartCoroutine(LightningAndDamageSequence(cells, lightColor));
+                }
             }
             else
             {
                 ShowFeedback(FB_BAD[Random.Range(0, FB_BAD.Length)], UITheme.Colors.TextDanger);
+                if (cells != null && cells.Count > 0)
+                    StartCoroutine(WrongWordEffect(cells));
             }
             UpdateUI();
+        }
+
+        private IEnumerator LightningAndDamageSequence(List<LetterCell> cells, Color lightColor)
+        {
+            foreach (var cell in cells)
+            {
+                if (cell != null) yield return StartCoroutine(cell.FlashLightning(lightColor, 0.09f));
+                yield return new WaitForSeconds(0.04f);
+            }
+            yield return new WaitForSeconds(0.05f);
+
+            var broken = new List<(int r, int c)>();
+            foreach (var cell in cells)
+            {
+                if (cell == null) continue;
+                if (cell.ApplyCorrectHit()) broken.Add((cell.Row, cell.Col));
+            }
+            GridManager.Instance?.DecrementAllFrozenCells();
+
+            if (broken.Count > 0)
+            {
+                yield return new WaitForSeconds(0.3f);
+                foreach (var (r, c) in broken) GridManager.Instance?.ReplaceCell(r, c);
+            }
+        }
+
+        private IEnumerator WrongWordEffect(List<LetterCell> cells)
+        {
+            var flashes = new List<Coroutine>();
+            foreach (var cell in cells)
+                if (cell != null) flashes.Add(StartCoroutine(cell.FlashWrong(0.14f)));
+            foreach (var f in flashes) yield return f;
+
+            var broken = new List<(int r, int c)>();
+            foreach (var cell in cells)
+            {
+                if (cell == null) continue;
+                cell.ApplyWrongHit();
+                if (cell.IsLetterBroken) broken.Add((cell.Row, cell.Col));
+            }
+            if (broken.Count > 0)
+            {
+                yield return new WaitForSeconds(0.3f);
+                foreach (var (r, c) in broken) GridManager.Instance?.ReplaceCell(r, c);
+            }
         }
 
         // -------- Fine sessione --------

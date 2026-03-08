@@ -1,5 +1,7 @@
 // ============================================================
-// WordSelector.cs — input Ruzzle: drag su celle adiacenti
+// WordSelector.cs — input Ruzzle: drag su celle adiacenti.
+// • Celle ghiacciate (IsFrozen) non sono selezionabili.
+// • Le celle selezionate vengono passate ai manager con la parola.
 // ============================================================
 using System.Collections.Generic;
 using System.Text;
@@ -53,11 +55,11 @@ namespace AppPuzz.Gameplay
                 Touch t = Input.GetTouch(0);
                 switch (t.phase)
                 {
-                    case TouchPhase.Began:     BeginSelection(t.position);                     break;
+                    case TouchPhase.Began:      BeginSelection(t.position);                      break;
                     case TouchPhase.Moved:
                     case TouchPhase.Stationary: if (_isSelecting) ContinueSelection(t.position); break;
                     case TouchPhase.Ended:
-                    case TouchPhase.Canceled:   if (_isSelecting) EndSelection();               break;
+                    case TouchPhase.Canceled:   if (_isSelecting) EndSelection();                break;
                 }
             }
         }
@@ -83,6 +85,9 @@ namespace AppPuzz.Gameplay
         {
             LetterCell cell = GetCellAtScreenPos(screenPos);
             if (cell == null) return;
+
+            // Le celle ghiacciate non possono essere selezionate
+            if (cell.IsFrozen) return;
 
             // Backtrack: se la cella è il penultimo elemento, rimuovi l'ultimo
             if (_selectedCells.Count >= 2 && _selectedCells[_selectedCells.Count - 2] == cell)
@@ -136,6 +141,10 @@ namespace AppPuzz.Gameplay
         private void SubmitCurrentWord()
         {
             string word = BuildCurrentWord();
+
+            // Cattura le celle PRIMA di pulire la selezione
+            var submittedCells = new List<LetterCell>(_selectedCells);
+
             GridManager.Instance?.ResetAllCells();
             _selectedCells.Clear();
             BroadcastWord("");
@@ -144,11 +153,11 @@ namespace AppPuzz.Gameplay
             {
                 var screen = AppPuzz.UI.ScreenManager.Instance?.Current;
                 if (screen == AppPuzz.UI.ScreenID.Training)
-                    TrainingManager.Instance?.SubmitWord(word);
+                    TrainingManager.Instance?.SubmitWord(word, submittedCells);
                 else if (screen == AppPuzz.UI.ScreenID.Arena)
-                    ArenaManager.Instance?.SubmitWord(word);
+                    ArenaManager.Instance?.SubmitWord(word, submittedCells);
                 else
-                    GameManager.Instance?.SubmitWord(word);
+                    GameManager.Instance?.SubmitWord(word, submittedCells);
             }
         }
     }
