@@ -33,6 +33,27 @@ namespace AppPuzz.UI
             public static readonly Color TileText       = HEX("#12186A"); // lettera navy scura
             public static readonly Color TileShadow     = HEX("#A06000"); // ombra bordo
 
+            // ── Tessere stile PIETRA INCISA ────────────────────────
+            public static readonly Color StoneBase      = HEX("#B8A890"); // superficie pietra (arenaria)
+            public static readonly Color StoneBorder    = HEX("#4E3C2C"); // cornice roccia scura
+            public static readonly Color StoneShadow    = HEX("#2C1C0C"); // base sottostante
+            public static readonly Color StoneSelected  = HEX("#D4AA50"); // pietra illuminata / rune attivate
+            public static readonly Color StoneBorderSel = HEX("#C8960A"); // bordo dorato selezione
+            public static readonly Color StoneText      = HEX("#1A1008"); // lettera incisa (scurissima)
+            public static readonly Color StoneHighlight = new Color(0.85f, 0.76f, 0.62f, 0.55f); // bordo incisione
+            public static readonly Color StonePointText = HEX("#E8D8B8"); // valore punti (crema pietra)
+
+            // Pietra danneggiata – la superficie si scurisce/sgretola:
+            public static readonly Color StoneDmg1     = HEX("#A89070"); // leggera usura
+            public static readonly Color StoneDmg2     = HEX("#907858"); // usura moderata
+            public static readonly Color StoneDmg3     = HEX("#785040"); // danno pesante
+            public static readonly Color StoneDmg4     = HEX("#5A3428"); // danno grave
+            public static readonly Color StoneDmg5     = HEX("#3C1E12"); // critico / pietra nera
+
+            // Crepa: ombra scura + highlight pietra fratturata
+            public static readonly Color CrackDark     = new Color(0.05f, 0.03f, 0.01f, 0.90f);
+            public static readonly Color CrackEdge     = new Color(0.85f, 0.76f, 0.60f, 0.40f);
+
             // ── Oro / Pokémon accent ───────────────────────────────
             public static readonly Color Gold           = HEX("#FFD700");
             public static readonly Color GoldDark       = HEX("#B8860B");
@@ -226,15 +247,17 @@ namespace AppPuzz.UI
             _ => Color.clear,
         };
 
-        /// <summary>Restituisce il colore della superficie interna per livello danno.</summary>
+        /// <summary>
+        /// Restituisce il colore della superficie stone in base al livello di danno (0=intatta, 5=critica).
+        /// </summary>
         public static Color TileSurfaceColor(int level) => level switch
         {
-            1 => Colors.TileDamage1,
-            2 => Colors.TileDamage2,
-            3 => Colors.TileDamage3,
-            4 => Colors.TileDamage4,
-            5 => Colors.TileDamage5,
-            _ => Colors.TileNormal,
+            1 => Colors.StoneDmg1,
+            2 => Colors.StoneDmg2,
+            3 => Colors.StoneDmg3,
+            4 => Colors.StoneDmg4,
+            5 => Colors.StoneDmg5,
+            _ => Colors.StoneBase,
         };
 
         /// <summary>Calcola il colore della barra energia (verde→giallo→rosso).</summary>
