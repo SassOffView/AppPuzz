@@ -168,7 +168,7 @@ namespace AppPuzz.UI
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             var img = go.AddComponent<Image>();
-            img.color = UITheme.Colors.BackgroundDeep;
+            img.color = UITheme.Colors.BackgroundPanel;
             return go;
         }
 
@@ -249,7 +249,7 @@ namespace AppPuzz.UI
             var bgRt = bg.AddComponent<RectTransform>();
             bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero; bgRt.offsetMax = Vector2.zero;
-            bg.AddComponent<Image>().color = UITheme.Colors.BackgroundPanel;
+            bg.AddComponent<Image>().color = UITheme.Colors.EnergyBarBg;
 
             // Fill area
             var fillArea = new GameObject("Fill Area");
@@ -400,106 +400,174 @@ namespace AppPuzz.UI
             if (panel.GetComponent<HomeScreen>() != null) return;
 
             panel.SetActive(false);
+            // Sfondo sky blue (come WD loading screen)
+            panel.GetComponent<Image>().color = UITheme.Colors.SkyBlue;
             var hs = panel.AddComponent<HomeScreen>();
 
-            // ── TOP BAR: titolo + livello + XP ──────────────────────────
-            hs.titleText = MakeText(panel.transform, "TitleText", UITheme.Strings.AppTitle,
-                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.1f, 0.93f), new Vector2(0.9f, 1.00f), Vector2.zero, Vector2.zero);
+            // ══════════════════════════════════════════════════════
+            // TOP BAR RISORSE  (y 0.925 – 1.00)
+            // ══════════════════════════════════════════════════════
+            var resBar = MakePanel(panel.transform, "ResourceBar",
+                UITheme.Colors.SkyBlueDark,
+                new Vector2(0, 0.928f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+
+            // ⚡ Energia
+            MakeResourceChip(resBar.transform, "EnergyChip",
+                "⚡", "60/60", UITheme.Colors.ResourceBg, UITheme.Colors.EnergyColor,
+                new Vector2(0.01f, 0.08f), new Vector2(0.32f, 0.92f));
+
+            // 💎 Gemme
+            MakeResourceChip(resBar.transform, "GemChip",
+                "◆", "110", UITheme.Colors.ResourceBg, UITheme.Colors.GemColor,
+                new Vector2(0.34f, 0.08f), new Vector2(0.64f, 0.92f));
+
+            // 🪙 Monete
+            MakeResourceChip(resBar.transform, "CoinChip",
+                "●", "5.960", UITheme.Colors.ResourceBg, UITheme.Colors.CoinColor,
+                new Vector2(0.66f, 0.08f), new Vector2(0.99f, 0.92f));
+
+            // ══════════════════════════════════════════════════════
+            // PLAYER INFO STRIP  (y 0.860 – 0.928)
+            // ══════════════════════════════════════════════════════
+            var playerStrip = MakePanel(panel.transform, "PlayerStrip",
+                UITheme.Colors.SkyBlueDark,
+                new Vector2(0, 0.860f), new Vector2(1, 0.928f), Vector2.zero, Vector2.zero);
+
+            // Titolo/nome app centrato
+            hs.titleText = MakeText(playerStrip.transform, "TitleText", UITheme.Strings.AppTitle,
+                42, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.2f, 0), new Vector2(0.8f, 1), Vector2.zero, Vector2.zero);
             hs.titleText.fontStyle = FontStyles.Bold;
 
-            hs.playerLevelText = MakeText(panel.transform, "PlayerLevelText", "LV. 1",
-                34, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.88f), new Vector2(0.35f, 0.93f), Vector2.zero, Vector2.zero);
+            // Badge livello (sinistra)
+            var lvBadge = MakePanel(playerStrip.transform, "LvBadge",
+                UITheme.Colors.NavBarBg,
+                new Vector2(0.01f, 0.08f), new Vector2(0.18f, 0.92f), Vector2.zero, Vector2.zero);
+            hs.playerLevelText = MakeText(lvBadge.transform, "LvText", "⭐ LV.1",
+                28, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
-            hs.arenaRankText = MakeText(panel.transform, "ArenaRankText", "BRONZO",
-                30, UITheme.Colors.Gold, TextAlignmentOptions.Right,
-                new Vector2(0.65f, 0.88f), new Vector2(0.96f, 0.93f), Vector2.zero, Vector2.zero);
+            // Badge rango (destra)
+            var rankBadge = MakePanel(playerStrip.transform, "RankBadge",
+                UITheme.Colors.NavBarBg,
+                new Vector2(0.82f, 0.08f), new Vector2(0.99f, 0.92f), Vector2.zero, Vector2.zero);
+            hs.arenaRankText = MakeText(rankBadge.transform, "RankText", "🏆 BRONZO",
+                24, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
-            hs.xpBar = MakeSlider(panel.transform, "XPBar", UITheme.Colors.Gold,
-                new Vector2(0.04f, 0.860f), new Vector2(0.96f, 0.882f), Vector2.zero, Vector2.zero);
+            // ══════════════════════════════════════════════════════
+            // CREATURA  (y 0.300 – 0.860)  ← area principale
+            // ══════════════════════════════════════════════════════
+            // Sky blue sfumato (pannello + layer scuro in basso)
+            var creatureZone = MakePanel(panel.transform, "CreatureZone",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.300f), new Vector2(1, 0.860f), Vector2.zero, Vector2.zero);
+
+            // Gradiente simulato: pannello semi-trasparente in basso
+            var gradFade = MakePanel(creatureZone.transform, "GradFade",
+                new Color(0.04f, 0.16f, 0.36f, 0.70f),
+                new Vector2(0, 0), new Vector2(1, 0.30f), Vector2.zero, Vector2.zero);
+
+            // Aura glow (cerchio grande semitrasparente dietro creatura)
+            var aura = new GameObject("CreatureAura");
+            aura.transform.SetParent(creatureZone.transform, false);
+            var auraRt = aura.AddComponent<RectTransform>();
+            auraRt.anchorMin = new Vector2(0.10f, 0.12f);
+            auraRt.anchorMax = new Vector2(0.90f, 0.92f);
+            auraRt.offsetMin = auraRt.offsetMax = Vector2.zero;
+            var auraImg = aura.AddComponent<Image>();
+            auraImg.color = new Color(1f, 0.85f, 0.0f, 0.18f); // glow gold
+            // Aggiungi componente di animazione idle
+            var idleAnim = aura.AddComponent<CreatureIdleAnimator>();
+
+            // Cerchio creatura (icona colorata per tipo)
+            var circle = new GameObject("CreatureCircle");
+            circle.transform.SetParent(creatureZone.transform, false);
+            var cRt = circle.AddComponent<RectTransform>();
+            cRt.anchorMin = new Vector2(0.20f, 0.18f);
+            cRt.anchorMax = new Vector2(0.80f, 0.86f);
+            cRt.offsetMin = cRt.offsetMax = Vector2.zero;
+            hs.creatureImage = circle.AddComponent<Image>();
+            hs.creatureImage.color = UITheme.Colors.TypeDragon;
+
+            // Lettera grande al centro del cerchio (rappresenta la creatura)
+            MakeText(circle.transform, "CreatureIcon", "★",
+                110, new Color(1, 1, 1, 0.35f), TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            // Type badge sopra
+            var typePill = MakePanel(creatureZone.transform, "TypePill",
+                UITheme.Colors.TypeDragon,
+                new Vector2(0.28f, 0.87f), new Vector2(0.72f, 0.97f), Vector2.zero, Vector2.zero);
+            hs.creatureTypeBadge = typePill.GetComponent<Image>();
+            hs.creatureTypeText = MakeText(typePill.transform, "TypeTxt", "✦ DRAGO MENTALE ✦",
+                26, Color.white, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            hs.creatureTypeText.fontStyle = FontStyles.Bold;
+
+            // Nome creatura in basso nella zona
+            hs.creatureNameText = MakeText(creatureZone.transform, "CreatureName", "Mental Dragon",
+                52, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.01f), new Vector2(0.95f, 0.16f), Vector2.zero, Vector2.zero);
+            hs.creatureNameText.fontStyle = FontStyles.Bold;
+
+            // Statistiche (in overlay sulla zona)
+            hs.bestScoreText = MakeText(creatureZone.transform, "BestScore", "🏆 Record: 0",
+                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
+                new Vector2(0.02f, 0.89f), new Vector2(0.45f, 0.97f), Vector2.zero, Vector2.zero);
+            hs.totalMatchesText = MakeText(creatureZone.transform, "TotalMatches", "Partite: 0",
+                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                new Vector2(0.55f, 0.89f), new Vector2(0.98f, 0.97f), Vector2.zero, Vector2.zero);
+
+            // XP bar sotto il nome
+            hs.xpBar = MakeSlider(creatureZone.transform, "XPBar", UITheme.Colors.Gold,
+                new Vector2(0.08f, 0.13f), new Vector2(0.92f, 0.18f), Vector2.zero, Vector2.zero);
             hs.xpBar.value = 0.3f;
+            hs.xpText = MakeText(creatureZone.transform, "XPText", "350 XP al prossimo livello",
+                22, new Color(1,1,1,0.7f), TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.08f), new Vector2(0.95f, 0.13f), Vector2.zero, Vector2.zero);
 
-            hs.xpText = MakeText(panel.transform, "XPText", "350 XP al prossimo livello",
-                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.04f, 0.837f), new Vector2(0.96f, 0.860f), Vector2.zero, Vector2.zero);
+            // ══════════════════════════════════════════════════════
+            // BOTTONI PRINCIPALI 3D  (y 0.195 – 0.298)
+            // ══════════════════════════════════════════════════════
+            var btnZone = MakePanel(panel.transform, "MainBtnZone",
+                UITheme.Colors.SkyBlueDark,
+                new Vector2(0, 0.195f), new Vector2(1, 0.298f), Vector2.zero, Vector2.zero);
 
-            // ── CREATURA (area centrale grande) ──────────────────────────
-            {
-                // Sfondo creatura
-                var creatureBg = MakePanel(panel.transform, "CreatureBg",
-                    new Color(0.08f, 0.10f, 0.22f, 1f),
-                    new Vector2(0f, 0.27f), new Vector2(1f, 0.837f), Vector2.zero, Vector2.zero);
+            hs.playButton = MakeButton3D(btnZone.transform, "PlayButton", "▶  GIOCA",
+                UITheme.Colors.BtnGreen, UITheme.Colors.BtnGreenDark, Color.white, 54,
+                new Vector2(0.03f, 0.08f), new Vector2(0.48f, 0.92f));
 
-                // Cerchio/icona creatura (colored circle)
-                var circle = new GameObject("CreatureCircle");
-                circle.transform.SetParent(creatureBg.transform, false);
-                var crt = circle.AddComponent<RectTransform>();
-                crt.anchorMin = new Vector2(0.25f, 0.15f);
-                crt.anchorMax = new Vector2(0.75f, 0.80f);
-                crt.offsetMin = crt.offsetMax = Vector2.zero;
-                hs.creatureImage = circle.AddComponent<Image>();
-                hs.creatureImage.color = UITheme.Colors.TypeDragon;
+            hs.arenaButton = MakeButton3D(btnZone.transform, "ArenaButton", "⚡ ARENA",
+                UITheme.Colors.BtnPurple, UITheme.Colors.BtnPurpleDark, Color.white, 48,
+                new Vector2(0.52f, 0.08f), new Vector2(0.97f, 0.92f));
 
-                // Type badge (sfondo pill-shaped)
-                var badge = new GameObject("CreatureTypeBadge");
-                badge.transform.SetParent(creatureBg.transform, false);
-                var brt = badge.AddComponent<RectTransform>();
-                brt.anchorMin = new Vector2(0.25f, 0.80f);
-                brt.anchorMax = new Vector2(0.75f, 0.90f);
-                brt.offsetMin = brt.offsetMax = Vector2.zero;
-                hs.creatureTypeBadge = badge.AddComponent<Image>();
-                hs.creatureTypeBadge.color = UITheme.Colors.TypeDragon;
+            // ══════════════════════════════════════════════════════
+            // BOTTONI SECONDARI  (y 0.105 – 0.194)
+            // ══════════════════════════════════════════════════════
+            var secZone = MakePanel(panel.transform, "SecBtnZone",
+                new Color(0.04f, 0.14f, 0.28f, 1f),
+                new Vector2(0, 0.105f), new Vector2(1, 0.194f), Vector2.zero, Vector2.zero);
 
-                hs.creatureTypeText = MakeText(badge.transform, "CreatureTypeText", "DRAGO MENTALE",
-                    30, Color.white, TextAlignmentOptions.Center,
-                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                hs.creatureTypeText.fontStyle = FontStyles.Bold;
+            hs.trainingButton = MakeButton3D(secZone.transform, "TrainingButton", "★ ALLENAMENTO",
+                UITheme.Colors.BtnOrange, UITheme.Colors.BtnOrangeDark, Color.white, 40,
+                new Vector2(0.02f, 0.08f), new Vector2(0.48f, 0.92f));
 
-                hs.creatureNameText = MakeText(creatureBg.transform, "CreatureNameText", "Mental Dragon",
-                    52, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
-                    new Vector2(0.05f, 0.02f), new Vector2(0.95f, 0.15f), Vector2.zero, Vector2.zero);
-                hs.creatureNameText.fontStyle = FontStyles.Bold;
+            hs.evolutionButton = MakeButton3D(secZone.transform, "EvolutionButton", "✦ EVOLUZIONE",
+                UITheme.Colors.TypeDragon, UITheme.Colors.BackgroundPanel, Color.white, 40,
+                new Vector2(0.52f, 0.08f), new Vector2(0.98f, 0.92f));
 
-                // Stats rapide
-                hs.bestScoreText = MakeText(creatureBg.transform, "BestScoreText", "Record: 0",
-                    28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
-                    new Vector2(0.05f, 0.90f), new Vector2(0.50f, 0.98f), Vector2.zero, Vector2.zero);
-                hs.totalMatchesText = MakeText(creatureBg.transform, "TotalMatchesText", "Partite: 0",
-                    28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
-                    new Vector2(0.50f, 0.90f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
-            }
+            // ══════════════════════════════════════════════════════
+            // BOTTOM NAV BAR  (y 0.00 – 0.105)
+            // ══════════════════════════════════════════════════════
+            MakeNavBar(panel.transform);
 
-            // ── MENU MODALITA' ORIZZONTALE ───────────────────────────────
-            {
-                var menuBg = MakePanel(panel.transform, "GameModeBg",
-                    new Color(0.06f, 0.08f, 0.18f, 1f),
-                    new Vector2(0f, 0.09f), new Vector2(1f, 0.27f), Vector2.zero, Vector2.zero);
-
-                // Container orizzontale
-                var row = new GameObject("ModeRow");
-                row.transform.SetParent(menuBg.transform, false);
-                var rowRt = row.AddComponent<RectTransform>();
-                rowRt.anchorMin = new Vector2(0.01f, 0.02f);
-                rowRt.anchorMax = new Vector2(0.99f, 0.98f);
-                rowRt.offsetMin = rowRt.offsetMax = Vector2.zero;
-                var hlg = row.AddComponent<HorizontalLayoutGroup>();
-                hlg.spacing = 8f;
-                hlg.padding = new RectOffset(6, 6, 4, 4);
-                hlg.childAlignment = TextAnchor.MiddleCenter;
-                hlg.childForceExpandWidth  = true;
-                hlg.childForceExpandHeight = true;
-
-                hs.playButton      = MakeModeButton(row.transform, "PlayButton",      "▶",  "GIOCA",         UITheme.Colors.Gold,           UITheme.Colors.BackgroundDeep);
-                hs.trainingButton  = MakeModeButton(row.transform, "TrainingButton",  "★",  "ALLENAMENTO",   UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary);
-                hs.arenaButton     = MakeModeButton(row.transform, "ArenaButton",     "⚡", "ARENA",         new Color(0.7f,0.2f,0.1f,1f),  UITheme.Colors.TextPrimary);
-                hs.evolutionButton = MakeModeButton(row.transform, "EvolutionButton", "✦",  "EVOLUZIONE",    new Color(0.3f,0.1f,0.6f,1f),  UITheme.Colors.TextPrimary);
-            }
-
-            // ── SETTINGS (bottom) ────────────────────────────────────────
-            hs.settingsButton = MakeButton(panel.transform, "SettingsButton", "⚙  IMPOSTAZIONI",
-                new Color(0.15f, 0.15f, 0.28f, 1f), UITheme.Colors.TextSecondary, 32,
-                new Vector2(0.2f, 0.01f), new Vector2(0.8f, 0.08f), Vector2.zero, Vector2.zero);
+            // Settings button (dentro nav bar area — piccolo)
+            hs.settingsButton = MakeButton(panel.transform, "SettingsButton", "⚙",
+                new Color(0,0,0,0), UITheme.Colors.TextSecondary, 36,
+                new Vector2(0.76f, 0.01f), new Vector2(0.98f, UITheme.Layout.NavBarHeight - 0.005f),
+                Vector2.zero, Vector2.zero);
 
             panel.SetActive(false);
         }
@@ -553,6 +621,202 @@ namespace AppPuzz.UI
         }
 
         // -------------------------------------------------------
+        // NUOVI HELPER VISIVI (stile Word Domination)
+        // -------------------------------------------------------
+
+        /// <summary>
+        /// Bottone 3D: layer ombra scuro offset + layer principale sopra.
+        /// Dà l'effetto "pressed" dei giochi mobile WD.
+        /// </summary>
+        private static Button MakeButton3D(Transform parent, string name, string label,
+            Color topColor, Color shadowColor, Color textColor, float fontSize,
+            Vector2 anchorMin, Vector2 anchorMax)
+        {
+            // Contenitore (non ha Image, serve solo come pivot)
+            var wrapper = new GameObject(name);
+            wrapper.transform.SetParent(parent, false);
+            var wRt = wrapper.AddComponent<RectTransform>();
+            wRt.anchorMin = anchorMin; wRt.anchorMax = anchorMax;
+            wRt.offsetMin = wRt.offsetMax = Vector2.zero;
+
+            // Shadow layer (leggermente più in basso)
+            var shadow = new GameObject("Shadow");
+            shadow.transform.SetParent(wrapper.transform, false);
+            var sRt = shadow.AddComponent<RectTransform>();
+            sRt.anchorMin = Vector2.zero; sRt.anchorMax = Vector2.one;
+            sRt.offsetMin = new Vector2(0, -6); sRt.offsetMax = new Vector2(0, -2);
+            shadow.AddComponent<Image>().color = shadowColor;
+
+            // Top layer (bottone vero)
+            var top = new GameObject("Top");
+            top.transform.SetParent(wrapper.transform, false);
+            var tRt = top.AddComponent<RectTransform>();
+            tRt.anchorMin = Vector2.zero; tRt.anchorMax = Vector2.one;
+            tRt.offsetMin = new Vector2(0, 2); tRt.offsetMax = new Vector2(0, 4);
+            var topImg = top.AddComponent<Image>();
+            topImg.color = topColor;
+            var btn = top.AddComponent<Button>();
+            var cb = btn.colors;
+            cb.normalColor      = topColor;
+            cb.highlightedColor = Color.Lerp(topColor, Color.white, 0.15f);
+            cb.pressedColor     = shadowColor;
+            btn.colors = cb;
+
+            // Testo
+            var txtGo = new GameObject("Label");
+            txtGo.transform.SetParent(top.transform, false);
+            var txtRt = txtGo.AddComponent<RectTransform>();
+            txtRt.anchorMin = Vector2.zero; txtRt.anchorMax = Vector2.one;
+            txtRt.offsetMin = txtRt.offsetMax = Vector2.zero;
+            var tmp = txtGo.AddComponent<TextMeshProUGUI>();
+            tmp.text      = label;
+            tmp.fontSize  = fontSize;
+            tmp.color     = textColor;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.alignment = TextAlignmentOptions.Center;
+
+            return btn;
+        }
+
+        /// <summary>
+        /// Card con bordo colorato (stile WD inventory card).
+        /// border ≈ 4px attorno a inner panel.
+        /// </summary>
+        private static GameObject MakeBorderedCard(Transform parent, string name,
+            Color borderColor, Color innerColor,
+            Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var outer = new GameObject(name);
+            outer.transform.SetParent(parent, false);
+            var oRt = outer.AddComponent<RectTransform>();
+            oRt.anchorMin = anchorMin; oRt.anchorMax = anchorMax;
+            oRt.offsetMin = oRt.offsetMax = Vector2.zero;
+            outer.AddComponent<Image>().color = borderColor;
+
+            var inner = new GameObject("Inner");
+            inner.transform.SetParent(outer.transform, false);
+            var iRt = inner.AddComponent<RectTransform>();
+            iRt.anchorMin = Vector2.zero; iRt.anchorMax = Vector2.one;
+            iRt.offsetMin = new Vector2(4, 4); iRt.offsetMax = new Vector2(-4, -4);
+            inner.AddComponent<Image>().color = innerColor;
+
+            return inner; // restituisce l'inner su cui mettere i figli
+        }
+
+        /// <summary>
+        /// Chip risorsa (energia/gemme/monete) per la top bar.
+        /// Crea un pannello pill-shaped con icona testo + valore.
+        /// </summary>
+        private static TextMeshProUGUI MakeResourceChip(Transform parent, string name,
+            string icon, string value, Color chipColor, Color iconColor,
+            Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var chip = new GameObject(name);
+            chip.transform.SetParent(parent, false);
+            var rt = chip.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            chip.AddComponent<Image>().color = chipColor;
+
+            // Icona
+            var iconGo = new GameObject("Icon");
+            iconGo.transform.SetParent(chip.transform, false);
+            var iRt = iconGo.AddComponent<RectTransform>();
+            iRt.anchorMin = new Vector2(0, 0); iRt.anchorMax = new Vector2(0.35f, 1);
+            iRt.offsetMin = iRt.offsetMax = Vector2.zero;
+            var iconTxt = iconGo.AddComponent<TextMeshProUGUI>();
+            iconTxt.text = icon; iconTxt.fontSize = 36;
+            iconTxt.color = iconColor; iconTxt.alignment = TextAlignmentOptions.Center;
+            iconTxt.fontStyle = FontStyles.Bold;
+
+            // Valore
+            var valGo = new GameObject("Value");
+            valGo.transform.SetParent(chip.transform, false);
+            var vRt = valGo.AddComponent<RectTransform>();
+            vRt.anchorMin = new Vector2(0.35f, 0); vRt.anchorMax = Vector2.one;
+            vRt.offsetMin = vRt.offsetMax = Vector2.zero;
+            var valTxt = valGo.AddComponent<TextMeshProUGUI>();
+            valTxt.text = value; valTxt.fontSize = 34;
+            valTxt.color = Color.white; valTxt.alignment = TextAlignmentOptions.Center;
+            valTxt.fontStyle = FontStyles.Bold;
+
+            return valTxt;
+        }
+
+        /// <summary>
+        /// Bottom navigation bar fissa con tab.
+        /// </summary>
+        private static void MakeNavBar(Transform parent)
+        {
+            var bar = new GameObject("NavBar");
+            bar.transform.SetParent(parent, false);
+            var rt = bar.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 0);
+            rt.anchorMax = new Vector2(1, UITheme.Layout.NavBarHeight);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            bar.AddComponent<Image>().color = UITheme.Colors.NavBarBg;
+
+            // Separatore top
+            var sep = new GameObject("Separator");
+            sep.transform.SetParent(bar.transform, false);
+            var sRt = sep.AddComponent<RectTransform>();
+            sRt.anchorMin = new Vector2(0, 0.92f); sRt.anchorMax = Vector2.one;
+            sRt.offsetMin = sRt.offsetMax = Vector2.zero;
+            sep.AddComponent<Image>().color = UITheme.Colors.SkyBlueDark;
+
+            // Tab icon row
+            var hlg = new GameObject("TabRow");
+            hlg.transform.SetParent(bar.transform, false);
+            var hlgRt = hlg.AddComponent<RectTransform>();
+            hlgRt.anchorMin = new Vector2(0, 0); hlgRt.anchorMax = new Vector2(1, 0.92f);
+            hlgRt.offsetMin = hlgRt.offsetMax = Vector2.zero;
+            var layout = hlg.AddComponent<HorizontalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+            layout.spacing = 0;
+
+            string[] icons   = { "★", "▶", "☆", "⚙" };
+            string[] labels  = { "HOME", "GIOCA", "ARENA", "OPT" };
+            Color[]  colors  = {
+                UITheme.Colors.NavBarActive,
+                UITheme.Colors.BtnGreen,
+                UITheme.Colors.BtnPurple,
+                UITheme.Colors.TextSecondary
+            };
+
+            for (int i = 0; i < icons.Length; i++)
+            {
+                var tab = new GameObject($"Tab{i}");
+                tab.transform.SetParent(hlg.transform, false);
+                tab.AddComponent<Image>().color = new Color(0, 0, 0, 0);
+
+                var col = new GameObject("Col");
+                col.transform.SetParent(tab.transform, false);
+                var colRt = col.AddComponent<RectTransform>();
+                colRt.anchorMin = Vector2.zero; colRt.anchorMax = Vector2.one;
+                colRt.offsetMin = colRt.offsetMax = Vector2.zero;
+                var vl = col.AddComponent<VerticalLayoutGroup>();
+                vl.childAlignment = TextAnchor.MiddleCenter;
+                vl.childForceExpandWidth = true; vl.childForceExpandHeight = false;
+
+                var ico = new GameObject("I");
+                ico.transform.SetParent(col.transform, false);
+                var icoTxt = ico.AddComponent<TextMeshProUGUI>();
+                icoTxt.text = icons[i]; icoTxt.fontSize = 38;
+                icoTxt.color = colors[i]; icoTxt.alignment = TextAlignmentOptions.Center;
+                var icoLe = ico.AddComponent<LayoutElement>(); icoLe.preferredHeight = 46;
+
+                var lbl = new GameObject("L");
+                lbl.transform.SetParent(col.transform, false);
+                var lblTxt = lbl.AddComponent<TextMeshProUGUI>();
+                lblTxt.text = labels[i]; lblTxt.fontSize = 20;
+                lblTxt.color = colors[i]; lblTxt.alignment = TextAlignmentOptions.Center;
+                var lblLe = lbl.AddComponent<LayoutElement>(); lblLe.preferredHeight = 24;
+            }
+        }
+
+        // -------------------------------------------------------
         // ONBOARDING PANEL
         // -------------------------------------------------------
         private void BuildOnboardingPanel(Canvas canvas)
@@ -567,7 +831,7 @@ namespace AppPuzz.UI
 
             // --- Step Welcome ---
             om.stepWelcome = MakePanel(panel.transform, "StepWelcome",
-                UITheme.Colors.BackgroundDeep,
+                UITheme.Colors.BackgroundPanel,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.welcomeTitle = MakeText(om.stepWelcome.transform, "WelcomeTitle",
@@ -591,7 +855,7 @@ namespace AppPuzz.UI
 
             // --- Step Profile: nickname + avatar ---
             om.stepCreature = MakePanel(panel.transform, "StepProfile",
-                UITheme.Colors.BackgroundDeep,
+                UITheme.Colors.BackgroundPanel,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var pss = om.stepCreature.AddComponent<ProfileSetupScreen>();
             om.profileSetupScreen = pss;
@@ -667,7 +931,7 @@ namespace AppPuzz.UI
 
             // --- Step Tutorial ---
             om.stepTutorial = MakePanel(panel.transform, "StepTutorial",
-                UITheme.Colors.BackgroundDeep,
+                UITheme.Colors.BackgroundPanel,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.tutorialText = MakeText(om.stepTutorial.transform, "TutorialText",
@@ -682,7 +946,7 @@ namespace AppPuzz.UI
 
             // --- Step Ready ---
             om.stepReady = MakePanel(panel.transform, "StepReady",
-                UITheme.Colors.BackgroundDeep,
+                UITheme.Colors.BackgroundPanel,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             om.readyTitle = MakeText(om.stepReady.transform, "ReadyTitle",
@@ -708,11 +972,15 @@ namespace AppPuzz.UI
 
             panel.SetActive(false);
             var css = panel.AddComponent<CreatureSelectionScreen>();
+            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundPanel;
 
-            // Titolo
-            MakeText(panel.transform, "Title", UITheme.Strings.SelectCreature,
+            // Top bar strip
+            var selTopBar = MakePanel(panel.transform, "TopBar",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.88f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+            MakeText(selTopBar.transform, "Title", UITheme.Strings.SelectCreature,
                 60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.02f, 0.87f), new Vector2(0.98f, 0.97f), Vector2.zero, Vector2.zero)
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             // 3 Carte affiancate
@@ -840,7 +1108,12 @@ namespace AppPuzz.UI
 
             panel.SetActive(false);
             var tm = panel.AddComponent<TrainingManager>();
-            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
+            panel.GetComponent<Image>().color = UITheme.Colors.SkyBlueDark;
+
+            // Top bar strip
+            MakePanel(panel.transform, "TopBar",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.90f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
 
             // Titolo
             MakeText(panel.transform, "TrainingTitle", "ALLENAMENTO",
@@ -890,7 +1163,7 @@ namespace AppPuzz.UI
                 26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.625f), new Vector2(0.95f, 0.648f), Vector2.zero, Vector2.zero);
 
-            // Cornice griglia (più grande)
+            // Cornice griglia (più grande) — bordo amber stile WD
             {
                 var frameBg = new GameObject("GridFrame");
                 frameBg.transform.SetParent(panel.transform, false);
@@ -899,7 +1172,7 @@ namespace AppPuzz.UI
                 frt.anchorMax = new Vector2(1.00f, 0.625f);
                 frt.offsetMin = frt.offsetMax = Vector2.zero;
                 var fImg = frameBg.AddComponent<Image>();
-                fImg.color = new Color(0.15f, 0.15f, 0.30f, 1f);
+                fImg.color = UITheme.Colors.TileBorder;
             }
 
             // Grid area (grande — stessa dimensione del gameplay)
@@ -930,23 +1203,30 @@ namespace AppPuzz.UI
                 UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 30,
                 new Vector2(0.25f, 0.005f), new Vector2(0.75f, 0.05f), Vector2.zero, Vector2.zero);
 
-            // Overlay fine sessione con ScrollRect
+            // Overlay fine sessione con ScrollRect — stile popup WD viola
             {
                 var ov = MakePanel(panel.transform, "EndSessionOverlay",
-                    new Color(0f, 0f, 0f, 0.93f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                    UITheme.Colors.PopupBg, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                // Bordo popup viola
+                var ovBorder = MakePanel(ov.transform, "PopupBorder",
+                    UITheme.Colors.PopupBorder,
+                    new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.98f), Vector2.zero, Vector2.zero);
+                var ovInner = MakePanel(ovBorder.transform, "PopupInner",
+                    UITheme.Colors.PopupInner,
+                    new Vector2(0.01f, 0.01f), new Vector2(0.99f, 0.99f), Vector2.zero, Vector2.zero);
                 tm.endSessionOverlay = ov;
 
-                tm.endSessionTitle = MakeText(ov.transform, "EndTitle", "Sessione terminata!",
+                tm.endSessionTitle = MakeText(ovInner.transform, "EndTitle", "Sessione terminata!",
                     52, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                     new Vector2(0.05f, 0.83f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero);
                 tm.endSessionTitle.fontStyle = FontStyles.Bold;
 
                 // ScrollRect per lista parole
-                tm.endWordsScrollText = MakeScrollableWordsList(ov.transform,
+                tm.endWordsScrollText = MakeScrollableWordsList(ovInner.transform,
                     new Vector2(0.03f, 0.17f), new Vector2(0.97f, 0.82f));
 
-                tm.endCloseButton = MakeButton(ov.transform, "EndCloseBtn", "CHIUDI",
-                    UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 44,
+                tm.endCloseButton = MakeButton(ovInner.transform, "EndCloseBtn", "CHIUDI",
+                    UITheme.Colors.PopupCTA, UITheme.Colors.BackgroundDeep, 44,
                     new Vector2(0.2f, 0.04f), new Vector2(0.8f, 0.15f), Vector2.zero, Vector2.zero);
                 ov.SetActive(false);
             }
@@ -977,6 +1257,12 @@ namespace AppPuzz.UI
 
             panel.SetActive(false);
             var am = panel.AddComponent<ArenaManager>();
+            panel.GetComponent<Image>().color = UITheme.Colors.SkyBlueDark;
+
+            // Top bar strip
+            MakePanel(panel.transform, "TopBar",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.93f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
 
             MakeText(panel.transform, "ArenaTitle", "ARENA",
                 60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
@@ -1028,7 +1314,7 @@ namespace AppPuzz.UI
                 new Vector2(0.05f, 0.662f), new Vector2(0.95f, 0.710f), Vector2.zero, Vector2.zero);
             am.currentWordText.fontStyle = FontStyles.Bold;
 
-            // Cornice griglia (stessa dimensione di Training)
+            // Cornice griglia (stessa dimensione di Training) — bordo amber WD
             {
                 var gridFrame = new GameObject("GridFrame");
                 gridFrame.transform.SetParent(panel.transform, false);
@@ -1037,7 +1323,7 @@ namespace AppPuzz.UI
                 frt.anchorMax = new Vector2(1.00f, 0.662f);
                 frt.offsetMin = frt.offsetMax = Vector2.zero;
                 var fImg = gridFrame.AddComponent<Image>();
-                fImg.color = new Color(0.15f, 0.15f, 0.30f, 1f);
+                fImg.color = UITheme.Colors.TileBorder;
             }
 
             // Grid area — stessa dimensione di Training
@@ -1070,33 +1356,36 @@ namespace AppPuzz.UI
                 am.floatCanvas = fc;
             }
 
-            // Results overlay
+            // Results overlay — stile popup WD viola
             var resultsOverlay = MakePanel(panel.transform, "ResultsOverlay",
-                new Color(0, 0, 0, 0.92f),
+                UITheme.Colors.PopupBg,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             am.resultsOverlay = resultsOverlay;
+            var roInner = MakeBorderedCard(resultsOverlay.transform, "ResultsBorder",
+                UITheme.Colors.PopupBorder, UITheme.Colors.PopupInner,
+                new Vector2(0.03f, 0.03f), new Vector2(0.97f, 0.97f));
 
-            am.resultTitle = MakeText(resultsOverlay.transform, "ResultTitle", "VITTORIA!",
+            am.resultTitle = MakeText(roInner.transform, "ResultTitle", "VITTORIA!",
                 72, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 new Vector2(0.05f, 0.83f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero);
 
-            am.resultScoreText = MakeText(resultsOverlay.transform, "ResultScore", "Energia: 0",
+            am.resultScoreText = MakeText(roInner.transform, "ResultScore", "Energia: 0",
                 48, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.74f), new Vector2(0.9f, 0.83f), Vector2.zero, Vector2.zero);
 
-            am.resultRankText = MakeText(resultsOverlay.transform, "ResultRank", "Rango: Bronzo",
+            am.resultRankText = MakeText(roInner.transform, "ResultRank", "Rango: Bronzo",
                 34, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                 new Vector2(0.1f, 0.68f), new Vector2(0.9f, 0.74f), Vector2.zero, Vector2.zero);
 
             // Parole trovabili — ScrollRect
-            am.resultWordsText = MakeScrollableWordsList(resultsOverlay.transform,
+            am.resultWordsText = MakeScrollableWordsList(roInner.transform,
                 new Vector2(0.03f, 0.18f), new Vector2(0.97f, 0.68f));
 
-            am.playAgainBtn = MakeButton(resultsOverlay.transform, "PlayAgainBtn", "GIOCA ANCORA",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 44,
+            am.playAgainBtn = MakeButton(roInner.transform, "PlayAgainBtn", "GIOCA ANCORA",
+                UITheme.Colors.PopupCTA, UITheme.Colors.TextPrimary, 44,
                 new Vector2(0.1f, 0.09f), new Vector2(0.9f, 0.17f), Vector2.zero, Vector2.zero);
 
-            am.exitBtn = MakeButton(resultsOverlay.transform, "ExitBtn", "MENU",
+            am.exitBtn = MakeButton(roInner.transform, "ExitBtn", "MENU",
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 36,
                 new Vector2(0.2f, 0.01f), new Vector2(0.8f, 0.08f), Vector2.zero, Vector2.zero);
 
@@ -1107,23 +1396,26 @@ namespace AppPuzz.UI
                 UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 28,
                 new Vector2(0.05f, 0.005f), new Vector2(0.95f, 0.09f), Vector2.zero, Vector2.zero);
 
-            // Popup conferma uscita
+            // Popup conferma uscita — stile WD viola
             var quitPopup = MakePanel(panel.transform, "QuitPopup",
-                new Color(0f, 0f, 0f, 0.92f),
+                UITheme.Colors.PopupBg,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            MakeText(quitPopup.transform, "QuitTitle", "VUOI USCIRE?",
+            var qpInner = MakeBorderedCard(quitPopup.transform, "QuitBorder",
+                UITheme.Colors.PopupBorder, UITheme.Colors.PopupInner,
+                new Vector2(0.05f, 0.25f), new Vector2(0.95f, 0.75f));
+            MakeText(qpInner.transform, "QuitTitle", "VUOI USCIRE?",
                 64, UITheme.Colors.TextDanger, TextAlignmentOptions.Center,
-                new Vector2(0.1f, 0.60f), new Vector2(0.9f, 0.78f), Vector2.zero, Vector2.zero);
-            MakeText(quitPopup.transform, "QuitWarning",
+                new Vector2(0.05f, 0.65f), new Vector2(0.95f, 0.92f), Vector2.zero, Vector2.zero);
+            MakeText(qpInner.transform, "QuitWarning",
                 "Perderai tutti i punti guadagnati in questa battaglia!",
-                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.48f), new Vector2(0.95f, 0.60f), Vector2.zero, Vector2.zero);
-            am.confirmQuitBtn = MakeButton(quitPopup.transform, "ConfirmQuit", "SI, ESCI",
+                34, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.42f), new Vector2(0.95f, 0.65f), Vector2.zero, Vector2.zero);
+            am.confirmQuitBtn = MakeButton(qpInner.transform, "ConfirmQuit", "SI, ESCI",
                 UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 44,
-                new Vector2(0.1f, 0.30f), new Vector2(0.9f, 0.43f), Vector2.zero, Vector2.zero);
-            am.cancelQuitBtn = MakeButton(quitPopup.transform, "CancelQuit", "NO, CONTINUA",
-                UITheme.Colors.Gold, UITheme.Colors.BackgroundDeep, 38,
-                new Vector2(0.15f, 0.16f), new Vector2(0.85f, 0.27f), Vector2.zero, Vector2.zero);
+                new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.40f), Vector2.zero, Vector2.zero);
+            am.cancelQuitBtn = MakeButton(qpInner.transform, "CancelQuit", "NO, CONTINUA",
+                UITheme.Colors.PopupCTA, UITheme.Colors.TextPrimary, 38,
+                new Vector2(0.12f, 0.03f), new Vector2(0.88f, 0.17f), Vector2.zero, Vector2.zero);
             am.quitPopup = quitPopup;
             quitPopup.SetActive(false);
 
@@ -1140,10 +1432,15 @@ namespace AppPuzz.UI
 
             panel.SetActive(false);
             var es = panel.AddComponent<EvolutionScreen>();
+            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundPanel;
 
-            MakeText(panel.transform, "EvolutionTitle", "EVOLUZIONE",
+            // Top bar strip
+            var evolTopBar = MakePanel(panel.transform, "TopBar",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.88f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+            MakeText(evolTopBar.transform, "EvolutionTitle", "EVOLUZIONE",
                 70, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero)
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             es.creatureNameText = MakeText(panel.transform, "CreatureNameText", "Mental Dragon",
@@ -1272,13 +1569,17 @@ namespace AppPuzz.UI
             if (panel.GetComponent<SettingsScreen>() != null) return;
 
             panel.SetActive(false);
-            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundDeep;
+            panel.GetComponent<Image>().color = UITheme.Colors.BackgroundPanel;
 
             var ss = panel.AddComponent<SettingsScreen>();
 
-            MakeText(panel.transform, "SettingsTitle", "IMPOSTAZIONI",
+            // Top bar strip (sfondo sky blue)
+            var settingsTopBar = MakePanel(panel.transform, "TopBar",
+                UITheme.Colors.SkyBlue,
+                new Vector2(0, 0.88f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+            MakeText(settingsTopBar.transform, "SettingsTitle", "IMPOSTAZIONI",
                 80, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.99f), Vector2.zero, Vector2.zero)
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
             MakeText(panel.transform, "SettingsInfo", "Versione 1.0",
