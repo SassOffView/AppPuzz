@@ -110,6 +110,8 @@ namespace AppPuzz.Gameplay
 
             if (gridContainer != null && GridManager.Instance != null)
                 GridManager.Instance.gridContainer = gridContainer;
+            // Passa il validator per garantire i requisiti minimi di parole
+            GridManager.Instance?.SetValidator(_validator);
             GridManager.Instance?.GenerateGrid();
 
             if (endSessionOverlay != null) endSessionOverlay.SetActive(false);
@@ -305,6 +307,7 @@ namespace AppPuzz.Gameplay
         {
             if (gridContainer != null && GridManager.Instance != null)
                 GridManager.Instance.gridContainer = gridContainer;
+            GridManager.Instance?.SetValidator(_validator);
             GridManager.Instance?.GenerateGrid();
             if (feedbackText != null) feedbackText.text = "Nuova griglia!";
         }

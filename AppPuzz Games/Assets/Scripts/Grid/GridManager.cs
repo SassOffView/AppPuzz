@@ -48,6 +48,9 @@ namespace AppPuzz.Grid
         /// <summary>Matrice 5×5 delle celle correnti.</summary>
         private LetterCell[,] _cells = new LetterCell[GRID_SIZE, GRID_SIZE];
 
+        /// <summary>Validator passato dall'esterno (GameManager / TrainingManager / ArenaManager).</summary>
+        private AppPuzz.Gameplay.WordValidator _validator;
+
         // ----------------------------------------------------------
         // Unity lifecycle
         // ----------------------------------------------------------
@@ -70,9 +73,19 @@ namespace AppPuzz.Grid
         // ----------------------------------------------------------
 
         /// <summary>
+        /// Imposta il WordValidator da usare per garantire i requisiti minimi.
+        /// Deve essere chiamato prima di GenerateGrid().
+        /// </summary>
+        public void SetValidator(AppPuzz.Gameplay.WordValidator validator)
+        {
+            _validator = validator;
+        }
+
+        /// <summary>
         /// Genera (o rigenera) l'intera griglia 5×5.
-        /// Distrugge le celle precedenti e ne crea di nuove con lettere casuali
-        /// distribuite in base alla lingua corrente.
+        /// Usa GridBuilder per garantire almeno:
+        ///   1 parola da 9 lettere, 4 da 8, 6 da 7.
+        /// Richiede che SetValidator() sia stato chiamato con dizionari caricati.
         /// </summary>
         public void GenerateGrid()
         {
@@ -80,33 +93,31 @@ namespace AppPuzz.Grid
             foreach (Transform child in gridContainer)
                 Destroy(child.gameObject);
 
-            // 2. Scegli la distribuzione di lettere in base alla lingua corrente
+            // 2. Distribuzione lettere per lingua
             var weights = (LanguageManager.Instance?.CurrentLanguage == Language.English)
                 ? WeightedRandom.EnglishWeights
                 : WeightedRandom.ItalianWeights;
 
-            // 3. Istanzia ogni cella e inizializzala
+            // 3. GridBuilder genera char[,] con requisiti garantiti
+            char[,] letters = GridBuilder.Build(weights, _validator);
+
+            // 4. Istanzia celle con le lettere calcolate
             for (int r = 0; r < GRID_SIZE; r++)
             {
                 for (int c = 0; c < GRID_SIZE; c++)
                 {
-                    GameObject obj = Instantiate(letterCellPrefab, gridContainer);
+                    GameObject obj  = Instantiate(letterCellPrefab, gridContainer);
                     LetterCell cell = obj.GetComponent<LetterCell>();
-
-                    char letter = WeightedRandom.GetLetter(weights);
-                    cell.Initialize(letter, r, c);
-
+                    cell.Initialize(letters[r, c], r, c);
                     _cells[r, c] = cell;
                 }
             }
 
-            // Forza il GridLayoutGroup a ricalcolare le posizioni subito.
-            // Senza questo le celle rimangono ad anchoredPos=(0,0) finche
-            // il Canvas non esegue il suo prossimo layout pass.
+            // 5. Forza ricalcolo layout
             if (gridContainer is RectTransform gridRt)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
 
-            Debug.Log("[GridManager] Griglia 5×5 generata.");
+            Debug.Log("[GridManager] Griglia 5×5 generata con requisiti minimi garantiti.");
         }
 
         /// <summary>

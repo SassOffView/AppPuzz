@@ -132,6 +132,7 @@ namespace AppPuzz.Gameplay
 
             if (gridContainer != null && GridManager.Instance != null)
                 GridManager.Instance.gridContainer = gridContainer;
+            GridManager.Instance?.SetValidator(_validator);
             GridManager.Instance?.GenerateGrid();
 
             if (resultsOverlay != null) resultsOverlay.SetActive(false);

@@ -217,6 +217,9 @@ namespace AppPuzz.Gameplay
             if (LanguageManager.Instance != null)
                 _wordValidator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
 
+            // Passa validator a GridManager (per requisiti minimi garantiti)
+            gridManager?.SetValidator(_wordValidator);
+
             // Genera la griglia
             if (gridManager != null)
                 gridManager.GenerateGrid();

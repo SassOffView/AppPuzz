@@ -10,7 +10,7 @@ namespace AppPuzz.Gameplay
 {
     public static class GridSolver
     {
-        private const int MAX_WORD_LENGTH = 8;
+        private const int MAX_WORD_LENGTH = 9;  // supporta parole fino a 9 lettere
 
         /// <summary>
         /// Restituisce tutte le parole valide trovabili nella griglia corrente,

@@ -42,6 +42,9 @@ namespace AppPuzz.Gameplay
         /// <summary>Dizionario fantasy condiviso IT+EN.</summary>
         private HashSet<string> _fantasyWords  = new HashSet<string>();
 
+        /// <summary>Indice per lunghezza — accesso rapido per GridBuilder.</summary>
+        private readonly Dictionary<int, List<string>> _byLength = new Dictionary<int, List<string>>();
+
         // ----------------------------------------------------------
         // API pubblica
         // ----------------------------------------------------------
@@ -59,6 +62,16 @@ namespace AppPuzz.Gameplay
         }
 
         /// <summary>
+        /// Tutte le parole standard di esattamente <paramref name="len"/> lettere.
+        /// Usato da GridBuilder per l'embedding di parole lunghe.
+        /// </summary>
+        public IReadOnlyList<string> GetWordsOfLength(int len) =>
+            _byLength.TryGetValue(len, out var list) ? list : System.Array.Empty<string>();
+
+        /// <summary>True se i dizionari sono stati caricati.</summary>
+        public bool IsLoaded => _standardWords.Count > 0;
+
+        /// <summary>
         /// Carica i dizionari JSON da Assets/Resources/Dictionaries/.
         /// Da chiamare all'avvio tramite GameManager.StartGame().
         /// </summary>
@@ -67,9 +80,19 @@ namespace AppPuzz.Gameplay
         {
             _standardWords.Clear();
             _fantasyWords.Clear();
+            _byLength.Clear();
 
             LoadInto($"Dictionaries/{standardFileName}", _standardWords);
             LoadInto("Dictionaries/fantasy_shared", _fantasyWords);
+
+            // Costruisce indice per lunghezza (solo parole standard)
+            foreach (string w in _standardWords)
+            {
+                int len = w.Length;
+                if (!_byLength.ContainsKey(len)) _byLength[len] = new List<string>();
+                _byLength[len].Add(w);
+            }
+            Debug.Log($"[WordValidator] Indice costruito per {_byLength.Count} lunghezze diverse.");
         }
 
         // ----------------------------------------------------------
