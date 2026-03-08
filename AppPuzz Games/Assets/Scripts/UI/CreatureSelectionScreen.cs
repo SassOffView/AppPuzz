@@ -184,6 +184,9 @@ namespace AppPuzz.UI
                 SetSlider(enduranceBars,  i, d.enduranceStat / 10f);
                 if (cardBorders != null && i < cardBorders.Length && cardBorders[i] != null)
                     cardBorders[i].color = d.typeColor;
+                // Carica sprite creatura da Resources/Creatures/ (se presente)
+                if (creatureImages != null && i < creatureImages.Length && creatureImages[i] != null)
+                    CreatureSpriteLoader.Apply(creatureImages[i], i);
             }
         }
 

@@ -45,6 +45,9 @@ namespace AppPuzz.Gameplay
         /// <summary>Stato corrente del flusso di gioco.</summary>
         public GameState CurrentState { get; private set; } = GameState.Idle;
 
+        /// <summary>Fires when the player submits an invalid word.</summary>
+        public static event System.Action OnWordInvalid;
+
         // ----------------------------------------------------------
         // Configurazione
         // ----------------------------------------------------------
@@ -242,6 +245,7 @@ namespace AppPuzz.Gameplay
             else
             {
                 energyManager?.ResetStreak();
+                OnWordInvalid?.Invoke();
                 Debug.Log($"[GameManager] Parola '{word}' non valida.");
             }
         }

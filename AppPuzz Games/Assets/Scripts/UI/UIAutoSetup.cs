@@ -66,6 +66,11 @@ namespace AppPuzz.UI
                 var go = new GameObject("AppNavigator");
                 go.AddComponent<AppNavigator>();
             }
+            if (AppPuzz.Audio.AudioManager.Instance == null)
+            {
+                var go = new GameObject("AudioManager");
+                go.AddComponent<AppPuzz.Audio.AudioManager>();
+            }
         }
 
         // -------------------------------------------------------
@@ -231,6 +236,7 @@ namespace AppPuzz.UI
             tmp.color = textColor; tmp.alignment = TextAlignmentOptions.Center;
             tmp.fontStyle = FontStyles.Bold;
 
+            btn.onClick.AddListener(AppPuzz.Audio.AudioManager.PlayClick);
             return btn;
         }
 
@@ -645,7 +651,9 @@ namespace AppPuzz.UI
             var sRt = shadow.AddComponent<RectTransform>();
             sRt.anchorMin = Vector2.zero; sRt.anchorMax = Vector2.one;
             sRt.offsetMin = new Vector2(0, -6); sRt.offsetMax = new Vector2(0, -2);
-            shadow.AddComponent<Image>().color = shadowColor;
+            var shImg = shadow.AddComponent<Image>();
+            shImg.color = shadowColor;
+            RoundedRectHelper.Apply(shImg, UITheme.Layout.CornerRadius);
 
             // Top layer (bottone vero)
             var top = new GameObject("Top");
@@ -655,6 +663,7 @@ namespace AppPuzz.UI
             tRt.offsetMin = new Vector2(0, 2); tRt.offsetMax = new Vector2(0, 4);
             var topImg = top.AddComponent<Image>();
             topImg.color = topColor;
+            RoundedRectHelper.Apply(topImg, UITheme.Layout.CornerRadius);
             var btn = top.AddComponent<Button>();
             var cb = btn.colors;
             cb.normalColor      = topColor;
@@ -675,6 +684,7 @@ namespace AppPuzz.UI
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
 
+            btn.onClick.AddListener(AppPuzz.Audio.AudioManager.PlayClick);
             return btn;
         }
 
@@ -691,14 +701,18 @@ namespace AppPuzz.UI
             var oRt = outer.AddComponent<RectTransform>();
             oRt.anchorMin = anchorMin; oRt.anchorMax = anchorMax;
             oRt.offsetMin = oRt.offsetMax = Vector2.zero;
-            outer.AddComponent<Image>().color = borderColor;
+            var outerImg = outer.AddComponent<Image>();
+            outerImg.color = borderColor;
+            RoundedRectHelper.Apply(outerImg, UITheme.Layout.CornerRadius);
 
             var inner = new GameObject("Inner");
             inner.transform.SetParent(outer.transform, false);
             var iRt = inner.AddComponent<RectTransform>();
             iRt.anchorMin = Vector2.zero; iRt.anchorMax = Vector2.one;
             iRt.offsetMin = new Vector2(4, 4); iRt.offsetMax = new Vector2(-4, -4);
-            inner.AddComponent<Image>().color = innerColor;
+            var innerImg = inner.AddComponent<Image>();
+            innerImg.color = innerColor;
+            RoundedRectHelper.Apply(innerImg, UITheme.Layout.CornerRadius - 2f);
 
             return inner; // restituisce l'inner su cui mettere i figli
         }
@@ -716,7 +730,9 @@ namespace AppPuzz.UI
             var rt = chip.AddComponent<RectTransform>();
             rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
             rt.offsetMin = rt.offsetMax = Vector2.zero;
-            chip.AddComponent<Image>().color = chipColor;
+            var chipImg = chip.AddComponent<Image>();
+            chipImg.color = chipColor;
+            RoundedRectHelper.Apply(chipImg, 8f);
 
             // Icona
             var iconGo = new GameObject("Icon");

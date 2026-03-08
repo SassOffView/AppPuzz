@@ -150,6 +150,8 @@ namespace AppPuzz.UI
             if (creatureNameText != null) creatureNameText.text = CREATURE_NAMES[creatureIdx];
             if (creatureTypeText != null) creatureTypeText.text = CREATURE_TYPE_LABELS[creatureIdx];
             if (creatureTypeBadge != null) creatureTypeBadge.color = TYPE_COLORS[creatureIdx];
+            // Carica sprite da Resources/Creatures/ (se disponibile)
+            CreatureSpriteLoader.Apply(creatureImage, creatureIdx);
 
             // ---- Statistiche ----
             if (bestScoreText   != null) bestScoreText.text    = $"Record: {p.BestScore:F0}";
