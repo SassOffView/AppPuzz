@@ -47,6 +47,26 @@ namespace AppPuzz.UI
         }
 
         // -------------------------------------------------------
+        // Start — dopo Awake di tutti gli oggetti nella scena
+        // -------------------------------------------------------
+        private void Start()
+        {
+            // WordSelector DEVE stare a livello radice della scena (non figlio di un pannello).
+            // I pannelli vengono disattivati dallo ScreenManager → WordSelector si bloccherebbe.
+            var ws = FindFirstObjectByType<AppPuzz.Gameplay.WordSelector>(FindObjectsInactive.Include);
+            if (ws == null)
+            {
+                var go = new GameObject("WordSelector");
+                go.AddComponent<AppPuzz.Gameplay.WordSelector>();
+            }
+            else if (ws.transform.parent != null)
+            {
+                // Sposta fuori dal pannello: SetParent(null) = radice scena
+                ws.transform.SetParent(null, true);
+            }
+        }
+
+        // -------------------------------------------------------
         // Manager globali (PlayerProfile, AppNavigator, ScreenManager)
         // -------------------------------------------------------
         private void EnsureManagers()

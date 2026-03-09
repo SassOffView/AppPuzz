@@ -168,17 +168,21 @@ namespace AppPuzz.Grid
             {
                 var lt = new GameObject("LetterText");
                 lt.transform.SetParent(transform, false);
-                var ltRt       = lt.AddComponent<RectTransform>();
-                ltRt.anchorMin = Vector2.zero;
-                ltRt.anchorMax = Vector2.one;
-                ltRt.offsetMin = ltRt.offsetMax = Vector2.zero;
                 letterText = lt.AddComponent<TextMeshProUGUI>();
             }
-            letterText.color         = UITheme.Colors.StoneText;
-            letterText.fontStyle     = FontStyles.Bold;
-            letterText.fontSize      = 72;
-            letterText.alignment     = TextAlignmentOptions.Center;
-            letterText.raycastTarget = false;
+            // Forza SEMPRE il RectTransform corretto (fill tile)
+            // — necessario se il prefab aveva ancoraggi diversi
+            var lrt = letterText.GetComponent<RectTransform>();
+            lrt.anchorMin = Vector2.zero;
+            lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = lrt.offsetMax = Vector2.zero;
+            letterText.color            = UITheme.Colors.StoneText;
+            letterText.fontStyle        = FontStyles.Bold;
+            letterText.enableAutoSizing = true;
+            letterText.fontSizeMin      = 16f;
+            letterText.fontSizeMax      = 80f;
+            letterText.alignment        = TextAlignmentOptions.Center;
+            letterText.raycastTarget    = false;
 
             // ── Overlay ghiaccio ───────────────────────────────────
             _freezeOverlay = EnsureImage("FreezeOverlay", Vector2.zero, Vector2.one,
@@ -254,18 +258,21 @@ namespace AppPuzz.Grid
             {
                 var go = new GameObject(nodeName);
                 go.transform.SetParent(transform, false);
-                var rt       = go.AddComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = offset;
-                rt.offsetMax = offset;
                 tmp = go.AddComponent<TextMeshProUGUI>();
             }
-            tmp.color          = color;
-            tmp.fontStyle      = bold ? FontStyles.Bold : FontStyles.Normal;
-            tmp.fontSize       = fontSize;
-            tmp.alignment      = TextAlignmentOptions.Center;
-            tmp.raycastTarget  = false;
+            // Sempre aggiorna il RectTransform per garantire ancoraggi corretti
+            var rt       = tmp.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = offset;
+            rt.offsetMax = offset;
+            tmp.color            = color;
+            tmp.fontStyle        = bold ? FontStyles.Bold : FontStyles.Normal;
+            tmp.enableAutoSizing = true;
+            tmp.fontSizeMin      = 14f;
+            tmp.fontSizeMax      = fontSize;   // fontSize = limite massimo
+            tmp.alignment        = TextAlignmentOptions.Center;
+            tmp.raycastTarget    = false;
             if (siblingAtEnd) tmp.transform.SetAsLastSibling();
             return tmp;
         }
