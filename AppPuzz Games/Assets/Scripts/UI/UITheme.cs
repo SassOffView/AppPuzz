@@ -15,19 +15,19 @@ namespace AppPuzz.UI
         public static class Colors
         {
             // ── Sfondi dark (gameplay / pannelli) ──────────────────
-            public static readonly Color BackgroundDeep  = HEX("#060E1C"); // quasi nero-blu
-            public static readonly Color BackgroundPanel = HEX("#0D1B3E"); // navy in-game
+            public static readonly Color BackgroundDeep  = HEX("#0A0F1E"); // quasi nero-blu (più caldo)
+            public static readonly Color BackgroundPanel = HEX("#141E33"); // navy-ardesia
             public static readonly Color BackgroundCard  = HEX("#1B2F5E"); // card navy
 
             // ── Sky blue (home / schermate principali) ─────────────
-            public static readonly Color SkyBlue        = HEX("#1BADE0"); // cielo WD
+            public static readonly Color SkyBlue        = HEX("#18B5E8"); // cielo luminoso
             public static readonly Color SkyBlueBright  = HEX("#4DD3F7"); // cielo chiaro
             public static readonly Color SkyBlueDark    = HEX("#0A7BA8"); // cielo scuro
             public static readonly Color TealDark       = HEX("#005F80"); // teal fondo
 
             // ── Tessere griglia (stile Word Domination) ────────────
             public static readonly Color TileNormal     = HEX("#FFFFFF"); // tile bianca
-            public static readonly Color TileBorder     = HEX("#E09010"); // bordo amber
+            public static readonly Color TileBorder     = HEX("#C88020"); // bordo ambra Ruzzle
             public static readonly Color TileBorderSel  = HEX("#FF8C00"); // bordo selezionato
             public static readonly Color TileSelected   = HEX("#FFD040"); // tile selezionata
             public static readonly Color TileText       = HEX("#12186A"); // lettera navy scura
@@ -50,9 +50,9 @@ namespace AppPuzz.UI
             public static readonly Color StoneDmg4     = HEX("#5A3428"); // danno grave
             public static readonly Color StoneDmg5     = HEX("#3C1E12"); // critico / pietra nera
 
-            // Crepa: ombra scura + highlight pietra fratturata
-            public static readonly Color CrackDark     = new Color(0.05f, 0.03f, 0.01f, 0.90f);
-            public static readonly Color CrackEdge     = new Color(0.85f, 0.76f, 0.60f, 0.40f);
+            // Crepa: ombra scura + highlight frattura (più visibili)
+            public static readonly Color CrackDark     = new Color(0.05f, 0.03f, 0.01f, 0.95f);
+            public static readonly Color CrackEdge     = new Color(0.85f, 0.76f, 0.60f, 0.55f);
 
             // ── Oro / Pokémon accent ───────────────────────────────
             public static readonly Color Gold           = HEX("#FFD700");
@@ -63,6 +63,11 @@ namespace AppPuzz.UI
             public static readonly Color TypeDragon     = HEX("#7B2FFF"); // viola drago
             public static readonly Color TypeWolf       = HEX("#2B8EFF"); // blu lupo
             public static readonly Color TypeSerpent    = HEX("#1EC87C"); // verde serpente
+
+            // ── Creature accent (dettagli procedurali) ───────────
+            public static readonly Color DragonAccent   = HEX("#B06FFF"); // viola chiaro
+            public static readonly Color WolfAccent     = HEX("#70B8FF"); // azzurro chiaro
+            public static readonly Color SerpentAccent  = HEX("#60E8A8"); // verde chiaro
 
             // ── Bottoni 3D (stile WD) ──────────────────────────────
             public static readonly Color BtnGreen       = HEX("#3CC244"); // verde gioca
@@ -144,24 +149,23 @@ namespace AppPuzz.UI
             public static readonly Color TileDamage4   = HEX("#FF9040");
             public static readonly Color TileDamage5   = HEX("#FF5018");
 
-            // ── Tile 2.5D — 5 tier di colore per valore lettera ───────────
-            // Stile: lastre di pietra (arenaria → ardesia → terracotta → basalto → ossidiana)
-            // Tier 1 (1pt) Arenaria | Tier 2 (2pt) Muschio | Tier 3 (3pt) Terracotta
-            // Tier 4 (4pt) Basalto  | Tier 5 (5pt) Ossidiana
-            public static readonly Color Tile1Face  = HEX("#9E8E7A"); // arenaria chiara
-            public static readonly Color Tile1Depth = HEX("#5A4A3A"); // arenaria scura
-            public static readonly Color Tile2Face  = HEX("#6A8C68"); // verde muschio pietra
-            public static readonly Color Tile2Depth = HEX("#344834"); // muschio scuro
-            public static readonly Color Tile3Face  = HEX("#B07850"); // terracotta cotta
-            public static readonly Color Tile3Depth = HEX("#6A3E22"); // terracotta bruciata
-            public static readonly Color Tile4Face  = HEX("#706880"); // ardesia bluastra
-            public static readonly Color Tile4Depth = HEX("#302840"); // ardesia scura
-            public static readonly Color Tile5Face  = HEX("#504848"); // basalto scuro
-            public static readonly Color Tile5Depth = HEX("#201818"); // basalto quasi nero
+            // ── Tile 2.5D — 5 tier di colore Ruzzle-style ────────────────
+            // Tier 1 (1pt) Blu calmo | Tier 2 (2pt) Verde fresco
+            // Tier 3 (3pt) Ambra dorato | Tier 4 (4pt) Rosso caldo | Tier 5 (5pt) Viola ricco
+            public static readonly Color Tile1Face  = HEX("#5B9BD5"); // blu calmo
+            public static readonly Color Tile1Depth = HEX("#2D5A8C"); // blu profondo
+            public static readonly Color Tile2Face  = HEX("#6BC76F"); // verde fresco
+            public static readonly Color Tile2Depth = HEX("#357A38"); // verde scuro
+            public static readonly Color Tile3Face  = HEX("#E8A838"); // ambra dorato
+            public static readonly Color Tile3Depth = HEX("#9A6810"); // ambra profondo
+            public static readonly Color Tile4Face  = HEX("#D85040"); // rosso caldo
+            public static readonly Color Tile4Depth = HEX("#802820"); // rosso profondo
+            public static readonly Color Tile5Face  = HEX("#9B6EC8"); // viola ricco
+            public static readonly Color Tile5Depth = HEX("#553880"); // viola profondo
 
-            // Selezione (oro universale per tutti i tier)
-            public static readonly Color TileSelFace  = HEX("#E8C010"); // oro brillante
-            public static readonly Color TileSelDepth = HEX("#8A6000"); // oro scuro
+            // Selezione (oro brillante Ruzzle-style)
+            public static readonly Color TileSelFace  = HEX("#FFD030"); // oro brillante
+            public static readonly Color TileSelDepth = HEX("#AA7800"); // oro profondo
 
             // Freeze 2.5D
             public static readonly Color TileFrozenFace  = HEX("#80D0F0"); // azzurro ghiaccio

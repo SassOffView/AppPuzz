@@ -82,7 +82,7 @@ namespace AppPuzz.Grid
         private Coroutine _shakeAnim;
 
         // Profondità 3D (pixel esposti sul lato basso e destro)
-        private const float DepthPx = 5f;
+        private const float DepthPx = 7f;
 
         // ----------------------------------------------------------
         // Definizione crepe (normalizzate rispetto al tile 0–1)
@@ -99,14 +99,14 @@ namespace AppPuzz.Grid
         }
 
         private static readonly CrackDef[] _cracks = {
-            new(0.38f, 0.67f, 0.018f, 0.22f, -26f, 1),
-            new(0.63f, 0.62f, 0.016f, 0.19f,  22f, 2),
-            new(0.30f, 0.40f, 0.013f, 0.15f, -54f, 3),
-            new(0.70f, 0.36f, 0.013f, 0.16f,  42f, 3),
-            new(0.50f, 0.50f, 0.012f, 0.12f,  88f, 4),
-            new(0.20f, 0.53f, 0.011f, 0.11f, -70f, 4),
-            new(0.78f, 0.50f, 0.012f, 0.13f,  63f, 5),
-            new(0.50f, 0.25f, 0.013f, 0.14f, -33f, 5),
+            new(0.38f, 0.67f, 0.026f, 0.24f, -26f, 1),
+            new(0.63f, 0.62f, 0.024f, 0.21f,  22f, 2),
+            new(0.30f, 0.40f, 0.020f, 0.17f, -54f, 3),
+            new(0.70f, 0.36f, 0.020f, 0.18f,  42f, 3),
+            new(0.50f, 0.50f, 0.018f, 0.14f,  88f, 4),
+            new(0.20f, 0.53f, 0.017f, 0.13f, -70f, 4),
+            new(0.78f, 0.50f, 0.018f, 0.15f,  63f, 5),
+            new(0.50f, 0.25f, 0.020f, 0.16f, -33f, 5),
         };
 
         // ----------------------------------------------------------
@@ -147,7 +147,6 @@ namespace AppPuzz.Grid
                                     UITheme.Colors.Tile1Face, raycast: false);
 
             // ── Top-edge highlight: striscia luminosa sul bordo superiore ────
-            // Simula la luce che colpisce il bordo alto della lastra di pietra
             {
                 DestroyChildByName("TopEdgeHighlight");
                 var goTe = new GameObject("TopEdgeHighlight");
@@ -156,11 +155,43 @@ namespace AppPuzz.Grid
                 rtTe.anchorMin = new Vector2(0f, 1f);
                 rtTe.anchorMax = new Vector2(1f, 1f);
                 rtTe.pivot     = new Vector2(0.5f, 1f);
-                rtTe.offsetMin = new Vector2(2f, -4f);
+                rtTe.offsetMin = new Vector2(2f, -5f);
                 rtTe.offsetMax = new Vector2(-2f, -1f);
                 var imgTe = goTe.AddComponent<Image>();
-                imgTe.color         = new Color(1f, 1f, 1f, 0.28f);
+                imgTe.color         = new Color(1f, 1f, 1f, 0.40f);
                 imgTe.raycastTarget = false;
+            }
+
+            // ── Left-edge highlight: striscia verticale sul bordo sinistro ────
+            {
+                DestroyChildByName("LeftEdgeHighlight");
+                var goLe = new GameObject("LeftEdgeHighlight");
+                goLe.transform.SetParent(_tileFace.transform, false);
+                var rtLe       = goLe.AddComponent<RectTransform>();
+                rtLe.anchorMin = new Vector2(0f, 0f);
+                rtLe.anchorMax = new Vector2(0f, 1f);
+                rtLe.pivot     = new Vector2(0f, 0.5f);
+                rtLe.offsetMin = new Vector2(1f, 2f);
+                rtLe.offsetMax = new Vector2(4f, -2f);
+                var imgLe = goLe.AddComponent<Image>();
+                imgLe.color         = new Color(1f, 1f, 1f, 0.15f);
+                imgLe.raycastTarget = false;
+            }
+
+            // ── Bottom-edge shadow: ombra interna sul bordo inferiore ────
+            {
+                DestroyChildByName("BottomEdgeShadow");
+                var goBot = new GameObject("BottomEdgeShadow");
+                goBot.transform.SetParent(_tileFace.transform, false);
+                var rtBot       = goBot.AddComponent<RectTransform>();
+                rtBot.anchorMin = new Vector2(0f, 0f);
+                rtBot.anchorMax = new Vector2(1f, 0f);
+                rtBot.pivot     = new Vector2(0.5f, 0f);
+                rtBot.offsetMin = new Vector2(2f, 1f);
+                rtBot.offsetMax = new Vector2(-2f, 4f);
+                var imgBot = goBot.AddComponent<Image>();
+                imgBot.color         = new Color(0f, 0f, 0f, 0.20f);
+                imgBot.raycastTarget = false;
             }
 
             // ── Drop shadow lettera — SEMPRE distrutto e ricreato da zero ────
@@ -174,11 +205,11 @@ namespace AppPuzz.Grid
                 rt.anchorMax = Vector2.one;
                 rt.offsetMin = new Vector2(2f, 2f);
                 rt.offsetMax = new Vector2(-2f, -2f);
-                // shadow: offset 1.5px basso/destra rispetto alla lettera principale
-                rt.offsetMin = new Vector2(1.5f, -1.5f);
-                rt.offsetMax = new Vector2(1.5f, -1.5f);
+                // shadow: offset 2px basso/destra rispetto alla lettera principale
+                rt.offsetMin = new Vector2(2f, -2f);
+                rt.offsetMax = new Vector2(2f, -2f);
                 _letterHighlight                   = go.AddComponent<TextMeshProUGUI>();
-                _letterHighlight.color             = new Color(0f, 0f, 0f, 0.40f);
+                _letterHighlight.color             = new Color(0f, 0f, 0f, 0.50f);
                 _letterHighlight.fontStyle         = FontStyles.Bold;
                 _letterHighlight.fontSize          = 72f;
                 _letterHighlight.enableAutoSizing  = false;
@@ -656,9 +687,9 @@ namespace AppPuzz.Grid
         // ----------------------------------------------------------
         private IEnumerator BounceCoroutine()
         {
-            // Keyframes: (secondi_dall_inizio, scala)
-            float[] times  = { 0f,    0.07f, 0.15f, 0.21f, 0.26f, 0.30f };
-            float[] scales = { 1.0f,  1.22f, 0.90f, 1.08f, 0.97f, 1.00f };
+            // Keyframes: spring snappy (più elastico e veloce)
+            float[] times  = { 0f,    0.06f, 0.13f, 0.19f, 0.24f, 0.28f };
+            float[] scales = { 1.0f,  1.25f, 0.88f, 1.10f, 0.96f, 1.00f };
 
             float elapsed = 0f;
             float total   = times[times.Length - 1];

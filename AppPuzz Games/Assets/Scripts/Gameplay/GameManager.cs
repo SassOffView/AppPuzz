@@ -357,12 +357,12 @@ namespace AppPuzz.Gameplay
             float rx = Random.Range(0.2f, 0.8f);
             float ry = Random.Range(0.3f, 0.6f);
             rt.anchorMin = rt.anchorMax = new Vector2(rx, ry);
-            rt.sizeDelta = new Vector2(240, 80);
+            rt.sizeDelta = new Vector2(280, 90);
             var txt = go.AddComponent<TextMeshProUGUI>();
             txt.text      = $"+{xp:F0} pt";
-            txt.fontSize  = 56;
+            txt.fontSize  = 72;
             txt.fontStyle = FontStyles.Bold;
-            txt.color     = UITheme.Colors.Gold;
+            txt.color     = Color.white; // flash bianco iniziale
             txt.alignment = TextAlignmentOptions.Center;
             StartCoroutine(AnimateXPFloat(go, txt));
         }
@@ -370,14 +370,28 @@ namespace AppPuzz.Gameplay
         private static IEnumerator AnimateXPFloat(GameObject go, TextMeshProUGUI txt)
         {
             float elapsed = 0f, duration = 1.4f;
-            Vector2 startPos   = go.GetComponent<RectTransform>().anchoredPosition;
-            Color   startColor = txt.color;
+            var rt = go.GetComponent<RectTransform>();
+            Vector2 startPos   = rt.anchoredPosition;
+            Color   goldColor  = UITheme.Colors.Gold;
+
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float t = elapsed / duration;
-                go.GetComponent<RectTransform>().anchoredPosition = startPos + Vector2.up * (55f * t);
-                txt.color = new Color(startColor.r, startColor.g, startColor.b, 1f - t);
+
+                // Scale: 0.8 → 1.2 nei primi 0.3s, poi 1.0
+                float scaleT = Mathf.Clamp01(elapsed / 0.3f);
+                float scale = scaleT < 1f ? Mathf.Lerp(0.8f, 1.2f, scaleT) : 1f;
+                rt.localScale = Vector3.one * scale;
+
+                // Colore: bianco → oro nei primi 0.2s, poi fade out
+                float colorT = Mathf.Clamp01(elapsed / 0.2f);
+                Color c = Color.Lerp(Color.white, goldColor, colorT);
+                c.a = 1f - t;
+                txt.color = c;
+
+                // Posizione: drift verso l'alto
+                rt.anchoredPosition = startPos + Vector2.up * (65f * t);
                 yield return null;
             }
             Destroy(go);
@@ -393,6 +407,17 @@ namespace AppPuzz.Gameplay
             int seconds = Mathf.CeilToInt(Mathf.Max(_timeRemaining, 0f));
             timerText.text  = $"{seconds / 60:D2}:{seconds % 60:D2}";
             timerText.color = _timeRemaining <= 10f ? Color.red : Color.white;
+
+            // Pulsazione quando ≤ 10s (scale 1.0 → 1.05 → 1.0 ogni 0.5s)
+            if (_timeRemaining <= 10f && _timeRemaining > 0f)
+            {
+                float pulse = 1f + 0.05f * Mathf.Abs(Mathf.Sin(Time.time * Mathf.PI / 0.5f));
+                timerText.transform.localScale = Vector3.one * pulse;
+            }
+            else
+            {
+                timerText.transform.localScale = Vector3.one;
+            }
         }
     }
 }
