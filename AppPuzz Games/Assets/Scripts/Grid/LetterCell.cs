@@ -152,43 +152,50 @@ namespace AppPuzz.Grid
                                       new Vector2(4, 4), new Vector2(-4, -6),
                                       UITheme.Colors.StoneBase, raycast: false);
 
-            // ── Highlight incisione lettera (dietro il testo) ──────
-            //    Stesso testo ma leggermente più chiaro e offset (+1,-1)
-            //    per simulare il bordo luminoso del solco inciso
-            _letterHighlight = EnsureTMP("LetterHighlight",
-                offset: new Vector2(1.5f, -1.5f),
-                color: UITheme.Colors.StoneHighlight,
-                fontSize: 72,
-                bold: true,
-                siblingAtEnd: false);
-
-            // ── Testo lettera principale (inciso scuro) ────────────
-            // Crea il TMP in codice se il riferimento Inspector è perso
-            if (letterText == null)
+            // ── Highlight incisione lettera ────────────────────────
+            // Cerca o crea per NOME — ignora qualsiasi riferimento Inspector
+            _letterHighlight = FindOrCreateTMP("LetterHighlight");
             {
-                var lt = new GameObject("LetterText");
-                lt.transform.SetParent(transform, false);
-                letterText = lt.AddComponent<TextMeshProUGUI>();
+                var rt       = _letterHighlight.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = new Vector2(1.5f, -1.5f);
+                rt.offsetMax = new Vector2(1.5f, -1.5f);
+                _letterHighlight.color            = UITheme.Colors.StoneHighlight;
+                _letterHighlight.fontStyle        = FontStyles.Bold;
+                _letterHighlight.enableAutoSizing = true;
+                _letterHighlight.fontSizeMin      = 14f;
+                _letterHighlight.fontSizeMax      = 72f;
+                _letterHighlight.alignment        = TextAlignmentOptions.Center;
+                _letterHighlight.overflowMode     = TMPro.TextOverflowModes.Overflow;
+                _letterHighlight.raycastTarget    = false;
+                _letterHighlight.text             = "";
             }
-            // Forza SEMPRE il RectTransform corretto (fill tile)
-            // — necessario se il prefab aveva ancoraggi diversi
-            var lrt = letterText.GetComponent<RectTransform>();
-            lrt.anchorMin = Vector2.zero;
-            lrt.anchorMax = Vector2.one;
-            lrt.offsetMin = lrt.offsetMax = Vector2.zero;
-            letterText.color            = UITheme.Colors.StoneText;
-            letterText.fontStyle        = FontStyles.Bold;
-            letterText.enableAutoSizing = true;
-            letterText.fontSizeMin      = 16f;
-            letterText.fontSizeMax      = 80f;
-            letterText.alignment        = TextAlignmentOptions.Center;
-            letterText.raycastTarget    = false;
+
+            // ── Testo lettera principale ───────────────────────────
+            // Cerca o crea per NOME — ignora qualsiasi riferimento Inspector
+            // In questo modo il riferimento è sempre al figlio giusto
+            letterText = FindOrCreateTMP("LetterText");
+            {
+                var rt       = letterText.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = rt.offsetMax = Vector2.zero;
+                letterText.color            = UITheme.Colors.StoneText;
+                letterText.fontStyle        = FontStyles.Bold;
+                letterText.enableAutoSizing = true;
+                letterText.fontSizeMin      = 16f;
+                letterText.fontSizeMax      = 80f;
+                letterText.alignment        = TextAlignmentOptions.Center;
+                letterText.overflowMode     = TMPro.TextOverflowModes.Overflow;
+                letterText.raycastTarget    = false;
+                letterText.text             = "";
+            }
 
             // ── Overlay ghiaccio ───────────────────────────────────
             _freezeOverlay = EnsureImage("FreezeOverlay", Vector2.zero, Vector2.one,
                                           Vector2.zero, Vector2.zero,
                                           Color.clear, raycast: false);
-            _freezeOverlay.transform.SetAsLastSibling();
 
             // ── Valore punti (angolo basso-destra, inciso) ─────────
             _pointValueText = EnsureTMP("PointText",
@@ -204,9 +211,27 @@ namespace AppPuzz.Grid
                 rt.anchorMax = Vector2.one;
                 rt.offsetMin = new Vector2(0, 3);
                 rt.offsetMax = new Vector2(-5, -2);
-                _pointValueText.alignment    = TextAlignmentOptions.BottomRight;
+                _pointValueText.alignment     = TextAlignmentOptions.BottomRight;
                 _pointValueText.raycastTarget = false;
             }
+        }
+
+        // ── Helper: cerca figlio per nome, oppure lo crea ─────────
+        // Garantisce sempre un TMP figlio diretto di questa tile.
+        private TextMeshProUGUI FindOrCreateTMP(string nodeName)
+        {
+            var existing = transform.Find(nodeName);
+            if (existing != null)
+            {
+                var t = existing.GetComponent<TextMeshProUGUI>();
+                if (t != null) return t;
+                // Il figlio esiste ma non ha TMP (raro): aggiunge il componente
+                return existing.gameObject.AddComponent<TextMeshProUGUI>();
+            }
+            var go = new GameObject(nodeName);
+            go.transform.SetParent(transform, false);
+            go.AddComponent<RectTransform>();  // esplicito, sempre
+            return go.AddComponent<TextMeshProUGUI>();
         }
 
         // ── Helper: crea/riusa un nodo Image ──────────────────────
@@ -270,8 +295,9 @@ namespace AppPuzz.Grid
             tmp.fontStyle        = bold ? FontStyles.Bold : FontStyles.Normal;
             tmp.enableAutoSizing = true;
             tmp.fontSizeMin      = 14f;
-            tmp.fontSizeMax      = fontSize;   // fontSize = limite massimo
+            tmp.fontSizeMax      = fontSize;
             tmp.alignment        = TextAlignmentOptions.Center;
+            tmp.overflowMode     = TMPro.TextOverflowModes.Overflow;
             tmp.raycastTarget    = false;
             if (siblingAtEnd) tmp.transform.SetAsLastSibling();
             return tmp;
