@@ -89,6 +89,22 @@ namespace AppPuzz.Grid
         /// </summary>
         public void GenerateGrid()
         {
+            // 0. Calcola cellSize in base al contenitore per tile quadrate
+            var glg = gridContainer?.GetComponent<UnityEngine.UI.GridLayoutGroup>();
+            if (glg != null && gridContainer is RectTransform crt)
+            {
+                // Forza aggiornamento layout canvas prima di leggere le dimensioni
+                Canvas.ForceUpdateCanvases();
+                float availW = crt.rect.width  - glg.padding.left  - glg.padding.right  - glg.spacing.x * (GRID_SIZE - 1);
+                float availH = crt.rect.height - glg.padding.top   - glg.padding.bottom - glg.spacing.y * (GRID_SIZE - 1);
+                if (availW > 0 && availH > 0)
+                {
+                    float sz = Mathf.Min(availW / GRID_SIZE, availH / GRID_SIZE);
+                    sz = Mathf.Max(sz, 40f);
+                    glg.cellSize = new Vector2(sz, sz);
+                }
+            }
+
             // 1. Distruggi le celle esistenti nel contenitore
             foreach (Transform child in gridContainer)
                 Destroy(child.gameObject);

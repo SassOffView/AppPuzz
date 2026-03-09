@@ -1126,98 +1126,90 @@ namespace AppPuzz.UI
             var tm = panel.AddComponent<TrainingManager>();
             panel.GetComponent<Image>().color = UITheme.Colors.SkyBlueDark;
 
-            // Top bar strip
+            // Top bar strip (compatta)
             MakePanel(panel.transform, "TopBar",
                 UITheme.Colors.SkyBlue,
-                new Vector2(0, 0.90f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+                new Vector2(0, 0.94f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
 
             // Titolo
             MakeText(panel.transform, "TrainingTitle", "ALLENAMENTO",
-                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.90f), new Vector2(0.95f, 0.99f), Vector2.zero, Vector2.zero)
+                56, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.94f), new Vector2(0.95f, 1.00f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
-            // Timer (testo grande + barra sottile)
+            // Timer (testo + barra)
             tm.timerText = MakeText(panel.transform, "TimerText", "02:00",
-                80, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
-                new Vector2(0.15f, 0.83f), new Vector2(0.85f, 0.91f), Vector2.zero, Vector2.zero);
+                72, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.15f, 0.885f), new Vector2(0.85f, 0.940f), Vector2.zero, Vector2.zero);
             tm.timerText.fontStyle = FontStyles.Bold;
             tm.timerBar = MakeSlider(panel.transform, "TimerBar", UITheme.Colors.EnergyFull,
-                new Vector2(0.04f, 0.815f), new Vector2(0.96f, 0.832f), Vector2.zero, Vector2.zero);
+                new Vector2(0.04f, 0.870f), new Vector2(0.96f, 0.886f), Vector2.zero, Vector2.zero);
 
-            // Punteggio e parole
+            // Punteggio e parole (riga compatta)
             tm.scoreText = MakeText(panel.transform, "ScoreText", "Energia: 0",
-                38, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
-                new Vector2(0.03f, 0.77f), new Vector2(0.52f, 0.815f), Vector2.zero, Vector2.zero);
+                34, UITheme.Colors.TextPrimary, TextAlignmentOptions.Left,
+                new Vector2(0.03f, 0.838f), new Vector2(0.52f, 0.870f), Vector2.zero, Vector2.zero);
             tm.wordsFoundText = MakeText(panel.transform, "WordsFoundText", "Parole: 0",
-                38, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
-                new Vector2(0.52f, 0.77f), new Vector2(0.97f, 0.815f), Vector2.zero, Vector2.zero);
+                34, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                new Vector2(0.52f, 0.838f), new Vector2(0.97f, 0.870f), Vector2.zero, Vector2.zero);
 
-            // Feedback
-            tm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
-                36, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.738f), new Vector2(0.95f, 0.77f), Vector2.zero, Vector2.zero);
-
-            // Barra energia: label + "0 XP" e "MAX XP" alle estremità
-            MakeText(panel.transform, "EnergyBarLabel", "ENERGIA",
-                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.715f), new Vector2(0.5f, 0.738f), Vector2.zero, Vector2.zero);
-            MakeText(panel.transform, "EnergyMaxLabel", $"0 → {5000:N0} XP",
-                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
-                new Vector2(0.5f, 0.715f), new Vector2(0.96f, 0.738f), Vector2.zero, Vector2.zero);
+            // Barra energia
             tm.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.Gold,
-                new Vector2(0.04f, 0.695f), new Vector2(0.96f, 0.717f), Vector2.zero, Vector2.zero);
+                new Vector2(0.04f, 0.818f), new Vector2(0.96f, 0.838f), Vector2.zero, Vector2.zero);
 
-            // Parola corrente (sopra la griglia, font più grande)
+            // Parola corrente (sopra la griglia)
             tm.currentWordText = MakeText(panel.transform, "CurrentWordText", "",
-                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.647f), new Vector2(0.95f, 0.697f), Vector2.zero, Vector2.zero);
+                56, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.775f), new Vector2(0.95f, 0.818f), Vector2.zero, Vector2.zero);
             tm.currentWordText.fontStyle = FontStyles.Bold;
 
-            // Hint text
+            // Feedback + Hint text (riga unica compatta)
+            tm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
+                30, UITheme.Colors.TextSuccess, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.750f), new Vector2(0.72f, 0.775f), Vector2.zero, Vector2.zero);
             tm.hintText = MakeText(panel.transform, "HintText", "",
-                26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.625f), new Vector2(0.95f, 0.648f), Vector2.zero, Vector2.zero);
+                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                new Vector2(0.72f, 0.750f), new Vector2(0.97f, 0.775f), Vector2.zero, Vector2.zero);
 
-            // Cornice griglia (più grande) — bordo amber stile WD
+            // Cornice griglia estesa — quasi a bordo schermo
             {
                 var frameBg = new GameObject("GridFrame");
                 frameBg.transform.SetParent(panel.transform, false);
                 var frt = frameBg.AddComponent<RectTransform>();
-                frt.anchorMin = new Vector2(0.00f, 0.09f);
-                frt.anchorMax = new Vector2(1.00f, 0.625f);
+                frt.anchorMin = new Vector2(0.00f, 0.060f);
+                frt.anchorMax = new Vector2(1.00f, 0.748f);
                 frt.offsetMin = frt.offsetMax = Vector2.zero;
                 var fImg = frameBg.AddComponent<Image>();
                 fImg.color = UITheme.Colors.TileBorder;
             }
 
-            // Grid area (grande — stessa dimensione del gameplay)
+            // Grid area estesa
             {
                 var gridArea = new GameObject("GridArea");
                 gridArea.transform.SetParent(panel.transform, false);
                 var rt = gridArea.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0.02f, 0.10f);
-                rt.anchorMax = new Vector2(0.98f, 0.618f);
+                rt.anchorMin = new Vector2(0.01f, 0.065f);
+                rt.anchorMax = new Vector2(0.99f, 0.742f);
                 rt.offsetMin = rt.offsetMax = Vector2.zero;
                 var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
                 glg.childAlignment  = TextAnchor.MiddleCenter;
                 glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
                 glg.constraintCount = 5;
-                glg.spacing         = new Vector2(10, 10);
-                glg.padding         = new RectOffset(8, 8, 8, 8);
+                glg.spacing         = new Vector2(8, 8);
+                glg.padding         = new RectOffset(6, 6, 6, 6);
                 tm.gridContainer    = gridArea.transform;
             }
 
-            // Pulsanti inferiori
+            // Pulsanti compatti in basso
             tm.hintButton = MakeButton(panel.transform, "HintButton", "Suggerimento",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 28,
-                new Vector2(0.03f, 0.05f), new Vector2(0.46f, 0.09f), Vector2.zero, Vector2.zero);
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 26,
+                new Vector2(0.03f, 0.032f), new Vector2(0.46f, 0.060f), Vector2.zero, Vector2.zero);
             tm.newGridButton = MakeButton(panel.transform, "NewGridButton", "Nuova Griglia",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 28,
-                new Vector2(0.54f, 0.05f), new Vector2(0.97f, 0.09f), Vector2.zero, Vector2.zero);
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 26,
+                new Vector2(0.54f, 0.032f), new Vector2(0.97f, 0.060f), Vector2.zero, Vector2.zero);
             tm.exitButton = MakeButton(panel.transform, "ExitButton", "ESCI",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 30,
-                new Vector2(0.25f, 0.005f), new Vector2(0.75f, 0.05f), Vector2.zero, Vector2.zero);
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 28,
+                new Vector2(0.30f, 0.004f), new Vector2(0.70f, 0.032f), Vector2.zero, Vector2.zero);
 
             // Overlay fine sessione con ScrollRect — stile popup WD viola
             {
@@ -1275,87 +1267,88 @@ namespace AppPuzz.UI
             var am = panel.AddComponent<ArenaManager>();
             panel.GetComponent<Image>().color = UITheme.Colors.SkyBlueDark;
 
-            // Top bar strip
+            // Top bar strip (compatta)
             MakePanel(panel.transform, "TopBar",
                 UITheme.Colors.SkyBlue,
-                new Vector2(0, 0.93f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+                new Vector2(0, 0.94f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
 
             MakeText(panel.transform, "ArenaTitle", "ARENA",
-                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.93f), new Vector2(0.95f, 1.00f), Vector2.zero, Vector2.zero)
+                56, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.94f), new Vector2(0.95f, 1.00f), Vector2.zero, Vector2.zero)
                 .fontStyle = FontStyles.Bold;
 
-            // Rank + Timer compatti
+            // Rank (sinistra) + Timer (destra) su stessa riga
             am.rankText = MakeText(panel.transform, "RankText", "Rango: Bronzo",
-                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.88f), new Vector2(0.5f, 0.93f), Vector2.zero, Vector2.zero);
+                26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.890f), new Vector2(0.50f, 0.940f), Vector2.zero, Vector2.zero);
 
             am.timerText = MakeText(panel.transform, "TimerText", "01:30",
-                68, UITheme.Colors.TextPrimary, TextAlignmentOptions.Right,
-                new Vector2(0.5f, 0.87f), new Vector2(0.96f, 0.94f), Vector2.zero, Vector2.zero);
+                60, UITheme.Colors.TextPrimary, TextAlignmentOptions.Right,
+                new Vector2(0.50f, 0.885f), new Vector2(0.96f, 0.940f), Vector2.zero, Vector2.zero);
             am.timerText.fontStyle = FontStyles.Bold;
 
             am.timerBar = MakeSlider(panel.transform, "TimerBar", UITheme.Colors.EnergyFull,
-                new Vector2(0.04f, 0.855f), new Vector2(0.96f, 0.872f), Vector2.zero, Vector2.zero);
+                new Vector2(0.04f, 0.870f), new Vector2(0.96f, 0.886f), Vector2.zero, Vector2.zero);
             am.timerBarFill = am.timerBar.fillRect?.GetComponent<Image>();
 
-            // Score + streak
+            // Score (sinistra) + Streak (destra)
             am.scoreText = MakeText(panel.transform, "ScoreText", "0",
-                52, UITheme.Colors.Gold, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.810f), new Vector2(0.55f, 0.855f), Vector2.zero, Vector2.zero);
+                46, UITheme.Colors.Gold, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.832f), new Vector2(0.55f, 0.870f), Vector2.zero, Vector2.zero);
             am.scoreText.fontStyle = FontStyles.Bold;
 
             am.streakText = MakeText(panel.transform, "StreakText", "Streak x0",
-                30, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
-                new Vector2(0.55f, 0.810f), new Vector2(0.96f, 0.855f), Vector2.zero, Vector2.zero);
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                new Vector2(0.55f, 0.832f), new Vector2(0.96f, 0.870f), Vector2.zero, Vector2.zero);
 
+            // Obiettivo + barra energia
             am.objectiveText = MakeText(panel.transform, "ObjectiveText", "Obiettivo: 1500",
-                26, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
-                new Vector2(0.04f, 0.783f), new Vector2(0.96f, 0.810f), Vector2.zero, Vector2.zero);
+                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.808f), new Vector2(0.96f, 0.832f), Vector2.zero, Vector2.zero);
 
             am.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.Gold,
-                new Vector2(0.04f, 0.762f), new Vector2(0.96f, 0.783f), Vector2.zero, Vector2.zero);
+                new Vector2(0.04f, 0.789f), new Vector2(0.96f, 0.808f), Vector2.zero, Vector2.zero);
 
-            // Avversario compatto
+            // Avversario
             am.opponentNameText = MakeText(panel.transform, "OpponentName", "Lupo Grigio",
-                32, UITheme.Colors.TextDanger, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.730f), new Vector2(0.96f, 0.762f), Vector2.zero, Vector2.zero);
+                28, UITheme.Colors.TextDanger, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.761f), new Vector2(0.96f, 0.789f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar = MakeSlider(panel.transform, "OpponentHP", UITheme.Colors.TextDanger,
-                new Vector2(0.04f, 0.710f), new Vector2(0.96f, 0.730f), Vector2.zero, Vector2.zero);
+                new Vector2(0.04f, 0.743f), new Vector2(0.96f, 0.761f), Vector2.zero, Vector2.zero);
             am.opponentHealthBar.value = 1f;
 
             // Parola corrente sopra la griglia
             am.currentWordText = MakeText(panel.transform, "CurrentWordText", "",
-                60, UITheme.Colors.Gold, TextAlignmentOptions.Center,
-                new Vector2(0.05f, 0.662f), new Vector2(0.95f, 0.710f), Vector2.zero, Vector2.zero);
+                54, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.700f), new Vector2(0.95f, 0.743f), Vector2.zero, Vector2.zero);
             am.currentWordText.fontStyle = FontStyles.Bold;
 
-            // Cornice griglia (stessa dimensione di Training) — bordo amber WD
+            // Cornice griglia estesa — quasi a bordo schermo
             {
                 var gridFrame = new GameObject("GridFrame");
                 gridFrame.transform.SetParent(panel.transform, false);
                 var frt = gridFrame.AddComponent<RectTransform>();
-                frt.anchorMin = new Vector2(0.00f, 0.09f);
-                frt.anchorMax = new Vector2(1.00f, 0.662f);
+                frt.anchorMin = new Vector2(0.00f, 0.060f);
+                frt.anchorMax = new Vector2(1.00f, 0.698f);
                 frt.offsetMin = frt.offsetMax = Vector2.zero;
                 var fImg = gridFrame.AddComponent<Image>();
                 fImg.color = UITheme.Colors.TileBorder;
             }
 
-            // Grid area — stessa dimensione di Training
+            // Grid area estesa
             {
                 var gridArea = new GameObject("GridArea");
                 gridArea.transform.SetParent(panel.transform, false);
                 var rt = gridArea.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(0.02f, 0.10f);
-                rt.anchorMax = new Vector2(0.98f, 0.655f);
+                rt.anchorMin = new Vector2(0.01f, 0.065f);
+                rt.anchorMax = new Vector2(0.99f, 0.692f);
                 rt.offsetMin = rt.offsetMax = Vector2.zero;
                 var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
                 glg.childAlignment  = TextAnchor.MiddleCenter;
                 glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
                 glg.constraintCount = 5;
-                glg.spacing         = new Vector2(10, 10);
-                glg.padding         = new RectOffset(8, 8, 8, 8);
+                glg.spacing         = new Vector2(8, 8);
+                glg.padding         = new RectOffset(6, 6, 6, 6);
                 am.gridContainer    = gridArea.transform;
             }
 
@@ -1407,10 +1400,10 @@ namespace AppPuzz.UI
 
             resultsOverlay.SetActive(false);
 
-            // Bottone "CONCLUDI BATTAGLIA"
-            am.quitButton = MakeButton(panel.transform, "QuitButton", "CONCLUDI BATTAGLIA",
-                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 28,
-                new Vector2(0.05f, 0.005f), new Vector2(0.95f, 0.09f), Vector2.zero, Vector2.zero);
+            // Bottone "CONCLUDI BATTAGLIA" (compatto in basso)
+            am.quitButton = MakeButton(panel.transform, "QuitButton", "CONCLUDI",
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 26,
+                new Vector2(0.20f, 0.004f), new Vector2(0.80f, 0.060f), Vector2.zero, Vector2.zero);
 
             // Popup conferma uscita — stile WD viola
             var quitPopup = MakePanel(panel.transform, "QuitPopup",

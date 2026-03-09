@@ -144,7 +144,7 @@ namespace AppPuzz.Grid
 
             // ── Ombra sottostante (profondità) ─────────────────────
             EnsureImage("TileShadow", Vector2.zero, Vector2.one,
-                        new Vector2(2, -4), new Vector2(-2, -2),
+                        new Vector2(2, 0), new Vector2(-2, -2),
                         UITheme.Colors.StoneShadow, raycast: false, siblingIndex: 0);
 
             // ── Superficie pietra ──────────────────────────────────
@@ -163,14 +163,22 @@ namespace AppPuzz.Grid
                 siblingAtEnd: false);
 
             // ── Testo lettera principale (inciso scuro) ────────────
-            if (letterText != null)
+            // Crea il TMP in codice se il riferimento Inspector è perso
+            if (letterText == null)
             {
-                letterText.transform.SetAsLastSibling();
-                letterText.color     = UITheme.Colors.StoneText;
-                letterText.fontStyle = FontStyles.Bold;
-                letterText.fontSize  = 72;
-                letterText.alignment = TextAlignmentOptions.Center;
+                var lt = new GameObject("LetterText");
+                lt.transform.SetParent(transform, false);
+                var ltRt       = lt.AddComponent<RectTransform>();
+                ltRt.anchorMin = Vector2.zero;
+                ltRt.anchorMax = Vector2.one;
+                ltRt.offsetMin = ltRt.offsetMax = Vector2.zero;
+                letterText = lt.AddComponent<TextMeshProUGUI>();
             }
+            letterText.color         = UITheme.Colors.StoneText;
+            letterText.fontStyle     = FontStyles.Bold;
+            letterText.fontSize      = 72;
+            letterText.alignment     = TextAlignmentOptions.Center;
+            letterText.raycastTarget = false;
 
             // ── Overlay ghiaccio ───────────────────────────────────
             _freezeOverlay = EnsureImage("FreezeOverlay", Vector2.zero, Vector2.one,
@@ -341,29 +349,27 @@ namespace AppPuzz.Grid
         }
 
         // ── Ordina i figli: ombre → superficie → crepe → lettere → overlay ──
+        // Usa SetAsLastSibling() in ordine crescente per Z affidabile.
         private void OrderChildrenZ()
         {
-            SetSiblingOrder("TileShadow", 0);
-            SetSiblingOrder("TileInner",  1);
-            // crepe: 2...(2+n*2-1)
+            var order = new System.Collections.Generic.List<Transform>();
+            void AddNamed(string n) { var t = transform.Find(n); if (t != null) order.Add(t); }
+
+            AddNamed("TileShadow");
+            AddNamed("TileInner");
             for (int i = 0; i < _cracks.Length; i++)
             {
-                if (_crackDark != null && _crackDark[i] != null)
-                    _crackDark[i].transform.SetSiblingIndex(2 + i * 2);
-                if (_crackEdge != null && _crackEdge[i] != null)
-                    _crackEdge[i].transform.SetSiblingIndex(2 + i * 2 + 1);
+                if (_crackDark?[i] != null) order.Add(_crackDark[i].transform);
+                if (_crackEdge?[i] != null) order.Add(_crackEdge[i].transform);
             }
-            int afterCracks = 2 + _cracks.Length * 2;
-            SetSiblingOrder("LetterHighlight", afterCracks);
-            if (letterText != null) letterText.transform.SetSiblingIndex(afterCracks + 1);
-            SetSiblingOrder("FreezeOverlay",   afterCracks + 2);
-            SetSiblingOrder("PointText",        afterCracks + 3);
-        }
+            AddNamed("LetterHighlight");
+            if (letterText != null) order.Add(letterText.transform);
+            AddNamed("FreezeOverlay");
+            AddNamed("PointText");
 
-        private void SetSiblingOrder(string childName, int index)
-        {
-            var t = transform.Find(childName);
-            if (t != null) t.SetSiblingIndex(index);
+            // SetAsLastSibling in order = item[0] ends at lowest Z, item[last] at highest Z
+            foreach (var t in order)
+                t.SetAsLastSibling();
         }
 
         // ----------------------------------------------------------
