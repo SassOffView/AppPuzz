@@ -313,12 +313,15 @@ namespace AppPuzz.Gameplay
         {
             if (cells == null || cells.Count == 0) yield break;
 
-            // Flash rosso simultaneo su tutte le celle
+            // Flash rosso + shake simultaneo su tutte le celle
             var flashes = new List<Coroutine>();
             foreach (var cell in cells)
             {
                 if (cell != null)
+                {
                     flashes.Add(StartCoroutine(cell.FlashWrong(0.14f)));
+                    cell.ShakeWrong();
+                }
             }
             foreach (var f in flashes) yield return f;
 

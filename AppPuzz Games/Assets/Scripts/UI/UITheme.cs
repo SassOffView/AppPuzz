@@ -144,6 +144,28 @@ namespace AppPuzz.UI
             public static readonly Color TileDamage4   = HEX("#FF9040");
             public static readonly Color TileDamage5   = HEX("#FF5018");
 
+            // ── Tile 2.5D — 5 tier di colore per valore lettera ───────────
+            // Tier 1 (1pt) Blu  | Tier 2 (2pt) Verde | Tier 3 (3pt) Ambra
+            // Tier 4 (4pt) Rosso | Tier 5 (5pt) Viola
+            public static readonly Color Tile1Face  = HEX("#4A7FD4"); // blu cobalto
+            public static readonly Color Tile1Depth = HEX("#1E3F70"); // blu scuro
+            public static readonly Color Tile2Face  = HEX("#3DAA72"); // verde smeraldo
+            public static readonly Color Tile2Depth = HEX("#1A5A3A"); // verde scuro
+            public static readonly Color Tile3Face  = HEX("#D47C1A"); // ambra
+            public static readonly Color Tile3Depth = HEX("#7A3E00"); // ambra scura
+            public static readonly Color Tile4Face  = HEX("#C83232"); // rosso cremisi
+            public static readonly Color Tile4Depth = HEX("#6E0E0E"); // rosso scuro
+            public static readonly Color Tile5Face  = HEX("#8A3EC0"); // viola
+            public static readonly Color Tile5Depth = HEX("#3A1A6A"); // viola scuro
+
+            // Selezione (oro universale per tutti i tier)
+            public static readonly Color TileSelFace  = HEX("#E8C010"); // oro brillante
+            public static readonly Color TileSelDepth = HEX("#8A6000"); // oro scuro
+
+            // Freeze 2.5D
+            public static readonly Color TileFrozenFace  = HEX("#80D0F0"); // azzurro ghiaccio
+            public static readonly Color TileFrozenDepth = HEX("#3080A8"); // azzurro scuro
+
             // ── Ghiaccio (freeze) ──────────────────────────────────
             public static readonly Color FreezeOverlay = new Color(0.50f, 0.85f, 1.00f, 0.60f);
             public static readonly Color FreezeBorder  = HEX("#A0E8FF");
@@ -266,6 +288,37 @@ namespace AppPuzz.UI
             if (normalized > 0.5f)
                 return Color.Lerp(Colors.EnergyMid, Colors.EnergyFull, (normalized - 0.5f) * 2f);
             return Color.Lerp(Colors.EnergyLow, Colors.EnergyMid, normalized * 2f);
+        }
+
+        // ----------------------------------------------------------
+        // Tile 2.5D colors helper
+        // ----------------------------------------------------------
+
+        /// <summary>Coppia di colori per una tessera 2.5D (faccia + profondità).</summary>
+        public struct TileColors
+        {
+            public Color Face;   // superficie principale
+            public Color Depth;  // lato inferiore/destro (effetto 3D)
+        }
+
+        /// <summary>
+        /// Restituisce i colori di una tessera in base al tier (1–5),
+        /// allo stato selezionato e allo stato frozen.
+        /// </summary>
+        public static TileColors GetTileColors(int tier, bool selected, bool frozen)
+        {
+            if (frozen)
+                return new TileColors { Face = Colors.TileFrozenFace, Depth = Colors.TileFrozenDepth };
+            if (selected)
+                return new TileColors { Face = Colors.TileSelFace, Depth = Colors.TileSelDepth };
+            return tier switch
+            {
+                2 => new TileColors { Face = Colors.Tile2Face, Depth = Colors.Tile2Depth },
+                3 => new TileColors { Face = Colors.Tile3Face, Depth = Colors.Tile3Depth },
+                4 => new TileColors { Face = Colors.Tile4Face, Depth = Colors.Tile4Depth },
+                5 => new TileColors { Face = Colors.Tile5Face, Depth = Colors.Tile5Depth },
+                _ => new TileColors { Face = Colors.Tile1Face, Depth = Colors.Tile1Depth },
+            };
         }
     }
 }
