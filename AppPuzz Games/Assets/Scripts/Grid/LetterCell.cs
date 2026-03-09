@@ -36,12 +36,14 @@ namespace AppPuzz.Grid
     public class LetterCell : MonoBehaviour
     {
         // ----------------------------------------------------------
-        // Riferimenti UI pubblici
+        // Riferimenti UI — privati (mai serializzati, sempre creati da codice)
         // ----------------------------------------------------------
-        [Header("Riferimenti UI")]
-        public TextMeshProUGUI letterText;
-        public Button          cellButton;
-        public Image           backgroundImage;
+        // NOTA: questi NON devono essere public/serializzati.
+        // Unity sovrascrive i valori serializzati PRIMA di Awake(), rendendo
+        // le reference stantie e invisibili. Li creiamo da zero ogni volta.
+        private TextMeshProUGUI letterText;
+        private Button          cellButton;
+        private Image           backgroundImage;
 
         // ----------------------------------------------------------
         // Dati cella
@@ -131,53 +133,65 @@ namespace AppPuzz.Grid
         private void BuildTileHierarchy()
         {
             // ── ROOT = colore profondità (visibile sul lato basso e destro) ──
-            if (backgroundImage == null)
-                backgroundImage = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
-            backgroundImage.color         = UITheme.Colors.Tile1Depth; // aggiornato da ApplyTierColors
+            // backgroundImage è privato → non serializzato → sempre ricreato
+            backgroundImage = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+            backgroundImage.color         = UITheme.Colors.Tile1Depth;
             backgroundImage.raycastTarget = true;
 
+            // Recupera Button se già presente sul GO
+            cellButton = GetComponent<Button>();
+
             // ── TileFace: superficie principale, offset per effetto 3D ────────
-            // anchorMin/Max = fill tile, offsetMin/Max espone DepthPx in basso e a destra
             _tileFace = EnsureImage("TileFace", Vector2.zero, Vector2.one,
                                     new Vector2(0f, DepthPx), new Vector2(-DepthPx, 0f),
                                     UITheme.Colors.Tile1Face, raycast: false);
 
-            // ── Drop shadow lettera (stesso testo, offset 1.5px basso/destra) ──
-            _letterHighlight = FindOrCreateTMP("LetterHighlight");
+            // ── Drop shadow lettera — SEMPRE distrutto e ricreato da zero ────
+            // (evita qualsiasi stato stantio dal prefab)
+            DestroyChildByName("LetterHighlight");
             {
-                var rt       = _letterHighlight.GetComponent<RectTransform>();
+                var go = new GameObject("LetterHighlight");
+                go.transform.SetParent(transform, false);
+                var rt       = go.AddComponent<RectTransform>();
                 rt.anchorMin = Vector2.zero;
                 rt.anchorMax = Vector2.one;
-                rt.offsetMin = new Vector2(2.5f, DepthPx - 0.5f);
-                rt.offsetMax = new Vector2(-DepthPx + 1f, -0.5f);
-                _letterHighlight.color            = new Color(0f, 0f, 0f, 0.40f);
-                _letterHighlight.fontStyle        = FontStyles.Bold;
-                _letterHighlight.enableAutoSizing = true;
-                _letterHighlight.fontSizeMin      = 14f;
-                _letterHighlight.fontSizeMax      = 72f;
-                _letterHighlight.alignment        = TextAlignmentOptions.Center;
-                _letterHighlight.overflowMode     = TMPro.TextOverflowModes.Overflow;
-                _letterHighlight.raycastTarget    = false;
-                _letterHighlight.text             = "";
+                rt.offsetMin = new Vector2(2f, 2f);
+                rt.offsetMax = new Vector2(-2f, -2f);
+                // shadow: offset 1.5px basso/destra rispetto alla lettera principale
+                rt.offsetMin = new Vector2(1.5f, -1.5f);
+                rt.offsetMax = new Vector2(1.5f, -1.5f);
+                _letterHighlight                   = go.AddComponent<TextMeshProUGUI>();
+                _letterHighlight.color             = new Color(0f, 0f, 0f, 0.40f);
+                _letterHighlight.fontStyle         = FontStyles.Bold;
+                _letterHighlight.fontSize          = 56f;
+                _letterHighlight.enableAutoSizing  = false;
+                _letterHighlight.alignment         = TextAlignmentOptions.Center;
+                _letterHighlight.overflowMode      = TMPro.TextOverflowModes.Overflow;
+                _letterHighlight.raycastTarget     = false;
+                _letterHighlight.text              = "";
             }
 
-            // ── Testo lettera principale (bianco bold, centrato sulla faccia) ──
-            letterText = FindOrCreateTMP("LetterText");
+            // ── Testo lettera principale — SEMPRE distrutto e ricreato da zero ──
+            // fontSize fisso: auto-sizing può fallire silenziosamente se il rect
+            // non è ancora stato calcolato dalla canvas al momento di Awake.
+            DestroyChildByName("LetterText");
             {
-                var rt       = letterText.GetComponent<RectTransform>();
+                var go = new GameObject("LetterText");
+                go.transform.SetParent(transform, false);
+                var rt       = go.AddComponent<RectTransform>();
                 rt.anchorMin = Vector2.zero;
                 rt.anchorMax = Vector2.one;
-                rt.offsetMin = new Vector2(1f, DepthPx);
-                rt.offsetMax = new Vector2(-DepthPx, 0f);
-                letterText.color            = Color.white;
-                letterText.fontStyle        = FontStyles.Bold;
-                letterText.enableAutoSizing = true;
-                letterText.fontSizeMin      = 16f;
-                letterText.fontSizeMax      = 80f;
-                letterText.alignment        = TextAlignmentOptions.Center;
-                letterText.overflowMode     = TMPro.TextOverflowModes.Overflow;
-                letterText.raycastTarget    = false;
-                letterText.text             = "";
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                letterText                   = go.AddComponent<TextMeshProUGUI>();
+                letterText.color             = Color.white;
+                letterText.fontStyle         = FontStyles.Bold;
+                letterText.fontSize          = 56f;
+                letterText.enableAutoSizing  = false;
+                letterText.alignment         = TextAlignmentOptions.Center;
+                letterText.overflowMode      = TMPro.TextOverflowModes.Overflow;
+                letterText.raycastTarget     = false;
+                letterText.text              = "";
             }
 
             // ── Overlay ghiaccio ─────────────────────────────────────────────

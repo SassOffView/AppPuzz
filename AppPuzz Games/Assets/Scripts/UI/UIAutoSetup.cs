@@ -142,7 +142,7 @@ namespace AppPuzz.UI
             {
                 "HomePanel", "OnboardingPanel", "CreatureSelectionPanel",
                 "TrainingPanel", "ArenaPanel", "EvolutionPanel",
-                "GameplayPanel", "TransitionOverlay"
+                "GameplayPanel", "GridPanel", "TransitionOverlay"
             };
 
             var log = new System.Text.StringBuilder("[UIAutoSetup] Gerarchia Canvas:\n");
@@ -1672,7 +1672,9 @@ namespace AppPuzz.UI
             sm.settingsPanel          = canvas.transform.Find("SettingsPanel")?.gameObject;
 
             // GameplayPanel = il contenitore degli elementi di gioco esistenti
-            sm.gameplayPanel = canvas.transform.Find("GameplayPanel")?.gameObject;
+            // Fallback su "GridPanel" per compatibilità con la scena originale
+            sm.gameplayPanel = canvas.transform.Find("GameplayPanel")?.gameObject
+                            ?? canvas.transform.Find("GridPanel")?.gameObject;
 
             // Salva il container griglia originale (GameplayPanel) per ripristinarlo
             var gm = FindFirstObjectByType<AppPuzz.Grid.GridManager>(FindObjectsInactive.Include);
