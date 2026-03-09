@@ -178,7 +178,7 @@ namespace AppPuzz.Gameplay
                 // Fulmine + danno corretto
                 if (cells != null && cells.Count > 0)
                 {
-                    string creatureType = CreatureController.Instance?.CreatureType ?? "MentalDragon";
+                    string creatureType = CreatureController.Instance?.SelectedCreatureTypeName ?? "MentalDragon";
                     Color  lightColor   = UITheme.LightningColor(creatureType);
                     StartCoroutine(LightningAndDamageSequence(cells, lightColor));
                 }

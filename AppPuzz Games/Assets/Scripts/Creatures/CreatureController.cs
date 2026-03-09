@@ -62,7 +62,7 @@ namespace AppPuzz.Creatures
         public int CurrentLevel => _currentLevel;
 
         /// <summary>Nome stringa del tipo creatura (per UITheme.LightningColor).</summary>
-        public string CreatureType => selectedCreature.ToString();
+        public string SelectedCreatureTypeName => selectedCreature.ToString();
 
         // ----------------------------------------------------------
         // Unity lifecycle

@@ -234,7 +234,7 @@ namespace AppPuzz.Gameplay
                 Debug.Log($"[GameManager] '{word}' valida. Legendary={legendary}");
 
                 // Fulmine + danno corretto + sblocco freeze
-                string creatureType = CreatureController.Instance?.CreatureType ?? "MentalDragon";
+                string creatureType = CreatureController.Instance?.SelectedCreatureTypeName ?? "MentalDragon";
                 Color  lightColor   = UITheme.LightningColor(creatureType);
                 StartCoroutine(LightningAndDamageSequence(cells, lightColor, correct: true));
             }
