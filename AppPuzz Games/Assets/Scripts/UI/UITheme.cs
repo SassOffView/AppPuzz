@@ -145,18 +145,19 @@ namespace AppPuzz.UI
             public static readonly Color TileDamage5   = HEX("#FF5018");
 
             // ── Tile 2.5D — 5 tier di colore per valore lettera ───────────
-            // Tier 1 (1pt) Blu  | Tier 2 (2pt) Verde | Tier 3 (3pt) Ambra
-            // Tier 4 (4pt) Rosso | Tier 5 (5pt) Viola
-            public static readonly Color Tile1Face  = HEX("#4A7FD4"); // blu cobalto
-            public static readonly Color Tile1Depth = HEX("#1E3F70"); // blu scuro
-            public static readonly Color Tile2Face  = HEX("#3DAA72"); // verde smeraldo
-            public static readonly Color Tile2Depth = HEX("#1A5A3A"); // verde scuro
-            public static readonly Color Tile3Face  = HEX("#D47C1A"); // ambra
-            public static readonly Color Tile3Depth = HEX("#7A3E00"); // ambra scura
-            public static readonly Color Tile4Face  = HEX("#C83232"); // rosso cremisi
-            public static readonly Color Tile4Depth = HEX("#6E0E0E"); // rosso scuro
-            public static readonly Color Tile5Face  = HEX("#8A3EC0"); // viola
-            public static readonly Color Tile5Depth = HEX("#3A1A6A"); // viola scuro
+            // Stile: lastre di pietra (arenaria → ardesia → terracotta → basalto → ossidiana)
+            // Tier 1 (1pt) Arenaria | Tier 2 (2pt) Muschio | Tier 3 (3pt) Terracotta
+            // Tier 4 (4pt) Basalto  | Tier 5 (5pt) Ossidiana
+            public static readonly Color Tile1Face  = HEX("#9E8E7A"); // arenaria chiara
+            public static readonly Color Tile1Depth = HEX("#5A4A3A"); // arenaria scura
+            public static readonly Color Tile2Face  = HEX("#6A8C68"); // verde muschio pietra
+            public static readonly Color Tile2Depth = HEX("#344834"); // muschio scuro
+            public static readonly Color Tile3Face  = HEX("#B07850"); // terracotta cotta
+            public static readonly Color Tile3Depth = HEX("#6A3E22"); // terracotta bruciata
+            public static readonly Color Tile4Face  = HEX("#706880"); // ardesia bluastra
+            public static readonly Color Tile4Depth = HEX("#302840"); // ardesia scura
+            public static readonly Color Tile5Face  = HEX("#504848"); // basalto scuro
+            public static readonly Color Tile5Depth = HEX("#201818"); // basalto quasi nero
 
             // Selezione (oro universale per tutti i tier)
             public static readonly Color TileSelFace  = HEX("#E8C010"); // oro brillante

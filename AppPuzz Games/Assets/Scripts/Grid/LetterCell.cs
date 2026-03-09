@@ -146,6 +146,23 @@ namespace AppPuzz.Grid
                                     new Vector2(0f, DepthPx), new Vector2(-DepthPx, 0f),
                                     UITheme.Colors.Tile1Face, raycast: false);
 
+            // ── Top-edge highlight: striscia luminosa sul bordo superiore ────
+            // Simula la luce che colpisce il bordo alto della lastra di pietra
+            {
+                DestroyChildByName("TopEdgeHighlight");
+                var goTe = new GameObject("TopEdgeHighlight");
+                goTe.transform.SetParent(_tileFace.transform, false);
+                var rtTe       = goTe.AddComponent<RectTransform>();
+                rtTe.anchorMin = new Vector2(0f, 1f);
+                rtTe.anchorMax = new Vector2(1f, 1f);
+                rtTe.pivot     = new Vector2(0.5f, 1f);
+                rtTe.offsetMin = new Vector2(2f, -4f);
+                rtTe.offsetMax = new Vector2(-2f, -1f);
+                var imgTe = goTe.AddComponent<Image>();
+                imgTe.color         = new Color(1f, 1f, 1f, 0.28f);
+                imgTe.raycastTarget = false;
+            }
+
             // ── Drop shadow lettera — SEMPRE distrutto e ricreato da zero ────
             // (evita qualsiasi stato stantio dal prefab)
             DestroyChildByName("LetterHighlight");
@@ -163,7 +180,7 @@ namespace AppPuzz.Grid
                 _letterHighlight                   = go.AddComponent<TextMeshProUGUI>();
                 _letterHighlight.color             = new Color(0f, 0f, 0f, 0.40f);
                 _letterHighlight.fontStyle         = FontStyles.Bold;
-                _letterHighlight.fontSize          = 56f;
+                _letterHighlight.fontSize          = 72f;
                 _letterHighlight.enableAutoSizing  = false;
                 _letterHighlight.alignment         = TextAlignmentOptions.Center;
                 _letterHighlight.overflowMode      = TMPro.TextOverflowModes.Overflow;
@@ -186,7 +203,7 @@ namespace AppPuzz.Grid
                 letterText                   = go.AddComponent<TextMeshProUGUI>();
                 letterText.color             = Color.white;
                 letterText.fontStyle         = FontStyles.Bold;
-                letterText.fontSize          = 56f;
+                letterText.fontSize          = 72f;
                 letterText.enableAutoSizing  = false;
                 letterText.alignment         = TextAlignmentOptions.Center;
                 letterText.overflowMode      = TMPro.TextOverflowModes.Overflow;
