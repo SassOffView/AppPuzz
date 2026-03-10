@@ -1,0 +1,216 @@
+{\rtf1\ansi\ansicpg1252\deff0
+{\fonttbl{\f0\fswiss\fcharset0 Arial;}{\f1\fmodern\fcharset0 Courier New;}}
+{\colortbl;\red0\green0\blue0;\red0\green70\blue180;\red180\green0\blue0;}
+\paperw12240\paperh15840\margl1440\margr1440\margt1440\margb1440
+\f0\fs22
+
+{\fs32\b\cf2 APPPUZZ \emdash DOCUMENTO DI LOGICA E ARCHITETTURA}\line
+{\fs20\cf1 Versione: 1.0  |  Data: Marzo 2026  |  Per: sviluppatori e potenziali investitori}
+\par\par
+
+{\fs28\b\cf2 1. PANORAMICA DELL'APP}
+\par\par
+AppPuzz \'e8 un gioco mobile (iOS/Android) di parole in italiano sviluppato in Unity 2D. Si ispira a Ruzzle: il giocatore trascina il dito su una griglia di lettere per formare parole valide, guadagnando punti in base al valore delle lettere e alla lunghezza della parola trovata.
+\par\par
+L\'27app \'e8 strutturata attorno a tre modalit\'e0 di gioco principali pi\'f9 un sistema di progressione a lungo termine basato su creature collezionabili e carte abilit\'e0.
+\par\par
+{\b Tecnologia:} Unity 2022+ | C# | Canvas UI runtime (nessun prefab grafico) | PlayerPrefs per la persistenza locale.
+\par\par
+
+{\fs28\b\cf2 2. ARCHITETTURA TECNICA}
+\par\par
+L\'27intera UI \'e8 costruita a RUNTIME tramite {\b UIAutoSetup.cs}: nessun prefab, nessuna asset grafica esterna. Tutti i pannelli, i testi, i bottoni e le tile vengono creati da codice C# al primo avvio.
+\par\par
+{\b SCHERMATE PRINCIPALI} (ScreenManager.cs \emdash ScreenID enum):
+\par
+\tab Home               \tab\tab schermata principale\line
+\tab Onboarding         \tab\tab primo avvio: nome + scelta creatura\line
+\tab CreatureSelection  \tab\tab scelta/cambio creatura\line
+\tab Training           \tab\tab modalit\'e0 allenamento (senza fretta)\line
+\tab Arena              \tab\tab modalit\'e0 competitiva a tempo\line
+\tab Legend             \tab\tab campagna narrativa 50 sfide\line
+\tab Evolution          \tab\tab evoluzione e statistiche creatura\line
+\tab Settings           \tab\tab impostazioni (lingua, audio)\line
+\par
+La navigazione usa uno stack "history" interno: il tasto Back torna alla schermata precedente. Le transizioni sono opzionali (fade 0.2s).
+\par\par
+
+{\fs28\b\cf2 3. IL SISTEMA DI GRIGLIA}
+\par\par
+{\b 3.1 Struttura Fisica}
+\par\par
+La griglia \'e8 una matrice NxN di celle LetterCell, disposte tramite Unity GridLayoutGroup:
+\par
+\tab 4x4 (16 celle)   \tab sfide Leggenda livelli 1-9\line
+\tab 5x5 (25 celle)   \tab modalit\'e0 default e sfide liv. 10-24\line
+\tab 6x6 (36 celle)   \tab sfide Leggenda livelli 25-44\line
+\tab 7x7 (49 celle)   \tab sfide Leggenda livelli 45-50\line
+\par
+Ogni cella LetterCell ha: una lettera maiuscola (A-Z), un valore in punti (1-5), un sistema di "danni" (0-6 HP) con crepe visive progressive, animazioni (bounce selezione, shake errore, flash corretto).
+\par\par
+{\b 3.2 Generazione Griglia (GridBuilder.cs)}
+\par\par
+L\'27algoritmo garantisce una griglia "ricca" di parole valide. Requisiti minimi (griglia 5x5): almeno 1 parola da 9 lettere, almeno 4 parole da 8 lettere, almeno 6 parole da 7 lettere.
+\par\par
+Strategia: (1) Sceglie una parola da 9 lettere dal dizionario. (2) Trova un percorso "snake" casuale di 9 celle adiacenti tramite DFS con backtracking. (3) Pianta la parola sul percorso, riempie le celle rimanenti con lettere ponderate per frequenza. (4) Verifica i requisiti. (5) Ripete fino a 50 tentativi.
+\par\par
+{\b 3.3 Adiacenza}
+\par\par
+Due celle sono adiacenti se differiscono di al massimo 1 in entrambi row e col (8 direzioni). Una cella non pu\'f2 essere usata due volte nella stessa parola.
+\par\par
+{\b 3.4 Sistema Danni}
+\par\par
+\tab HitPoints 0      \tab tessera intatta\line
+\tab HitPoints 1-5    \tab scurimento + crepe progressive\line
+\tab HitPoints 6      \tab lettera "rotta" (IsLetterBroken = true)\line
+\par
+ApplyCorrectHit() \rarrow +1 HP | ApplyWrongHit() \rarrow +2 HP (3 errori consecutivi = FREEZE 2 turni)
+\par\par
+
+{\fs28\b\cf2 4. VALIDAZIONE PAROLE}
+\par\par
+{\b WordValidator.cs} gestisce due dizionari JSON (in Resources/):
+\par
+\tab Dizionario standard   \tab parole italiane normali (Valid)\line
+\tab Dizionario fantasy    \tab parole inventate/fantasy (Legendary)\line
+\par
+{\b Risultati:} Invalid \rarrow score 0, shake rosso | Valid \rarrow score calcolato, flash verde | Legendary \rarrow score x1.5 XP
+\par\par
+Il dizionario usa HashSet\<string\> per ricerca O(1). Le parole sono indicizzate per lunghezza per GridBuilder.
+\par\par
+
+{\fs28\b\cf2 5. SISTEMA DI PUNTEGGIO (LetterScoring.cs)}
+\par\par
+{\b Valori lettera (italiano):}
+\par
+\tab 1 punto   \tab A E I O\line
+\tab 2 punti   \tab R T N C D L\line
+\tab 3 punti   \tab F P S M U G\line
+\tab 4 punti   \tab B V\line
+\tab 5 punti   \tab Z X H J Q Y W K\line
+\par
+{\b Punteggio parola} = somma(valori lettere) x moltiplicatore_lunghezza
+\par
+\tab 2-4 lettere \tab x1.00  |  5 lettere \tab x1.25  |  6 lettere \tab x1.50\line
+\tab 7 lettere   \tab x1.75  |  8 lettere \tab x2.00  |  9 lettere \tab x2.50\line
+\tab 10+ lettere \tab x3.00-4.00 (cap a 12)\line
+\par
+In Arena: punteggio x moltiplicatore streak (x1 + 0.15 x streak, cap x2.5)
+\par\par
+
+{\fs28\b\cf2 6. MODALITA' DI GIOCO}
+\par\par
+{\b 6.1 Allenamento (TrainingManager.cs)} \emdash Modalit\'e0 libera, timer 2 minuti. A fine sessione: popup con parole trovate e tutte le parole possibili nella griglia (GridSolver). XP x0.5 rispetto all\'27Arena.
+\par\par
+{\b 6.2 Arena (ArenaManager.cs)} \emdash Timer 90 secondi, rank Bronzo\rarrow Argento\rarrow Oro\rarrow Platino\rarrow Leggenda. Streak multiplier. 3 slot carte abilit\'e0 (ATT/DEF/SPE).
+\par\par
+{\b 6.3 Leggenda (LegendManager.cs)} \emdash 50 sfide progressive:
+\par
+\tab Sfide  1-9   \tab griglia 4x4, 60s, obiettivo leggero\line
+\tab Sfide 10-24  \tab griglia 5x5, 45s, obiettivo medio\line
+\tab Sfide 25-44  \tab griglia 6x6, 40s, obiettivo elevato\line
+\tab Sfide 45-50  \tab griglia 7x7, 30s, obiettivo massimo\line
+\par
+Obiettivo: 50 + livello x 20 punti. Ricompense: carte ATT/DEF/SPE + XP + accessori ogni 5 livelli.
+\par\par
+
+{\fs28\b\cf2 7. SISTEMA CREATURE}
+\par\par
+Costruite interamente da forme geometriche runtime (ProceduralCreatureBuilder.cs). Nessun asset grafico.
+\par
+\tab Mental Dragon     \tab viola, specialit\'e0 ATT\line
+\tab Astral Wolf       \tab blu, specialit\'e0 DEF\line
+\tab Ethereal Serpent  \tab verde, specialit\'e0 SPE\line
+\par
+3 livelli di evoluzione per creatura, sbloccati tramite XP accumulato.
+\par\par
+
+{\fs28\b\cf2 8. PROGRESSIONE GIOCATORE (PlayerProfile.cs)}
+\par\par
+Tutti i dati sono salvati in {\b PlayerPrefs} (locale sul device).
+\par\par
+Dati principali: player_name, player_creature, player_xp, player_total_xp, player_best_score, player_total_matches, player_best_streak, player_wins, arena_rank, player_level, legend_level, legend_cards, onboarding_complete.
+\par\par
+{\b Livelli giocatore:}
+\par
+\tab Lv 1-4   \tab Apprendista  |  Lv 5-9   \tab Iniziato  |  Lv 10-19  \tab Praticante\line
+\tab Lv 20-34 \tab Esperto      |  Lv 35-49 \tab Maestro   |  Lv 50-74  \tab Arcimago\line
+\tab Lv 75+   \tab Stregone\line
+\par
+Soglie XP: 100 / 300 / 600 / 1000 / 1500 / 2100 / 2800 / 3600 / 4500 (poi lineare)
+\par\par
+Formula XP: xpBase = energia x 0.5 + streak x 5 | xpVittoria = xpBase x 1.5
+\par\par
+
+{\fs28\b\cf2 9. SISTEMA CARTE ABILITA'}
+\par\par
+In Arena, 3 slot carta: ATT (moltiplicatore punteggio), DEF (riduce danno celle), SPE (abilit\'e0 creatura). Si guadagnano completando sfide Leggenda. Formato salvataggio: "att,def,spe" es. "3,1,2".
+\par\par
+
+{\fs28\b\cf2 10. INPUT E SELEZIONE LETTERE (WordSelector.cs)}
+\par\par
+Sistema basato sul trascinamento del dito. PointerDown \rarrow inizio | PointerEnter \rarrow aggiunge lettera (solo adiacenti) | PointerUp \rarrow invia parola. Routing automatico verso TrainingManager / ArenaManager / LegendManager in base alla schermata attiva.
+\par\par
+
+{\fs28\b\cf2 11. RICERCA PAROLE (GridSolver.cs)}
+\par\par
+A fine partita, DFS completo su tutta la griglia trova tutte le parole valide. Risultato ordinato per lunghezza (decrescente) poi alfabetico. Mostrato nel popup finale con marcatura [OK] per le parole gi\'e0 trovate.
+\par\par
+
+{\fs28\b\cf2 12. ONBOARDING}
+\par\par
+Al primo avvio: (1) schermata benvenuto + nome, (2) scelta creatura, (3) tutorial base. Flag onboarding_complete in PlayerPrefs. Per resettare: PlayerProfile.Instance.ResetAll() o cancellare PlayerPrefs del device.
+\par\par
+
+{\fs28\b\cf2 13. NAVIGAZIONE UI}
+\par\par
+ScreenManager gestisce i pannelli come GameObject attivi/inattivi (no LoadScene). Stack history interno: Back() ripristina il pannello precedente. Tutti i pannelli sono costruiti da UIAutoSetup.cs al primo Awake().
+\par\par
+
+{\fs28\b\cf2 14. LOCALIZZAZIONE}
+\par\par
+LanguageManager.cs: Italiano (default) e Inglese. Il cambio lingua aggiorna: dizionario di validazione, valori lettera in LetterScoring, testi UI.
+\par\par
+
+{\fs28\b\cf2 15. AUDIO}
+\par\par
+AudioManager.cs (stub): placeholder per effetti sonori e musica. Da implementare: suoni selezione, parola corretta/sbagliata, timer, vittoria, evoluzione.
+\par\par
+
+{\fs28\b\cf2 16. FLUSSO SESSIONE COMPLETA (ESEMPIO ARENA)}
+\par\par
+App avvio \rarrow UIAutoSetup.SetupCanvas() \rarrow PlayerProfile carica dati \rarrow ScreenManager.ShowScreen(Home) \rarrow Player tocca ARENA \rarrow ArenaManager.StartArena() genera griglia e timer \rarrow Player gioca \rarrow Timer 0 \rarrow EndArena() \rarrow GridSolver.FindAllWords() \rarrow ShowResults() popup \rarrow PlayerProfile.RecordMatchResult() \rarrow Player tocca MENU \rarrow Home.
+\par\par
+
+{\fs28\b\cf2 17. DOMANDE FREQUENTI \emdash SVILUPPATORE}
+\par\par
+{\b Q: Come aggiungere parole al dizionario?}\line
+A: Modificare Resources/Dictionaries/italian.json, array "words", parole in minuscolo.
+\par\par
+{\b Q: Come cambiare la dimensione della griglia?}\line
+A: Impostare GridManager.overrideGridSize = N prima di GenerateGrid(). LegendManager lo fa automaticamente.
+\par\par
+{\b Q: Come resettare i dati del giocatore?}\line
+A: PlayerProfile.Instance.ResetAll() da codice, oppure cancellare PlayerPrefs del device.
+\par\par
+{\b Q: Come aggiungere una nuova creatura?}\line
+A: (1) Aggiungere valore a CreatureType enum. (2) Aggiungere case in ProceduralCreatureBuilder.Build(). (3) Aggiungere colori in UITheme.cs.
+\par\par
+{\b Q: Come funziona la build senza asset grafiche?}\line
+A: UIAutoSetup.cs crea programmanticamente tutta la UI in Awake(). Non esistono prefab. Pannelli, testi, bottoni e slider vengono costruiti da codice C# ad ogni avvio di Play mode.
+\par\par
+
+{\fs28\b\cf2 18. ROADMAP FUTURA (SUGGERIMENTI INVESTITORE)}
+\par\par
+{\b Fase 2 \emdash Monetizzazione:} Shop carte abilit\'e0 (IAP), skin creature premium, pacchetti boost (timer extra, suggerimenti), Pass Leggenda mensile.
+\par\par
+{\b Fase 3 \emdash Sociale:} Arena PvP in tempo reale, classifiche globali per rank, tornei settimanali, condivisione risultati su social.
+\par\par
+{\b Fase 4 \emdash Contenuto:} Dizionari aggiuntivi (FR, DE, ES), Sfida del Giorno (griglia condivisa globale), nuove creature, accessori stagionali.
+\par\par
+{\b Metriche chiave:} Retention D1/D7/D30, sessioni al giorno per utente, tasso completamento sfide Leggenda, conversione free \rarrow paying.
+\par\par\par
+{\b\cf2 ================================================================}\line
+{\b\cf2 FINE DOCUMENTO \emdash APPPUZZ v1.0 \emdash Marzo 2026}\line
+{\b\cf2 ================================================================}
+}

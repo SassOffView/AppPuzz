@@ -37,6 +37,7 @@ namespace AppPuzz.UI
             BuildCreatureSelectionPanel(canvas);
             BuildTrainingPanel(canvas);
             BuildArenaPanel(canvas);
+            BuildLegendPanel(canvas);
             BuildEvolutionPanel(canvas);
             BuildSettingsPanel(canvas);
             BuildTransitionOverlay(canvas);
@@ -1496,6 +1497,161 @@ namespace AppPuzz.UI
         }
 
         // -------------------------------------------------------
+        // LEGEND PANEL
+        // -------------------------------------------------------
+        private void BuildLegendPanel(Canvas canvas)
+        {
+            var panel = FindOrCreatePanel(canvas, "LegendPanel");
+            if (panel.GetComponent<AppPuzz.Gameplay.LegendManager>() != null) return;
+
+            panel.SetActive(false);
+            var lm = panel.AddComponent<AppPuzz.Gameplay.LegendManager>();
+            panel.GetComponent<Image>().color = new Color(0.06f, 0.04f, 0.12f, 1f);
+
+            // Sfondo gradient viola scuro
+            MakePanel(panel.transform, "GradTop",
+                new Color(0.28f, 0.10f, 0.45f, 0.55f),
+                new Vector2(0, 0.87f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+
+            // Top bar
+            MakePanel(panel.transform, "TopBar",
+                new Color(0.22f, 0.08f, 0.38f, 1f),
+                new Vector2(0, 0.94f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
+
+            MakeText(panel.transform, "LegendTitle", "LEGGENDA",
+                56, UITheme.Colors.Legendary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.94f), new Vector2(0.95f, 1.00f), Vector2.zero, Vector2.zero)
+                .fontStyle = FontStyles.Bold;
+
+            // Titolo sfida corrente
+            lm.challengeTitle = MakeText(panel.transform, "ChallengeTitle", "SFIDA 1/50",
+                38, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.890f), new Vector2(0.95f, 0.940f), Vector2.zero, Vector2.zero);
+            lm.challengeTitle.fontStyle = FontStyles.Bold;
+
+            // Testo narrativo
+            lm.narrativeText = MakeText(panel.transform, "NarrativeText", "",
+                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
+                new Vector2(0.04f, 0.858f), new Vector2(0.96f, 0.890f), Vector2.zero, Vector2.zero);
+
+            // Timer (testo + barra)
+            lm.timerText = MakeText(panel.transform, "TimerText", "01:00",
+                60, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.30f, 0.820f), new Vector2(0.70f, 0.858f), Vector2.zero, Vector2.zero);
+            lm.timerText.fontStyle = FontStyles.Bold;
+            lm.timerBar = MakeSlider(panel.transform, "TimerBar", UITheme.Colors.EnergyFull,
+                new Vector2(0.04f, 0.808f), new Vector2(0.96f, 0.820f), Vector2.zero, Vector2.zero);
+
+            // Score (sinistra) + parole (destra)
+            lm.scoreText = MakeText(panel.transform, "ScoreText", "Punteggio: 0 / 70",
+                28, UITheme.Colors.Gold, TextAlignmentOptions.Left,
+                new Vector2(0.04f, 0.772f), new Vector2(0.62f, 0.808f), Vector2.zero, Vector2.zero);
+            lm.wordsFoundText = MakeText(panel.transform, "WordsFoundText", "Parole: 0",
+                28, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
+                new Vector2(0.62f, 0.772f), new Vector2(0.96f, 0.808f), Vector2.zero, Vector2.zero);
+
+            // Barra progresso obiettivo
+            lm.energyBar = MakeSlider(panel.transform, "EnergyBar", UITheme.Colors.Legendary,
+                new Vector2(0.04f, 0.758f), new Vector2(0.96f, 0.772f), Vector2.zero, Vector2.zero);
+            lm.energyBar.value = 0f;
+
+            // Parola corrente
+            lm.currentWordText = MakeText(panel.transform, "CurrentWordText", "",
+                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.715f), new Vector2(0.95f, 0.758f), Vector2.zero, Vector2.zero);
+            lm.currentWordText.fontStyle = FontStyles.Bold;
+
+            // Feedback
+            lm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
+                28, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
+                new Vector2(0.04f, 0.695f), new Vector2(0.96f, 0.715f), Vector2.zero, Vector2.zero);
+
+            // Cornice griglia
+            {
+                var gridFrame = new GameObject("GridFrame");
+                gridFrame.transform.SetParent(panel.transform, false);
+                var frt = gridFrame.AddComponent<RectTransform>();
+                frt.anchorMin = new Vector2(0.00f, 0.170f);
+                frt.anchorMax = new Vector2(1.00f, 0.692f);
+                frt.offsetMin = frt.offsetMax = Vector2.zero;
+                gridFrame.AddComponent<Image>().color = UITheme.Colors.TileBorder;
+            }
+
+            // Grid area
+            {
+                var gridArea = new GameObject("GridArea");
+                gridArea.transform.SetParent(panel.transform, false);
+                var rt = gridArea.AddComponent<RectTransform>();
+                rt.anchorMin = new Vector2(0.01f, 0.175f);
+                rt.anchorMax = new Vector2(0.99f, 0.688f);
+                rt.offsetMin = rt.offsetMax = Vector2.zero;
+                var glg = gridArea.AddComponent<UnityEngine.UI.GridLayoutGroup>();
+                glg.childAlignment  = TextAnchor.MiddleCenter;
+                glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
+                glg.constraintCount = 4; // inizia con 4x4 (sfida 1)
+                glg.spacing         = new Vector2(6, 6);
+                glg.padding         = new RectOffset(4, 4, 4, 4);
+                lm.gridContainer    = gridArea.transform;
+            }
+
+            // Pulsante esci
+            lm.exitButton = MakeButton(panel.transform, "ExitButton", "ESCI",
+                UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 26,
+                new Vector2(0.25f, 0.030f), new Vector2(0.75f, 0.090f), Vector2.zero, Vector2.zero);
+
+            // Float canvas
+            {
+                var floatGo = new GameObject("FloatCanvas");
+                floatGo.transform.SetParent(panel.transform, false);
+                var fc = floatGo.AddComponent<Canvas>();
+                fc.overrideSorting = true;
+                fc.sortingOrder = 50;
+                var fcRt = floatGo.GetComponent<RectTransform>();
+                fcRt.anchorMin = Vector2.zero; fcRt.anchorMax = Vector2.one;
+                fcRt.offsetMin = fcRt.offsetMax = Vector2.zero;
+                lm.floatCanvas = fc;
+            }
+
+            // Result overlay — popup WD viola
+            var resultOverlay = MakePanel(panel.transform, "ResultOverlay",
+                UITheme.Colors.PopupBg,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            lm.resultOverlay = resultOverlay;
+            var roInner = MakeBorderedCard(resultOverlay.transform, "ResultBorder",
+                UITheme.Colors.PopupBorder, UITheme.Colors.PopupInner,
+                new Vector2(0.03f, 0.03f), new Vector2(0.97f, 0.97f));
+
+            lm.resultTitle = MakeText(roInner.transform, "ResultTitle", "SFIDA SUPERATA!",
+                64, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.87f), new Vector2(0.95f, 0.97f), Vector2.zero, Vector2.zero);
+            lm.resultTitle.fontStyle = FontStyles.Bold;
+
+            lm.resultScoreText = MakeText(roInner.transform, "ResultScore", "Punteggio: 0 / 70",
+                38, UITheme.Colors.TextPrimary, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.80f), new Vector2(0.95f, 0.87f), Vector2.zero, Vector2.zero);
+
+            lm.resultRewardText = MakeText(roInner.transform, "ResultReward", "",
+                26, UITheme.Colors.Gold, TextAlignmentOptions.Center,
+                new Vector2(0.05f, 0.70f), new Vector2(0.95f, 0.80f), Vector2.zero, Vector2.zero);
+
+            // Parole trovate/trovabili — ScrollRect
+            lm.resultWordsText = MakeScrollableWordsList(roInner.transform,
+                new Vector2(0.03f, 0.19f), new Vector2(0.97f, 0.70f));
+
+            lm.nextChallengeBtn = MakeButton(roInner.transform, "NextChallengeBtn", "PROSSIMA SFIDA",
+                UITheme.Colors.PopupCTA, UITheme.Colors.BackgroundDeep, 38,
+                new Vector2(0.08f, 0.09f), new Vector2(0.92f, 0.17f), Vector2.zero, Vector2.zero);
+
+            lm.resultMenuBtn = MakeButton(roInner.transform, "ResultMenuBtn", "MENU",
+                UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 32,
+                new Vector2(0.20f, 0.01f), new Vector2(0.80f, 0.08f), Vector2.zero, Vector2.zero);
+
+            resultOverlay.SetActive(false);
+
+            panel.SetActive(false);
+        }
+
+        // -------------------------------------------------------
         // EVOLUTION PANEL
         // -------------------------------------------------------
         private void BuildEvolutionPanel(Canvas canvas)
@@ -1714,6 +1870,7 @@ namespace AppPuzz.UI
             sm.arenaPanel             = canvas.transform.Find("ArenaPanel")?.gameObject;
             sm.evolutionPanel         = canvas.transform.Find("EvolutionPanel")?.gameObject;
             sm.settingsPanel          = canvas.transform.Find("SettingsPanel")?.gameObject;
+            sm.legendPanel            = canvas.transform.Find("LegendPanel")?.gameObject;
 
             // GameplayPanel = il contenitore degli elementi di gioco esistenti
             // Fallback su "GridPanel" per compatibilità con la scena originale
@@ -1744,6 +1901,16 @@ namespace AppPuzz.UI
                 {
                     var gridArea = arenaPanel.Find("GridArea");
                     if (gridArea != null) am.gridContainer = gridArea;
+                }
+            }
+            var legendPanel = canvas.transform.Find("LegendPanel");
+            if (legendPanel != null)
+            {
+                var lm = legendPanel.GetComponent<AppPuzz.Gameplay.LegendManager>();
+                if (lm != null)
+                {
+                    var gridArea = legendPanel.Find("GridArea");
+                    if (gridArea != null) lm.gridContainer = gridArea;
                 }
             }
 

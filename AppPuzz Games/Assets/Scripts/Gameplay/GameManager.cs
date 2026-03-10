@@ -284,25 +284,14 @@ namespace AppPuzz.Gameplay
             // Applica danno + verifica rottura e sblocco freeze
             yield return new WaitForSeconds(0.05f);
 
-            List<(int row, int col)> broken = new List<(int, int)>();
             foreach (var cell in cells)
             {
                 if (cell == null) continue;
-                bool isBroken = cell.ApplyCorrectHit();
-                if (isBroken)
-                    broken.Add((cell.Row, cell.Col));
+                cell.ApplyCorrectHit();
             }
 
             // Decrementa il freeze su tutte le celle ghiacciate (1 parola corretta = 1 turno)
             gridManager?.DecrementAllFrozenCells();
-
-            // Sostituisci le celle rotte (breve pausa per mostrare lo stato finale)
-            if (broken.Count > 0)
-            {
-                yield return new WaitForSeconds(0.3f);
-                foreach (var (row, col) in broken)
-                    gridManager?.ReplaceCell(row, col);
-            }
         }
 
         // ----------------------------------------------------------
@@ -326,21 +315,10 @@ namespace AppPuzz.Gameplay
             foreach (var f in flashes) yield return f;
 
             // Applica danno da parola errata (2 hit) e controlla freeze
-            List<(int row, int col)> broken = new List<(int, int)>();
             foreach (var cell in cells)
             {
                 if (cell == null) continue;
-                cell.ApplyWrongHit(); // gestisce anche il freeze interno
-                if (cell.IsLetterBroken)
-                    broken.Add((cell.Row, cell.Col));
-            }
-
-            // Sostituisci eventuali celle rotte
-            if (broken.Count > 0)
-            {
-                yield return new WaitForSeconds(0.3f);
-                foreach (var (row, col) in broken)
-                    gridManager?.ReplaceCell(row, col);
+                cell.ApplyWrongHit();
             }
         }
 

@@ -209,19 +209,12 @@ namespace AppPuzz.Gameplay
             }
             yield return new WaitForSeconds(0.05f);
 
-            var broken = new List<(int r, int c)>();
             foreach (var cell in cells)
             {
                 if (cell == null) continue;
-                if (cell.ApplyCorrectHit()) broken.Add((cell.Row, cell.Col));
+                cell.ApplyCorrectHit();
             }
             GridManager.Instance?.DecrementAllFrozenCells();
-
-            if (broken.Count > 0)
-            {
-                yield return new WaitForSeconds(0.3f);
-                foreach (var (r, c) in broken) GridManager.Instance?.ReplaceCell(r, c);
-            }
         }
 
         private IEnumerator WrongWordEffect(List<LetterCell> cells)
@@ -231,17 +224,10 @@ namespace AppPuzz.Gameplay
                 if (cell != null) flashes.Add(StartCoroutine(cell.FlashWrong(0.14f)));
             foreach (var f in flashes) yield return f;
 
-            var broken = new List<(int r, int c)>();
             foreach (var cell in cells)
             {
                 if (cell == null) continue;
                 cell.ApplyWrongHit();
-                if (cell.IsLetterBroken) broken.Add((cell.Row, cell.Col));
-            }
-            if (broken.Count > 0)
-            {
-                yield return new WaitForSeconds(0.3f);
-                foreach (var (r, c) in broken) GridManager.Instance?.ReplaceCell(r, c);
             }
         }
 
@@ -341,6 +327,8 @@ namespace AppPuzz.Gameplay
                     }
                 }
                 resultWordsText.text = sb.ToString();
+                LayoutRebuilder.ForceRebuildLayoutImmediate(
+                    resultWordsText.transform.parent.parent as RectTransform);
             }
         }
 
