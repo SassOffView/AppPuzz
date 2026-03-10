@@ -1,0 +1,494 @@
+================================================================
+APPPUZZ — DOCUMENTO DI LOGICA E ARCHITETTURA
+Versione: 1.0  |  Data: Marzo 2026
+Per: sviluppatori e potenziali investitori
+================================================================
+
+================================================================
+1. PANORAMICA DELL'APP
+================================================================
+
+AppPuzz è un gioco mobile (iOS/Android) di parole in italiano
+sviluppato in Unity 2D. Si ispira a Ruzzle: il giocatore trascina
+il dito su una griglia di lettere per formare parole valide,
+guadagnando punti in base al valore delle lettere e alla
+lunghezza della parola trovata.
+
+L'app è strutturata attorno a tre modalità di gioco principali
+più un sistema di progressione a lungo termine basato su
+creature collezionabili e carte abilità.
+
+Tecnologia: Unity 2022+ | C# | Canvas UI runtime (nessun prefab
+grafico) | PlayerPrefs per la persistenza locale.
+
+================================================================
+2. ARCHITETTURA TECNICA
+================================================================
+
+L'intera UI è costruita a RUNTIME tramite UIAutoSetup.cs:
+nessun prefab, nessuna asset grafica esterna. Tutti i pannelli,
+i testi, i bottoni e le tile vengono creati da codice C# al
+primo avvio. Questo rende il progetto facilmente modificabile
+senza aprire l'editor Unity.
+
+SCHERMATE PRINCIPALI (ScreenManager.cs — ScreenID enum):
+  Home               → schermata principale
+  Onboarding         → primo avvio: nome + scelta creatura
+  CreatureSelection  → scelta/cambio creatura
+  Training           → modalità allenamento (senza fretta)
+  Arena              → modalità competitiva a tempo
+  Legend             → campagna narrativa 50 sfide
+  Evolution          → evoluzione e statistiche creatura
+  Settings           → impostazioni (lingua, audio)
+
+La navigazione usa uno stack "history" interno: il tasto Back
+torna alla schermata precedente. Le transizioni sono opzionali
+(fade 0.2s).
+
+================================================================
+3. IL SISTEMA DI GRIGLIA
+================================================================
+
+--- 3.1 STRUTTURA FISICA ---
+
+La griglia è una matrice NxN di celle LetterCell, disposte
+tramite Unity GridLayoutGroup. La dimensione è variabile:
+  4x4 (16 celle)  — sfide Leggenda livelli 1-9
+  5x5 (25 celle)  — modalità default e sfide liv. 10-24
+  6x6 (36 celle)  — sfide Leggenda livelli 25-44
+  7x7 (49 celle)  — sfide Leggenda livelli 45-50
+
+Ogni cella LetterCell ha:
+  • Una lettera maiuscola (A-Z)
+  • Un valore in punti (1-5) basato sulla rarità della lettera
+  • Un sistema di "danni" (0-6 HP) con crepe visive progressive
+  • Animazioni: bounce selezione, shake errore, flash corretto
+
+--- 3.2 GENERAZIONE GRIGLIA (GridBuilder.cs) ---
+
+L'algoritmo garantisce una griglia "ricca" di parole valide:
+  Requisiti minimi (griglia 5x5):
+    • Almeno 1 parola da 9 lettere
+    • Almeno 4 parole da 8 lettere
+    • Almeno 6 parole da 7 lettere
+
+Strategia in 3 passi:
+  1. Sceglie una parola da 9 lettere dal dizionario
+  2. Trova un percorso "snake" casuale di 9 celle adiacenti
+     tramite DFS con backtracking
+  3. Pianta la parola sul percorso, riempie le celle rimanenti
+     con lettere ponderate per frequenza (vocali più comuni)
+  4. Verifica i requisiti tramite DFS completo sulla griglia
+  5. Ripete fino a 50 tentativi; restituisce il miglior risultato
+
+--- 3.3 ADIACENZA ---
+
+Due celle sono adiacenti se differiscono di al massimo 1 in
+entrambi row e col (8 direzioni: N, NE, E, SE, S, SW, W, NW).
+Una cella non può essere usata due volte nella stessa parola.
+
+--- 3.4 SISTEMA DANNI ---
+
+Ogni cella tiene traccia dei danni ricevuti (HitPoints 0-6):
+  HitPoints 0     → tessera intatta
+  HitPoints 1-5   → superficie si scurisce + crepe progressive
+                    (8 crepe definite, compaiono a soglie 1,2,3,4,5)
+  HitPoints 6     → lettera "rotta" (IsLetterBroken = true)
+
+Cause di danno:
+  • ApplyCorrectHit() → +1 HP (parola corretta contenente la cella)
+  • ApplyWrongHit()   → +2 HP (parola errata contenente la cella)
+    → se 3 errori consecutivi sulla stessa cella: FREEZE 2 turni
+
+Freeze: la cella appare ghiacciata (overlay azzurro) e non può
+essere selezionata per 2 turni di parola.
+
+================================================================
+4. VALIDAZIONE PAROLE
+================================================================
+
+WordValidator.cs gestisce due dizionari JSON (in Resources/):
+  • Dizionario standard  → parole italiane normali (Valid)
+  • Dizionario fantasy   → parole inventate/fantasy (Legendary)
+
+Risultati validazione (ValidationResult enum):
+  Invalid   → parola non trovata → score 0, shake + flash rosso
+  Valid     → parola trovata → score calcolato, flash verde
+  Legendary → parola fantasy → score con bonus extra (×1.5 XP)
+
+Il dizionario usa HashSet<string> per ricerca O(1).
+Le parole sono indicizzate per lunghezza per GridBuilder.
+
+================================================================
+5. SISTEMA DI PUNTEGGIO (LetterScoring.cs)
+================================================================
+
+Ogni lettera ha un valore base (dizionario italiano):
+  1 punto  → A E I O  (vocali comuni)
+  2 punti  → R T N C D L  (consonanti comuni)
+  3 punti  → F P S M U G  (consonanti medie)
+  4 punti  → B V  (consonanti rare)
+  5 punti  → Z X H J Q Y W K  (rarissime)
+
+Punteggio parola = somma(valori lettere) × moltiplicatore_lunghezza
+
+Moltiplicatori lunghezza:
+  2-4 lettere → ×1.00
+  5 lettere   → ×1.25
+  6 lettere   → ×1.50
+  7 lettere   → ×1.75
+  8 lettere   → ×2.00
+  9 lettere   → ×2.50
+  10+ lettere → ×3.00-4.00 (cap a 12)
+
+In Arena: punteggio × moltiplicatore streak (×1 + 0.2 × streak)
+In Legend: punteggio contribuisce all'obiettivo della sfida
+
+================================================================
+6. MODALITÀ DI GIOCO
+================================================================
+
+--- 6.1 ALLENAMENTO (TrainingManager.cs) ---
+
+Modalità libera senza pressione temporale (o timer lungo).
+Ideale per imparare il sistema e scoprire parole.
+
+Caratteristiche:
+  • Griglia 5x5 standard
+  • Nessun limite di tempo rigido
+  • Feedback parola corrente in tempo reale durante il trascinamento
+  • Al termine: popup con parole trovate + TUTTE le parole
+    possibili nella griglia (calcolate da GridSolver)
+  • XP guadagnato × 0.5f rispetto all'Arena
+
+Flusso:
+  1. StartTraining() → genera griglia, reset score e parole trovate
+  2. Giocatore trascina dito su lettere adiacenti
+  3. WordSelector.OnWordSubmitted → TrainingManager.SubmitWord()
+  4. SubmitWord() → validazione → aggiorna score e found words
+  5. Bottone "Nuova Griglia" → nuova partita
+  6. ShowEndOverlay() → mostra risultati
+
+--- 6.2 ARENA (ArenaManager.cs) ---
+
+Modalità competitiva a tempo con avversario simulato.
+
+Caratteristiche:
+  • Griglia 5x5 standard
+  • Timer 90 secondi con barra visiva
+  • Sistema rank: Bronzo → Argento → Oro → Platino → Leggenda
+  • Obiettivo variabile per rank (es. 1500 energia per Bronzo)
+  • Streak multiplier: ogni parola consecutiva corretta aumenta
+    il moltiplicatore (×1.2, ×1.4, ecc.)
+  • 3 slot carte abilità (ATT/DEF/SPE) — attivabili durante partita
+  • Al termine: rank guadagnato, parole trovate, tutte le parole possibili
+  • XP guadagnato, aggiornamento PlayerProfile
+
+Flusso:
+  1. StartArena() → griglia, timer, reset stato
+  2. Update() → decrementa timer, aggiorna barra
+  3. SubmitWord() → validazione → score + streak + found words
+  4. Timer a 0 → EndArena() → ShowResults()
+  5. ShowResults() → popup con rank, parole, ricompense
+
+--- 6.3 LEGGENDA (LegendManager.cs) ---
+
+Campagna narrativa con 50 sfide progressive.
+Ogni sfida sblocca la successiva (progressione lineare).
+
+Struttura sfide:
+  Sfide  1-9  → griglia 4x4, 60 secondi, obiettivo leggero
+  Sfide 10-24 → griglia 5x5, 45 secondi, obiettivo medio
+  Sfide 25-44 → griglia 6x6, 40 secondi, obiettivo elevato
+  Sfide 45-50 → griglia 7x7, 30 secondi, obiettivo massimo
+
+Obiettivo per sfida: 50 + livello × 20 punti
+
+Ricompense al completamento:
+  • Carte ATT/DEF/SPE (quantità crescente con la difficoltà)
+  • XP creatura
+  • Ogni 5 livelli: accessorio cosmetico per la creatura
+
+Testo narrativo: ogni sfida ha una frase narrativa unica che
+costruisce la storia del mondo fantasy dell'app.
+
+Layout pannello:
+  • In alto: titolo sfida, testo narrativo, timer, score
+  • Al centro: la griglia di gioco
+  • In basso: creatura del giocatore (visuale procedurale)
+  • Overlay risultati: VITTORIA/SCONFITTA + ricompense
+
+================================================================
+7. SISTEMA CREATURE
+================================================================
+
+Le creature sono entità visive collezionabili che accompagnano
+il giocatore. Nessun asset grafico: sono costruite interamente
+da forme geometriche sovrapposte (ProceduralCreatureBuilder.cs).
+
+Tre creature disponibili:
+  Mental Dragon  → viola, specialità ATT (attacco)
+  Astral Wolf    → blu, specialità DEF (difesa)
+  Ethereal Serpent → verde, specialità SPE (speciale/velocità)
+
+Ogni creatura ha 3 livelli di evoluzione:
+  Livello 1 → forma base
+  Livello 2 → dettagli aggiuntivi (fiamma/stelline/veleno)
+  Livello 3 → accessori evoluti (corona/aureola/gemme)
+
+L'evoluzione richiede XP accumulato tramite le partite.
+
+Costruzione visiva (ProceduralCreatureBuilder):
+  8-12 layer di Image Unity sovrapposti (cerchi, ellissi,
+  rettangoli ruotati) con colori e alpha diversi.
+  Esempio Dragon: aura → corpo → ventre → testa → occhi →
+  pupille → ali → corna → coda → fiamma → corona.
+
+Animazione idle: CanvasGroup alpha pulsante lento (respiro).
+
+================================================================
+8. PROGRESSIONE GIOCATORE (PlayerProfile.cs)
+================================================================
+
+Tutti i dati sono salvati in PlayerPrefs (locale sul device).
+
+Dati persistiti:
+  player_name         → nickname giocatore (default: "Evocatore")
+  player_creature     → tipo creatura selezionata (0/1/2)
+  player_xp           → XP corrente (per livello attuale)
+  player_total_xp     → XP totale accumulato in tutte le sessioni
+  player_best_score   → miglior punteggio singola partita
+  player_total_matches → numero totale di partite giocate
+  player_best_streak  → miglior streak di parole consecutive
+  player_wins         → vittorie in Arena
+  arena_rank          → rango Arena (0=Bronzo ... 4=Leggenda)
+  player_level        → livello giocatore (1-75+)
+  legend_level        → sfida Leggenda raggiunta (1-50)
+  legend_cards        → carte collezionate "att,def,spe"
+  onboarding_complete → onboarding già fatto (bool)
+
+Livelli giocatore (basati su TotalXP):
+  Livello 1-4   → "Apprendista"
+  Livello 5-9   → "Iniziato"
+  Livello 10-19 → "Praticante"
+  Livello 20-34 → "Esperto"
+  Livello 35-49 → "Maestro"
+  Livello 50-74 → "Arcimago"
+  Livello 75+   → "Stregone"
+
+Soglie XP per livello: 100 / 300 / 600 / 1000 / 1500 / 2100 /
+  2800 / 3600 / 4500 (poi cresce linearmente)
+
+Formula XP per partita:
+  xpBase = energia × 0.5 + streak × 5
+  xpVittoria = xpBase × 1.5 (bonus vittoria Arena)
+
+================================================================
+9. SISTEMA CARTE ABILITÀ
+================================================================
+
+In Arena, il giocatore dispone di 3 slot carta:
+  ATT (Attacco)   → moltiplicatore punteggio temporaneo
+  DEF (Difesa)    → riduce danno alle celle per N turni
+  SPE (Speciale)  → abilità specifica della creatura
+
+Le carte si guadagnano:
+  • Completando sfide Leggenda (ricompense progressive)
+  • (Future: shop, eventi, daily reward)
+
+Le carte sono conservate in legend_cards "att,def,spe"
+es. "3,1,2" = 3 carte ATT, 1 DEF, 2 SPE
+
+================================================================
+10. SELEZIONE LETTERE — INPUT (WordSelector.cs)
+================================================================
+
+Il sistema di input è basato sul TRASCINAMENTO del dito.
+
+Flusso input:
+  1. PointerDown su una cella → inizio selezione
+  2. PointerEnter su celle adiacenti → aggiunge alla parola
+  3. PointerUp → invia la parola corrente al manager attivo
+  4. Il manager valida e aggiorna lo stato
+
+Routing per schermata attiva:
+  Training → TrainingManager.SubmitWord()
+  Arena    → ArenaManager.SubmitWord()
+  Legend   → LegendManager.SubmitWord()
+
+Durante il trascinamento:
+  • La parola corrente è mostrata in currentWordText (fontSize 64)
+  • Le celle selezionate mostrano l'animazione bounce
+  • Solo celle adiacenti all'ultima selezionata sono accettate
+
+================================================================
+11. RICERCA PAROLE NELLA GRIGLIA (GridSolver.cs)
+================================================================
+
+A fine partita (o su richiesta) GridSolver trova TUTTE le parole
+valide nella griglia tramite DFS completo.
+
+Algoritmo:
+  1. Per ogni cella come punto di partenza
+  2. DFS ricorsivo su celle adiacenti non ancora visitate
+  3. Ad ogni passo: valida la parola corrente (≥2 lettere)
+  4. Se valida: aggiunge all'HashSet (no duplicati)
+  5. Stop a 9 lettere (MAX_WORD_LENGTH)
+  6. Risultato ordinato: più lunghe → più corte, poi alfabetico
+
+Usato per: mostrare nel popup finale "parole che potevi trovare"
+
+================================================================
+12. ONBOARDING
+================================================================
+
+Al primo avvio (OnboardingComplete = false):
+  1. Schermata "Benvenuto" con nome giocatore
+  2. Scelta creatura (Dragon/Wolf/Serpent)
+  3. Tutorial interattivo di base
+  4. OnboardingComplete = true → mai più ripetuto
+
+Per resettare il test: PlayerProfile.ResetAll() via codice,
+oppure cancellare i PlayerPrefs del device tramite le impostazioni
+di sistema del telefono.
+
+================================================================
+13. NAVIGAZIONE UI
+================================================================
+
+ScreenManager gestisce i pannelli come GameObject attivi/inattivi
+(nessun LoadScene → transizioni istantanee o fade opzionale).
+
+Stack history: ogni ShowScreen() salva il pannello precedente.
+Back() ripristina il pannello precedente dallo stack.
+
+Pannelli creati da UIAutoSetup.cs:
+  HomePanel, OnboardingPanel, CreatureSelectionPanel,
+  TrainingPanel, ArenaPanel, LegendPanel, EvolutionPanel,
+  SettingsPanel, TransitionOverlay
+
+================================================================
+14. LOCALIZZAZIONE
+================================================================
+
+LanguageManager.cs gestisce la lingua corrente:
+  • Italiano (default)
+  • Inglese
+
+Il cambio lingua aggiorna:
+  • Il dizionario usato per la validazione (italian.json / english.json)
+  • I valori lettera in LetterScoring (tabella IT vs EN)
+  • I testi UI (tbd — attualmente hardcoded in italiano)
+
+================================================================
+15. AUDIO
+================================================================
+
+AudioManager.cs (stub attuale):
+  • Placeholder per effetti sonori e musica
+  • Da implementare: suoni selezione, parola corretta/sbagliata,
+    timer, vittoria, evoluzione
+
+================================================================
+16. FLUSSO SESSIONE COMPLETA — ESEMPIO ARENA
+================================================================
+
+  App avvio
+    ↓
+  UIAutoSetup.SetupCanvas() — costruisce tutta la UI
+    ↓
+  PlayerProfile.Instance carica i dati da PlayerPrefs
+    ↓
+  ScreenManager.ShowScreen(Onboarding) se primo avvio
+    oppure ShowScreen(Home) se ritorno
+    ↓
+  [Home] Player tocca "ARENA"
+    ↓
+  ScreenManager.ShowScreen(Arena)
+    ↓
+  ArenaManager.StartArena()
+    → GridManager.GenerateGrid() con GridBuilder
+    → WordValidator carica dizionario (se non già caricato)
+    → Timer 90s inizia
+    ↓
+  [Gioco] Player trascina dito sulla griglia
+    → WordSelector.OnPointerUp() → ArenaManager.SubmitWord()
+    → WordValidator.Validate() → ValidationResult
+    → Se Valid/Legendary: LetterScoring.CalculateBaseScore()
+      × streak_multiplier → aggiorna score, streak, energyBar
+      → LetterCell.FlashLightning() su ogni cella della parola
+      → FloatCanvas: testo "+XX" che sale e svanisce
+    → Se Invalid: LetterCell.ShakeWrong() + FlashWrong()
+      → ApplyWrongHit() su ogni cella
+    ↓
+  Timer → 0
+    → EndArena()
+    → GridSolver.FindAllWords() — trova tutte le parole possibili
+    → ShowResults() — popup con score, rank, parole trovate,
+      tutte le parole possibili (marcate [OK] se trovate)
+    → PlayerProfile.RecordMatchResult() — salva XP, best score
+    ↓
+  Player tocca "MENU"
+    → ScreenManager.GoBack() → Home
+
+================================================================
+17. DOMANDE FREQUENTI — SVILUPPATORE
+================================================================
+
+Q: Come aggiungere parole al dizionario?
+A: Modificare Resources/Dictionaries/italian.json aggiungendo
+   le parole nell'array "words". Le parole devono essere in
+   minuscolo. Ricompilare e reinstallare l'app.
+
+Q: Come cambiare la dimensione della griglia?
+A: Impostare GridManager.overrideGridSize = N prima di chiamare
+   GenerateGrid(). LegendManager lo fa automaticamente per
+   ogni sfida basandosi sul livello.
+
+Q: Come resettare i dati del giocatore?
+A: Chiamare PlayerProfile.Instance.ResetAll() da codice, oppure
+   cancellare i PlayerPrefs del device tramite le impostazioni
+   di sistema del telefono.
+
+Q: Come aggiungere un nuovo tipo di creatura?
+A: 1) Aggiungere il valore al CreatureType enum
+   2) Aggiungere un case in ProceduralCreatureBuilder.Build()
+   3) Aggiungere i colori corrispondenti in UITheme.cs
+
+Q: Come funziona il sistema di build senza asset grafiche?
+A: Ogni volta che Unity entra in Play mode, UIAutoSetup.cs
+   esegue SetupCanvas() che crea programmanticamente tutti
+   i componenti UI (pannelli, testi, bottoni, slider) e li
+   collega ai rispettivi Manager. Non esistono prefab.
+
+================================================================
+18. ROADMAP FUTURA (SUGGERIMENTI INVESTITORE)
+================================================================
+
+Fase 2 — Monetizzazione:
+  • Shop carte abilità (acquisto IAP o valuta di gioco)
+  • Skin creature premium
+  • Pacchetti "boost" (timer extra, suggerimenti)
+  • Abbonamento mensile "Pass Leggenda" con sblocco sfide extra
+
+Fase 3 — Sociale:
+  • Arena PvP in tempo reale (stessa griglia, chi trova più parole)
+  • Classifiche globali per rank
+  • Tornei settimanali con ricompense esclusive
+  • Condivisione risultati su social
+
+Fase 4 — Contenuto:
+  • Espansione dizionario (slang, termini tecnici, dialetti)
+  • Dizionari aggiuntivi (FR, DE, ES)
+  • Modalità Sfida del Giorno (griglia condivisa globale)
+  • Nuovi tipi di creature e accessori stagionali
+
+Metriche chiave da tracciare:
+  • Retention D1/D7/D30
+  • Sessioni al giorno per utente
+  • Tasso completamento sfide Leggenda (funnel)
+  • Conversione free → paying per carte abilità
+
+================================================================
+FINE DOCUMENTO
+================================================================

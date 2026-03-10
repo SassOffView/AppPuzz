@@ -46,9 +46,9 @@ namespace AppPuzz.Gameplay
 
             if (word.Length >= MAX_WORD_LENGTH) return;
 
-            for (int r = 0; r < size; r++)
+            for (int r = 0; r < grid.CurrentSize; r++)
             {
-                for (int c = 0; c < size; c++)
+                for (int c = 0; c < grid.CurrentSize; c++)
                 {
                     if (visited[r, c]) continue;
                     LetterCell next = grid.GetCell(r, c);
