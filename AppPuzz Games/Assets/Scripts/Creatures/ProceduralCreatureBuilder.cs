@@ -149,18 +149,18 @@ namespace AppPuzz.Creatures
             // 12. Livello 2+: stelline
             if (level >= 2)
             {
-                MakeText(parent, "PCB_Star1", "★", 0.08f, 0.72f, 0.18f, 0.82f,
+                MakeText(parent, "PCB_Star1", "*", 0.08f, 0.72f, 0.18f, 0.82f,
                          new Color(1f, 1f, 1f, 0.45f), 20);
-                MakeText(parent, "PCB_Star2", "★", 0.78f, 0.82f, 0.88f, 0.92f,
+                MakeText(parent, "PCB_Star2", "*", 0.78f, 0.82f, 0.88f, 0.92f,
                          new Color(1f, 1f, 1f, 0.35f), 16);
-                MakeText(parent, "PCB_Star3", "★", 0.82f, 0.45f, 0.92f, 0.55f,
+                MakeText(parent, "PCB_Star3", "*", 0.82f, 0.45f, 0.92f, 0.55f,
                          new Color(1f, 1f, 1f, 0.30f), 14);
             }
 
             // 13. Livello 3: aureola
             if (level >= 3)
             {
-                MakeText(parent, "PCB_Halo", "◯", 0.30f, 0.90f, 0.65f, 1.02f,
+                MakeText(parent, "PCB_Halo", "O", 0.30f, 0.90f, 0.65f, 1.02f,
                          HEX("#FFD700"), 32);
             }
         }

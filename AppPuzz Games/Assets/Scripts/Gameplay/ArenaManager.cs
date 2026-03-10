@@ -79,6 +79,7 @@ namespace AppPuzz.Gameplay
         private bool           _isPlaying;
         private ArenaDifficulty _difficulty;
         private float          _opponentHealth = 1f;
+        private readonly List<string> _foundWords = new List<string>();
 
         private void Awake()
         {
@@ -127,6 +128,7 @@ namespace AppPuzz.Gameplay
             _maxStreak  = 0;
             _isPlaying  = true;
             _opponentHealth = 1f;
+            _foundWords.Clear();
 
             if (LanguageManager.Instance != null)
                 _validator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
@@ -162,6 +164,7 @@ namespace AppPuzz.Gameplay
             {
                 _streak++;
                 _maxStreak = Mathf.Max(_maxStreak, _streak);
+                _foundWords.Add(word.ToUpper());
                 float streakMult = Mathf.Min(1f + (_streak - 1) * 0.15f, 2.5f);
                 float legMult    = legendary ? 3f : 1f;
                 float baseScore  = LetterScoring.CalculateBaseScore(word, isItalian);
@@ -307,20 +310,36 @@ namespace AppPuzz.Gameplay
             if (quitButton     != null) quitButton.gameObject.SetActive(false);
             if (resultTitle    != null)
             {
-                resultTitle.text  = won ? "★ VITTORIA! ★" : "SCONFITTA";
+                resultTitle.text  = won ? "VITTORIA!" : "SCONFITTA";
                 resultTitle.color = won ? UITheme.Colors.Gold : UITheme.Colors.TextDanger;
             }
             if (resultScoreText != null) resultScoreText.text = $"Energia: {_score:F0}";
             if (resultRankText  != null) resultRankText.text  = $"Rango: {PlayerProfile.Instance?.ArenaRankName ?? "Bronzo"}";
 
-            if (resultWordsText != null && allWords != null)
+            if (resultWordsText != null)
             {
                 var sb = new System.Text.StringBuilder();
-                int show = Mathf.Min(allWords.Count, 20);
-                sb.AppendLine($"Parole trovabili ({allWords.Count}):");
-                for (int i = 0; i < show; i++)
-                    sb.AppendLine($"{allWords[i].ToUpper()} ({allWords[i].Length})");
-                if (allWords.Count > show) sb.AppendLine("...");
+
+                // Parole trovate dall'utente
+                if (_foundWords.Count > 0)
+                {
+                    sb.AppendLine($"<b>LE TUE PAROLE ({_foundWords.Count}):</b>");
+                    foreach (var w in _foundWords)
+                        sb.AppendLine($"  {w}  ({w.Length} lettere)");
+                    sb.AppendLine();
+                }
+
+                // Tutte le parole nella griglia
+                if (allWords != null && allWords.Count > 0)
+                {
+                    var foundSet = new HashSet<string>(_foundWords, System.StringComparer.OrdinalIgnoreCase);
+                    sb.AppendLine($"<b>PAROLE NELLA GRIGLIA ({allWords.Count}):</b>");
+                    foreach (var w in allWords)
+                    {
+                        string mark = foundSet.Contains(w.ToUpper()) ? " [OK]" : "";
+                        sb.AppendLine($"  {w.ToUpper()}  ({w.Length} lettere){mark}");
+                    }
+                }
                 resultWordsText.text = sb.ToString();
             }
         }

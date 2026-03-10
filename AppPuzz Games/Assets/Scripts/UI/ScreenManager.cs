@@ -23,7 +23,8 @@ namespace AppPuzz.UI
         Arena,
         Evolution,
         Settings,
-        Results
+        Results,
+        Legend
     }
 
     /// <summary>
@@ -52,6 +53,7 @@ namespace AppPuzz.UI
         public GameObject evolutionPanel;
         public GameObject settingsPanel;
         public GameObject resultsPanel;
+        public GameObject legendPanel;
 
         [Header("Grid condivisa")]
         [Tooltip("Container originale del GridManager (GameplayPanel). Ripristinato quando si mostra Gameplay.")]
@@ -127,6 +129,7 @@ namespace AppPuzz.UI
             SetActive(evolutionPanel,        false);
             SetActive(settingsPanel,         false);
             SetActive(resultsPanel,          false);
+            SetActive(legendPanel,           false);
         }
 
         private void ActivateScreen(ScreenID id)
@@ -200,6 +203,7 @@ namespace AppPuzz.UI
             ScreenID.Evolution        => evolutionPanel,
             ScreenID.Settings         => settingsPanel,
             ScreenID.Results          => resultsPanel,
+            ScreenID.Legend           => legendPanel,
             _                         => null,
         };
 

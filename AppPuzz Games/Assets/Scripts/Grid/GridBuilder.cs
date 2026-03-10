@@ -29,7 +29,7 @@ namespace AppPuzz.Grid
         public const int MIN_WORDS_8 = 4;
         public const int MIN_WORDS_7 = 6;
 
-        private const int SIZE         = GridManager.GRID_SIZE; // 5
+        private static int _size        = GridManager.GRID_SIZE; // default 5
         private const int MAX_ATTEMPTS = 50;
         private const int MAX_DEPTH    = 9;  // lunghezza massima ricercata
 
@@ -41,8 +41,9 @@ namespace AppPuzz.Grid
         /// Genera un char[5,5] di lettere maiuscole che rispettano i requisiti minimi.
         /// <paramref name="validator"/> può essere null: in quel caso si usa puro random.
         /// </summary>
-        public static char[,] Build(Dictionary<char, float> weights, WordValidator validator)
+        public static char[,] Build(Dictionary<char, float> weights, WordValidator validator, int gridSize = 5)
         {
+            _size = gridSize;
             bool canEmbed = validator != null && validator.IsLoaded;
 
             IReadOnlyList<string> pool9 = canEmbed
@@ -113,9 +114,9 @@ namespace AppPuzz.Grid
 
         private static char[,] BuildRandom(Dictionary<char, float> weights)
         {
-            var grid = new char[SIZE, SIZE];
-            for (int r = 0; r < SIZE; r++)
-                for (int c = 0; c < SIZE; c++)
+            var grid = new char[_size, _size];
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
                     grid[r, c] = AppPuzz.Utils.WeightedRandom.GetLetter(weights);
             return grid;
         }
@@ -127,16 +128,16 @@ namespace AppPuzz.Grid
         private static List<(int r, int c)> FindRandomPath(int length)
         {
             // Prova ogni cella come punto di partenza in ordine casuale
-            var starts = new List<(int r, int c)>(SIZE * SIZE);
-            for (int r = 0; r < SIZE; r++)
-                for (int c = 0; c < SIZE; c++)
+            var starts = new List<(int r, int c)>(_size * _size);
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
                     starts.Add((r, c));
             Shuffle(starts);
 
             foreach (var start in starts)
             {
                 var path    = new List<(int r, int c)> { start };
-                var visited = new bool[SIZE, SIZE];
+                var visited = new bool[_size, _size];
                 visited[start.r, start.c] = true;
                 if (DFSPath(path, visited, length))
                     return path;
@@ -173,7 +174,7 @@ namespace AppPuzz.Grid
                 {
                     if (dr == 0 && dc == 0) continue;
                     int nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE)
+                    if (nr >= 0 && nr < _size && nc >= 0 && nc < _size)
                         list.Add((nr, nc));
                 }
             Shuffle(list);
@@ -183,13 +184,13 @@ namespace AppPuzz.Grid
         private static List<(int r, int c)> SnakeFallback(int length)
         {
             var path = new List<(int, int)>(length);
-            for (int r = 0; r < SIZE && path.Count < length; r++)
+            for (int r = 0; r < _size && path.Count < length; r++)
             {
                 if (r % 2 == 0)
-                    for (int c = 0; c < SIZE && path.Count < length; c++)
+                    for (int c = 0; c < _size && path.Count < length; c++)
                         path.Add((r, c));
                 else
-                    for (int c = SIZE - 1; c >= 0 && path.Count < length; c--)
+                    for (int c = _size - 1; c >= 0 && path.Count < length; c--)
                         path.Add((r, c));
             }
             return path;
@@ -205,10 +206,10 @@ namespace AppPuzz.Grid
             if (validator == null) return (0, 0, 0);
 
             var found   = new HashSet<string>();
-            var visited = new bool[SIZE, SIZE];
+            var visited = new bool[_size, _size];
 
-            for (int r = 0; r < SIZE; r++)
-                for (int c = 0; c < SIZE; c++)
+            for (int r = 0; r < _size; r++)
+                for (int c = 0; c < _size; c++)
                 {
                     visited[r, c] = true;
                     string first = char.ToLower(grid[r, c]).ToString();
@@ -241,7 +242,7 @@ namespace AppPuzz.Grid
                 {
                     if (dr == 0 && dc == 0) continue;
                     int nr = r + dr, nc = c + dc;
-                    if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+                    if (nr < 0 || nr >= _size || nc < 0 || nc >= _size) continue;
                     if (visited[nr, nc]) continue;
 
                     visited[nr, nc] = true;

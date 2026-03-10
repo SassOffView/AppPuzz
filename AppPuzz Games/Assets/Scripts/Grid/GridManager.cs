@@ -23,7 +23,10 @@ namespace AppPuzz.Grid
         // ----------------------------------------------------------
         // Costanti
         // ----------------------------------------------------------
-        public const int GRID_SIZE = 5; // 5 righe × 5 colonne
+        public const int GRID_SIZE = 5; // default 5 righe × 5 colonne
+
+        /// <summary>Override temporaneo per la modalità Leggenda (4/5/6/7).</summary>
+        [System.NonSerialized] public int overrideGridSize = 0;
 
         // ----------------------------------------------------------
         // Singleton
@@ -89,21 +92,29 @@ namespace AppPuzz.Grid
         /// </summary>
         public void GenerateGrid()
         {
+            int size = overrideGridSize > 0 ? overrideGridSize : GRID_SIZE;
+
             // 0. Calcola cellSize in base al contenitore per tile quadrate
             var glg = gridContainer?.GetComponent<UnityEngine.UI.GridLayoutGroup>();
-            if (glg != null && gridContainer is RectTransform crt)
+            if (glg != null)
             {
-                // Forza aggiornamento layout canvas prima di leggere le dimensioni
-                Canvas.ForceUpdateCanvases();
-                float availW = crt.rect.width  - glg.padding.left  - glg.padding.right  - glg.spacing.x * (GRID_SIZE - 1);
-                float availH = crt.rect.height - glg.padding.top   - glg.padding.bottom - glg.spacing.y * (GRID_SIZE - 1);
-                if (availW > 0 && availH > 0)
+                glg.constraintCount = size;
+                if (gridContainer is RectTransform crt)
                 {
-                    float sz = Mathf.Min(availW / GRID_SIZE, availH / GRID_SIZE);
-                    sz = Mathf.Max(sz, 40f);
-                    glg.cellSize = new Vector2(sz, sz);
+                    Canvas.ForceUpdateCanvases();
+                    float availW = crt.rect.width  - glg.padding.left  - glg.padding.right  - glg.spacing.x * (size - 1);
+                    float availH = crt.rect.height - glg.padding.top   - glg.padding.bottom - glg.spacing.y * (size - 1);
+                    if (availW > 0 && availH > 0)
+                    {
+                        float sz = Mathf.Min(availW / size, availH / size);
+                        sz = Mathf.Max(sz, 30f);
+                        glg.cellSize = new Vector2(sz, sz);
+                    }
                 }
             }
+
+            // Ridimensiona matrice celle se necessario
+            _cells = new LetterCell[size, size];
 
             // 1. Distruggi le celle esistenti nel contenitore
             foreach (Transform child in gridContainer)
@@ -115,12 +126,12 @@ namespace AppPuzz.Grid
                 : WeightedRandom.ItalianWeights;
 
             // 3. GridBuilder genera char[,] con requisiti garantiti
-            char[,] letters = GridBuilder.Build(weights, _validator);
+            char[,] letters = GridBuilder.Build(weights, _validator, size);
 
             // 4. Istanzia celle con le lettere calcolate
-            for (int r = 0; r < GRID_SIZE; r++)
+            for (int r = 0; r < size; r++)
             {
-                for (int c = 0; c < GRID_SIZE; c++)
+                for (int c = 0; c < size; c++)
                 {
                     GameObject obj  = Instantiate(letterCellPrefab, gridContainer);
                     LetterCell cell = obj.GetComponent<LetterCell>();
@@ -133,15 +144,19 @@ namespace AppPuzz.Grid
             if (gridContainer is RectTransform gridRt)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
 
-            Debug.Log("[GridManager] Griglia 5×5 generata con requisiti minimi garantiti.");
+            Debug.Log($"[GridManager] Griglia {size}x{size} generata.");
         }
 
         /// <summary>
         /// Restituisce la cella alla posizione (row, col), o null se fuori bounds.
         /// </summary>
+        /// <summary>Dimensione corrente della griglia (può essere diversa da GRID_SIZE).</summary>
+        public int CurrentSize => _cells.GetLength(0);
+
         public LetterCell GetCell(int row, int col)
         {
-            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE)
+            int size = CurrentSize;
+            if (row < 0 || row >= size || col < 0 || col >= size)
                 return null;
             return _cells[row, col];
         }
@@ -161,8 +176,9 @@ namespace AppPuzz.Grid
         /// </summary>
         public System.Collections.Generic.IEnumerable<LetterCell> GetAllCells()
         {
-            for (int r = 0; r < GRID_SIZE; r++)
-                for (int c = 0; c < GRID_SIZE; c++)
+            int size = CurrentSize;
+            for (int r = 0; r < size; r++)
+                for (int c = 0; c < size; c++)
                     if (_cells[r, c] != null)
                         yield return _cells[r, c];
         }
@@ -183,7 +199,8 @@ namespace AppPuzz.Grid
         /// </summary>
         public void ReplaceCell(int row, int col)
         {
-            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return;
+            int size = CurrentSize;
+            if (row < 0 || row >= size || col < 0 || col >= size) return;
             LetterCell cell = _cells[row, col];
             if (cell == null) return;
 

@@ -38,6 +38,8 @@ namespace AppPuzz.Utils
         private const string KEY_LEVEL          = "player_level";
         private const string KEY_NAME           = "player_name";
         private const string KEY_AVATAR         = "player_avatar";
+        private const string KEY_LEGEND_LEVEL   = "legend_level";
+        private const string KEY_LEGEND_CARDS   = "legend_cards";
 
         // ----------------------------------------------------------
         // Proprietà (lettura da PlayerPrefs al primo accesso)
@@ -125,6 +127,30 @@ namespace AppPuzz.Utils
         {
             get => PlayerPrefs.GetInt(KEY_LEVEL, 1);
             private set => PlayerPrefs.SetInt(KEY_LEVEL, value);
+        }
+
+        /// <summary>Sfida Leggenda corrente (1-50). 1 = prima sfida.</summary>
+        public int LegendLevel
+        {
+            get => PlayerPrefs.GetInt(KEY_LEGEND_LEVEL, 1);
+            set => PlayerPrefs.SetInt(KEY_LEGEND_LEVEL, Mathf.Clamp(value, 1, 50));
+        }
+
+        /// <summary>Carte collezionate (ATT|DEF|SPE conteggi separati da virgola).</summary>
+        public string LegendCards
+        {
+            get => PlayerPrefs.GetString(KEY_LEGEND_CARDS, "0,0,0");
+            set => PlayerPrefs.SetString(KEY_LEGEND_CARDS, value);
+        }
+
+        public void AddLegendCards(int att, int def, int spe)
+        {
+            var parts = LegendCards.Split(',');
+            int a = int.Parse(parts[0]) + att;
+            int d = int.Parse(parts[1]) + def;
+            int s = int.Parse(parts[2]) + spe;
+            LegendCards = $"{a},{d},{s}";
+            PlayerPrefs.Save();
         }
 
         // ----------------------------------------------------------

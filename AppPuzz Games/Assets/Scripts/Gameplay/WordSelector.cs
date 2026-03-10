@@ -43,7 +43,8 @@ namespace AppPuzz.Gameplay
             if (sm != null &&
                 sm.Current != AppPuzz.UI.ScreenID.Gameplay &&
                 sm.Current != AppPuzz.UI.ScreenID.Training &&
-                sm.Current != AppPuzz.UI.ScreenID.Arena)
+                sm.Current != AppPuzz.UI.ScreenID.Arena &&
+                sm.Current != AppPuzz.UI.ScreenID.Legend)
                 return;
 
             if (Input.GetMouseButtonDown(0))      BeginSelection(Input.mousePosition);
@@ -156,6 +157,8 @@ namespace AppPuzz.Gameplay
                     TrainingManager.Instance?.SubmitWord(word, submittedCells);
                 else if (screen == AppPuzz.UI.ScreenID.Arena)
                     ArenaManager.Instance?.SubmitWord(word, submittedCells);
+                else if (screen == AppPuzz.UI.ScreenID.Legend)
+                    LegendManager.Instance?.SubmitWord(word, submittedCells);
                 else
                     GameManager.Instance?.SubmitWord(word, submittedCells);
             }

@@ -405,7 +405,7 @@ namespace AppPuzz.UI
             txtRt.anchorMin = Vector2.zero; txtRt.anchorMax = Vector2.one;
             txtRt.offsetMin = new Vector2(8, 8); txtRt.offsetMax = new Vector2(-8, -8);
             var txt = txtGo.AddComponent<TextMeshProUGUI>();
-            txt.fontSize  = 104;   // 4× l'originale 26
+            txt.fontSize  = 28;
             txt.color     = UITheme.Colors.TextPrimary;
             txt.alignment = TextAlignmentOptions.TopLeft;
             txt.textWrappingMode = TMPro.TextWrappingModes.Normal;
@@ -445,19 +445,19 @@ namespace AppPuzz.UI
                 new Color(0f, 0f, 0f, 0.35f),
                 new Vector2(0, 0.928f), new Vector2(1, 1.00f), Vector2.zero, Vector2.zero);
 
-            // ⚡ Energia
+            // Energia
             MakeResourceChip(resBar.transform, "EnergyChip",
-                "⚡", "60/60", UITheme.Colors.ResourceBg, UITheme.Colors.EnergyColor,
+                "E", "60/60", UITheme.Colors.ResourceBg, UITheme.Colors.EnergyColor,
                 new Vector2(0.01f, 0.08f), new Vector2(0.32f, 0.92f));
 
-            // 💎 Gemme
+            // Gemme
             MakeResourceChip(resBar.transform, "GemChip",
-                "◆", "110", UITheme.Colors.ResourceBg, UITheme.Colors.GemColor,
+                "G", "110", UITheme.Colors.ResourceBg, UITheme.Colors.GemColor,
                 new Vector2(0.34f, 0.08f), new Vector2(0.64f, 0.92f));
 
-            // 🪙 Monete
+            // Monete
             MakeResourceChip(resBar.transform, "CoinChip",
-                "●", "5.960", UITheme.Colors.ResourceBg, UITheme.Colors.CoinColor,
+                "M", "5.960", UITheme.Colors.ResourceBg, UITheme.Colors.CoinColor,
                 new Vector2(0.66f, 0.08f), new Vector2(0.99f, 0.92f));
 
             // ══════════════════════════════════════════════════════
@@ -477,7 +477,7 @@ namespace AppPuzz.UI
             var lvBadge = MakePanel(playerStrip.transform, "LvBadge",
                 UITheme.Colors.NavBarBg,
                 new Vector2(0.01f, 0.08f), new Vector2(0.18f, 0.92f), Vector2.zero, Vector2.zero);
-            hs.playerLevelText = MakeText(lvBadge.transform, "LvText", "⭐ LV.1",
+            hs.playerLevelText = MakeText(lvBadge.transform, "LvText", "LV.1",
                 28, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
@@ -485,7 +485,7 @@ namespace AppPuzz.UI
             var rankBadge = MakePanel(playerStrip.transform, "RankBadge",
                 UITheme.Colors.NavBarBg,
                 new Vector2(0.82f, 0.08f), new Vector2(0.99f, 0.92f), Vector2.zero, Vector2.zero);
-            hs.arenaRankText = MakeText(rankBadge.transform, "RankText", "🏆 BRONZO",
+            hs.arenaRankText = MakeText(rankBadge.transform, "RankText", "BRONZO",
                 24, UITheme.Colors.Gold, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
@@ -542,7 +542,7 @@ namespace AppPuzz.UI
                 UITheme.Colors.TypeDragon,
                 new Vector2(0.28f, 0.87f), new Vector2(0.72f, 0.97f), Vector2.zero, Vector2.zero);
             hs.creatureTypeBadge = typePill.GetComponent<Image>();
-            hs.creatureTypeText = MakeText(typePill.transform, "TypeTxt", "✦ DRAGO MENTALE ✦",
+            hs.creatureTypeText = MakeText(typePill.transform, "TypeTxt", "DRAGO MENTALE",
                 26, Color.white, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             hs.creatureTypeText.fontStyle = FontStyles.Bold;
@@ -554,7 +554,7 @@ namespace AppPuzz.UI
             hs.creatureNameText.fontStyle = FontStyles.Bold;
 
             // Statistiche (in overlay sulla zona)
-            hs.bestScoreText = MakeText(creatureZone.transform, "BestScore", "🏆 Record: 0",
+            hs.bestScoreText = MakeText(creatureZone.transform, "BestScore", "Record: 0",
                 24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Left,
                 new Vector2(0.02f, 0.89f), new Vector2(0.45f, 0.97f), Vector2.zero, Vector2.zero);
             hs.totalMatchesText = MakeText(creatureZone.transform, "TotalMatches", "Partite: 0",
@@ -578,7 +578,7 @@ namespace AppPuzz.UI
                           UITheme.Colors.TypeDragon.b, 0.15f),
                 new Vector2(0.04f, 0.190f), new Vector2(0.96f, 0.296f), Vector2.zero, Vector2.zero);
 
-            hs.evolutionButton = MakeButton3D(panel.transform, "EvolutionButton", "✦ EVOLVI ✦",
+            hs.evolutionButton = MakeButton3D(panel.transform, "EvolutionButton", "EVOLVI",
                 UITheme.Colors.TypeDragon, UITheme.Colors.BackgroundPanel, Color.white, 50,
                 new Vector2(0.08f, 0.198f), new Vector2(0.92f, 0.288f));
 
@@ -597,20 +597,20 @@ namespace AppPuzz.UI
                 new Color(1f, 1f, 1f, 0.12f),
                 new Vector2(0.666f, 0.08f), new Vector2(0.669f, 0.92f), Vector2.zero, Vector2.zero);
 
-            hs.playButton = MakeButton3D(navBg.transform, "PlayButton", "▶ GIOCA",
-                UITheme.Colors.BtnGreen, UITheme.Colors.BtnGreenDark, Color.white, 34,
+            hs.playButton = MakeButton3D(navBg.transform, "PlayButton", "LEGGENDA",
+                UITheme.Colors.BtnGreen, UITheme.Colors.BtnGreenDark, Color.white, 30,
                 new Vector2(0.01f, 0.06f), new Vector2(0.33f, 0.94f));
 
-            hs.trainingButton = MakeButton3D(navBg.transform, "TrainingButton", "📖 ALLENAMENTO",
+            hs.trainingButton = MakeButton3D(navBg.transform, "TrainingButton", "ALLENAMENTO",
                 UITheme.Colors.BtnOrange, UITheme.Colors.BtnOrangeDark, Color.white, 26,
                 new Vector2(0.34f, 0.06f), new Vector2(0.66f, 0.94f));
 
-            hs.arenaButton = MakeButton3D(navBg.transform, "ArenaButton", "⚔ ARENA",
+            hs.arenaButton = MakeButton3D(navBg.transform, "ArenaButton", "ARENA",
                 UITheme.Colors.BtnPurple, UITheme.Colors.BtnPurpleDark, Color.white, 34,
                 new Vector2(0.67f, 0.06f), new Vector2(0.99f, 0.94f));
 
             // Settings button (piccolo icona a destra sopra la nav)
-            hs.settingsButton = MakeButton(panel.transform, "SettingsButton", "⚙",
+            hs.settingsButton = MakeButton(panel.transform, "SettingsButton", "OPT",
                 new Color(0,0,0,0), UITheme.Colors.TextSecondary, 30,
                 new Vector2(0.82f, 0.195f), new Vector2(0.98f, 0.288f),
                 Vector2.zero, Vector2.zero);
@@ -832,7 +832,7 @@ namespace AppPuzz.UI
             layout.childForceExpandHeight = true;
             layout.spacing = 0;
 
-            string[] icons   = { "★", "▶", "☆", "⚙" };
+            string[] icons   = { "*", ">", "~", "=" };
             string[] labels  = { "HOME", "GIOCA", "ARENA", "OPT" };
             Color[]  colors  = {
                 UITheme.Colors.NavBarActive,
@@ -1203,13 +1203,10 @@ namespace AppPuzz.UI
                 new Vector2(0.05f, 0.770f), new Vector2(0.95f, 0.818f), Vector2.zero, Vector2.zero);
             tm.currentWordText.fontStyle = FontStyles.Bold;
 
-            // Feedback + Hint text (riga unica compatta)
+            // Feedback text
             tm.feedbackText = MakeText(panel.transform, "FeedbackText", "",
-                30, UITheme.Colors.TextSuccess, TextAlignmentOptions.Left,
-                new Vector2(0.04f, 0.750f), new Vector2(0.72f, 0.770f), Vector2.zero, Vector2.zero);
-            tm.hintText = MakeText(panel.transform, "HintText", "",
-                24, UITheme.Colors.TextSecondary, TextAlignmentOptions.Right,
-                new Vector2(0.72f, 0.750f), new Vector2(0.97f, 0.770f), Vector2.zero, Vector2.zero);
+                30, UITheme.Colors.TextSuccess, TextAlignmentOptions.Center,
+                new Vector2(0.04f, 0.750f), new Vector2(0.96f, 0.770f), Vector2.zero, Vector2.zero);
 
             // Cornice griglia — allineata ad Arena (y 0.170-0.758)
             {
@@ -1241,12 +1238,9 @@ namespace AppPuzz.UI
             }
 
             // Pulsanti compatti sotto la griglia
-            tm.hintButton = MakeButton(panel.transform, "HintButton", "💡 Suggerimento",
-                UITheme.Colors.ButtonSecondary, UITheme.Colors.Gold, 26,
-                new Vector2(0.03f, 0.100f), new Vector2(0.48f, 0.160f), Vector2.zero, Vector2.zero);
-            tm.newGridButton = MakeButton(panel.transform, "NewGridButton", "🔄 Nuova Griglia",
+            tm.newGridButton = MakeButton(panel.transform, "NewGridButton", "NUOVA GRIGLIA",
                 UITheme.Colors.ButtonSecondary, UITheme.Colors.TextPrimary, 26,
-                new Vector2(0.52f, 0.100f), new Vector2(0.97f, 0.160f), Vector2.zero, Vector2.zero);
+                new Vector2(0.25f, 0.100f), new Vector2(0.75f, 0.160f), Vector2.zero, Vector2.zero);
             tm.exitButton = MakeButton(panel.transform, "ExitButton", "ESCI",
                 UITheme.Colors.ButtonDanger, UITheme.Colors.TextPrimary, 28,
                 new Vector2(0.25f, 0.030f), new Vector2(0.75f, 0.090f), Vector2.zero, Vector2.zero);

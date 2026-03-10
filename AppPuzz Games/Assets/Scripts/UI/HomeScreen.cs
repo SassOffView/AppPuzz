@@ -179,7 +179,7 @@ namespace AppPuzz.UI
         // ---- Handler pulsanti ----
         private void OnPlay()
         {
-            ScreenManager.Instance?.ShowScreen(ScreenID.Gameplay);
+            ScreenManager.Instance?.ShowScreen(ScreenID.Legend);
         }
 
         private void OnTraining()

@@ -21,7 +21,8 @@ namespace AppPuzz.Gameplay
             if (grid == null || validator == null) return new List<string>();
 
             var found = new HashSet<string>();
-            bool[,] visited = new bool[GridManager.GRID_SIZE, GridManager.GRID_SIZE];
+            int size = grid.CurrentSize;
+            bool[,] visited = new bool[size, size];
 
             foreach (LetterCell start in grid.GetAllCells())
             {
@@ -45,9 +46,9 @@ namespace AppPuzz.Gameplay
 
             if (word.Length >= MAX_WORD_LENGTH) return;
 
-            for (int r = 0; r < GridManager.GRID_SIZE; r++)
+            for (int r = 0; r < size; r++)
             {
-                for (int c = 0; c < GridManager.GRID_SIZE; c++)
+                for (int c = 0; c < size; c++)
                 {
                     if (visited[r, c]) continue;
                     LetterCell next = grid.GetCell(r, c);

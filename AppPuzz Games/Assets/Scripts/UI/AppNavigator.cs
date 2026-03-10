@@ -88,6 +88,11 @@ namespace AppPuzz.UI
             ScreenManager.Instance?.ShowScreen(ScreenID.Settings);
         }
 
+        public void ShowLegend()
+        {
+            ScreenManager.Instance?.ShowScreen(ScreenID.Legend);
+        }
+
         /// <summary>Ricarica la scena corrente (hard reset).</summary>
         public void ReloadScene()
         {

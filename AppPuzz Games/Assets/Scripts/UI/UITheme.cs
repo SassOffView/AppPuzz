@@ -233,11 +233,11 @@ namespace AppPuzz.UI
             public const string MenuBtn        = "MENU";
             public const string SelectCreature = "SCEGLI LA TUA CREATURA";
             public const string EvolveBtn      = "EVOLVI!";
-            public const string Legendary      = "★ LEGGENDARIO ★";
+            public const string Legendary      = "LEGGENDARIO";
             public const string WordValid      = "PAROLA VALIDA!";
             public const string WordInvalid    = "Parola non trovata";
             public const string TimesUp        = "TEMPO SCADUTO!";
-            public const string NewRecord      = "★ NUOVO RECORD ★";
+            public const string NewRecord      = "NUOVO RECORD";
         }
 
         // ----------------------------------------------------------

@@ -25,13 +25,11 @@ namespace AppPuzz.Gameplay
         public TextMeshProUGUI feedbackText;
         public TextMeshProUGUI scoreText;
         public TextMeshProUGUI wordsFoundText;
-        public TextMeshProUGUI hintText;
-        public TextMeshProUGUI timerText;         // NUOVO: countdown
+        public TextMeshProUGUI timerText;
         public Slider          energyBar;
-        public Slider          timerBar;          // NUOVO
+        public Slider          timerBar;
 
         [Header("Pulsanti")]
-        public Button hintButton;
         public Button newGridButton;
         public Button exitButton;
 
@@ -48,21 +46,20 @@ namespace AppPuzz.Gameplay
         public Canvas floatCanvas;                     // canvas per i label XP flottanti
 
         [Header("Configurazione")]
-        public int   hintsPerSession = 3;
         public float xpMultiplier   = 0.5f;
         public float sessionDuration = 120f;           // 2 minuti
 
         private readonly WordValidator _validator = new WordValidator();
         private float _score;
         private int   _wordsFound;
-        private int   _hintsLeft;
         private bool  _isActive;
         private float _timeLeft;
+        private readonly List<string> _foundWords = new List<string>();
 
         private const float MAX_ENERGY = 500f;
 
         private static readonly string[] FB_OK  = {"Ottimo!","Bravo!","Perfetto!","Fantastico!"};
-        private static readonly string[] FB_LEG  = {"★ LEGGENDARIO! ★","★ INCREDIBILE! ★","★ EPICO! ★"};
+        private static readonly string[] FB_LEG  = {"LEGGENDARIO!","INCREDIBILE!","EPICO!"};
         private static readonly string[] FB_BAD  = {"Non trovata","Riprova!","Non è nel dizionario"};
 
         private void Awake()
@@ -102,8 +99,8 @@ namespace AppPuzz.Gameplay
         {
             _score      = 0f;
             _wordsFound = 0;
-            _hintsLeft  = hintsPerSession;
             _isActive   = true;
+            _foundWords.Clear();
             _timeLeft   = sessionDuration;
 
             if (LanguageManager.Instance != null)
@@ -120,7 +117,6 @@ namespace AppPuzz.Gameplay
             UpdateUI();
             UpdateTimerUI();
             if (feedbackText != null) feedbackText.text = "Trova parole sulla griglia!";
-            if (hintText     != null) hintText.text     = "";
             if (currentWordText != null) currentWordText.text = "";
         }
 
@@ -139,6 +135,7 @@ namespace AppPuzz.Gameplay
                 if (legendary) baseScore *= 3f;
                 _score += baseScore;
                 _wordsFound++;
+                _foundWords.Add(word.ToUpper());
 
                 ShowFeedback(legendary
                     ? FB_LEG[Random.Range(0, FB_LEG.Length)]
@@ -231,19 +228,33 @@ namespace AppPuzz.Gameplay
 
             if (endWordsScrollText != null)
             {
+                var sb = new System.Text.StringBuilder();
+
+                // Parole trovate dall'utente
+                if (_foundWords.Count > 0)
+                {
+                    sb.AppendLine($"<b>LE TUE PAROLE ({_foundWords.Count}):</b>");
+                    foreach (var w in _foundWords)
+                        sb.AppendLine($"  {w}  ({w.Length} lettere)");
+                    sb.AppendLine();
+                }
+
+                // Tutte le parole nella griglia
                 if (allWords.Count == 0)
                 {
-                    endWordsScrollText.text = "(nessuna parola trovabile)";
+                    sb.AppendLine("(nessuna parola trovabile)");
                 }
                 else
                 {
-                    var sb = new System.Text.StringBuilder();
-                    sb.AppendLine($"Parole trovabili ({allWords.Count}):");
-                    sb.AppendLine();
+                    var foundSet = new HashSet<string>(_foundWords, System.StringComparer.OrdinalIgnoreCase);
+                    sb.AppendLine($"<b>PAROLE NELLA GRIGLIA ({allWords.Count}):</b>");
                     foreach (var w in allWords)
-                        sb.AppendLine($"  {w.ToUpper()}  ({w.Length} lettere)");
-                    endWordsScrollText.text = sb.ToString();
+                    {
+                        string mark = foundSet.Contains(w.ToUpper()) ? " [OK]" : "";
+                        sb.AppendLine($"  {w.ToUpper()}  ({w.Length} lettere){mark}");
+                    }
                 }
+                endWordsScrollText.text = sb.ToString();
             }
         }
 
@@ -302,12 +313,6 @@ namespace AppPuzz.Gameplay
             if (scoreText      != null) scoreText.text      = $"Energia: {_score:F0}";
             if (wordsFoundText != null) wordsFoundText.text = $"Parole: {_wordsFound}";
             if (energyBar      != null) energyBar.value     = Mathf.Clamp01(_score / MAX_ENERGY);
-            if (hintButton != null)
-            {
-                var lbl = hintButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (lbl != null) lbl.text = $"Suggerimento ({_hintsLeft})";
-                hintButton.interactable = _hintsLeft > 0;
-            }
         }
 
         private void ShowFeedback(string msg, Color color)
@@ -340,7 +345,6 @@ namespace AppPuzz.Gameplay
             foreach (var r in hits)
             {
                 var go = r.gameObject;
-                if (IsUnder(go, hintButton))    { ShowHint();                  return; }
                 if (IsUnder(go, newGridButton)) { OnNewGrid();                 return; }
                 if (IsUnder(go, exitButton))    { OnExit();                    return; }
                 if (IsUnder(go, endCloseButton)){ OnEndClose();                return; }
@@ -351,15 +355,6 @@ namespace AppPuzz.Gameplay
         {
             if (owner == null || go == null) return false;
             return go == owner.gameObject || go.transform.IsChildOf(owner.transform);
-        }
-
-        private void ShowHint()
-        {
-            if (_hintsLeft <= 0) { ShowFeedback("Nessun suggerimento rimasto!", UITheme.Colors.TextDanger); return; }
-            _hintsLeft--;
-            if (hintText != null)
-                hintText.text = $"Suggerimento: cerca parole di {Random.Range(4,7)} lettere. ({_hintsLeft} rimasti)";
-            UpdateUI();
         }
 
         private void OnNewGrid()
