@@ -1396,7 +1396,7 @@ namespace AppPuzz.UI
                     22, UITheme.Colors.TextSecondary, TextAlignmentOptions.Center,
                     new Vector2(0f, 0.72f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
 
-                // 3 slot carta placeholder
+                // 3 slot carta — collegati ad ArenaManager per mostrare conti reali
                 string[] slotLabels = { "ATT", "DEF", "SPE" };
                 Color[] slotColors  = { UITheme.Colors.BtnOrange, UITheme.Colors.TypeWolf, UITheme.Colors.TypeDragon };
                 for (int i = 0; i < 3; i++)
@@ -1409,11 +1409,15 @@ namespace AppPuzz.UI
                     sRt.anchorMin = new Vector2(x0, 0.04f); sRt.anchorMax = new Vector2(x1, 0.70f);
                     sRt.offsetMin = sRt.offsetMax = Vector2.zero;
                     slot.AddComponent<Image>().color = new Color(slotColors[i].r, slotColors[i].g, slotColors[i].b, 0.55f);
-                    var btn = slot.AddComponent<Button>();
-                    MakeText(slot.transform, "SlotLabel", slotLabels[i],
+                    slot.AddComponent<Button>(); // interattivo per feedback visivo
+                    var lbl = MakeText(slot.transform, "SlotLabel", slotLabels[i],
                         28, Color.white, TextAlignmentOptions.Center,
-                        Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero)
-                        .fontStyle = FontStyles.Bold;
+                        Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                    lbl.fontStyle = FontStyles.Bold;
+                    // Collega il TextMeshProUGUI ad ArenaManager per aggiornamenti a runtime
+                    if      (i == 0) am.attCardText = lbl;
+                    else if (i == 1) am.defCardText = lbl;
+                    else             am.speCardText = lbl;
                 }
             }
 

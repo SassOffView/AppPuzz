@@ -5,7 +5,7 @@
 \f0\fs22
 
 {\fs32\b\cf2 APPPUZZ \emdash DOCUMENTO DI LOGICA E ARCHITETTURA}\line
-{\fs20\cf1 Versione: 1.0  |  Data: Marzo 2026  |  Per: sviluppatori e potenziali investitori}
+{\fs20\cf1 Versione: 1.1  |  Data: Marzo 2026  |  Per: sviluppatori e potenziali investitori}
 \par\par
 
 {\fs28\b\cf2 1. PANORAMICA DELL'APP}
@@ -146,6 +146,15 @@ Formula XP: xpBase = energia x 0.5 + streak x 5 | xpVittoria = xpBase x 1.5
 \par\par
 In Arena, 3 slot carta: ATT (moltiplicatore punteggio), DEF (riduce danno celle), SPE (abilit\'e0 creatura). Si guadagnano completando sfide Leggenda. Formato salvataggio: "att,def,spe" es. "3,1,2".
 \par\par
+{\b Effetti implementati in ArenaManager.cs:}
+\par
+\tab ATT \tab\tab punteggio x (1 + carte x 0.10), max 2.0x\line
+\tab DEF \tab\tab \'bc1 carta: le parole errate non causano danno alle tessere\line
+\tab    \tab\tab \'bc2 carte: anche le parole corrette non consumano HP\line
+\tab SPE \tab\tab +3 secondi al timer per ogni parola leggendaria trovata\line
+\par
+I contatori carte sono mostrati nei 3 slot della sezione "ABILIT\'c0 CREATURA" durante la partita Arena.
+\par\par
 
 {\fs28\b\cf2 10. INPUT E SELEZIONE LETTERE (WordSelector.cs)}
 \par\par
@@ -174,7 +183,15 @@ LanguageManager.cs: Italiano (default) e Inglese. Il cambio lingua aggiorna: diz
 
 {\fs28\b\cf2 15. AUDIO}
 \par\par
-AudioManager.cs (stub): placeholder per effetti sonori e musica. Da implementare: suoni selezione, parola corretta/sbagliata, timer, vittoria, evoluzione.
+AudioManager.cs: audio completamente implementato con sintesi PCM procedurale (nessun file .wav o .mp3 esterno). Effetti disponibili:
+\par
+\tab PlayClick()       \tab click UI: tick 1200\rarrow800 Hz, 55ms\line
+\tab PlayWordValid()   \tab doppio chime ascendente 660\rarrow880 Hz\line
+\tab PlayWordInvalid() \tab ronzio 180+270 Hz con distorsione, 130ms\line
+\tab PlayStreak(n)     \tab arpeggio 4 note 440\rarrow880 Hz, pitch crescente con streak\line
+\tab PlayEvolution()   \tab accordo maestoso 5 armoniche, 750ms con fade-in/out\line
+\par
+I suoni sono generati al primo Awake() e memorizzati come AudioClip. L'AudioManager si collega automaticamente agli eventi EnergyManager.OnEnergyGained e GameManager.OnWordInvalid.
 \par\par
 
 {\fs28\b\cf2 16. FLUSSO SESSIONE COMPLETA (ESEMPIO ARENA)}
@@ -211,6 +228,6 @@ A: UIAutoSetup.cs crea programmanticamente tutta la UI in Awake(). Non esistono 
 {\b Metriche chiave:} Retention D1/D7/D30, sessioni al giorno per utente, tasso completamento sfide Leggenda, conversione free \rarrow paying.
 \par\par\par
 {\b\cf2 ================================================================}\line
-{\b\cf2 FINE DOCUMENTO \emdash APPPUZZ v1.0 \emdash Marzo 2026}\line
+{\b\cf2 FINE DOCUMENTO \emdash APPPUZZ v1.1 \emdash Marzo 2026}\line
 {\b\cf2 ================================================================}
 }

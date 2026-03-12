@@ -1,7 +1,7 @@
 // ============================================================
 // ArenaManager.cs — Arena: time-attack con punteggio e rank.
 // Aggiunto: parola corrente in RT, lista parole a fine partita,
-// XP float animation.
+// XP float animation, sistema carte ATT/DEF/SPE.
 // ============================================================
 using System.Collections;
 using System.Collections.Generic;
@@ -66,10 +66,24 @@ namespace AppPuzz.Gameplay
         [Header("XP Float")]
         public Canvas floatCanvas;
 
+        [Header("Carte Abilità")]
+        public TextMeshProUGUI attCardText;   // mostra "ATT x3"
+        public TextMeshProUGUI defCardText;   // mostra "DEF x1"
+        public TextMeshProUGUI speCardText;   // mostra "SPE x2"
+
         [Header("Configurazione")]
         public float baseDuration  = 90f;
         public float maxEnergy     = 3000f;
         public float targetEnergy  = 1500f;
+
+        // ── Bonus carte (letti da PlayerProfile all'inizio di ogni match) ──
+        // ATT: moltiplicatore punteggio. Ogni carta ATT aggiunge +10%, cap 2.0×
+        // DEF: riduce danno celle. Con ≥1 carta DEF le parole errate non applicano
+        //      danno, con ≥2 anche le parole corrette non consumano HP.
+        // SPE: bonus tempo. Ogni carta SPE aggiunge +3s per ogni parola leggendaria.
+        private int _attCards;
+        private int _defCards;
+        private int _speCards;
 
         private readonly WordValidator _validator = new WordValidator();
         private float          _timeLeft;
@@ -130,6 +144,10 @@ namespace AppPuzz.Gameplay
             _opponentHealth = 1f;
             _foundWords.Clear();
 
+            // ── Carica carte da PlayerProfile ──
+            LoadCards();
+            RefreshCardUI();
+
             if (LanguageManager.Instance != null)
                 _validator.LoadDictionaries(LanguageManager.Instance.GetDictionaryFileName());
 
@@ -167,19 +185,22 @@ namespace AppPuzz.Gameplay
                 _foundWords.Add(word.ToUpper());
                 float streakMult = Mathf.Min(1f + (_streak - 1) * 0.15f, 2.5f);
                 float legMult    = legendary ? 3f : 1f;
+                // ATT bonus: +10% per carta, cap 2.0×
+                float attMult    = Mathf.Min(1f + _attCards * 0.10f, 2.0f);
                 float baseScore  = LetterScoring.CalculateBaseScore(word, isItalian);
-                float gained     = baseScore * streakMult * legMult;
+                float gained     = baseScore * streakMult * legMult * attMult;
                 _score += gained;
 
                 _opponentHealth = Mathf.Clamp01(_opponentHealth - gained / maxEnergy);
                 UpdateOpponentUI();
 
-                if (legendary) _timeLeft += 5f;
+                // Base time bonus: +5s per parola leggendaria + SPE bonus (+3s per carta SPE)
+                if (legendary) _timeLeft += 5f + _speCards * 3f;
                 StartCoroutine(AttackFlashEffect());
                 SpawnXPFloat(gained);
 
-                // Fulmine + danno corretto
-                if (cells != null && cells.Count > 0)
+                // Fulmine + danno corretto (saltato con ≥2 carte DEF)
+                if (cells != null && cells.Count > 0 && _defCards < 2)
                 {
                     string creatureType = CreatureController.Instance?.SelectedCreatureTypeName ?? "MentalDragon";
                     Color  lightColor   = UITheme.LightningColor(creatureType);
@@ -194,7 +215,8 @@ namespace AppPuzz.Gameplay
                 if (_difficulty >= ArenaDifficulty.Oro)
                     _timeLeft = Mathf.Max(0f, _timeLeft - 2f);
 
-                if (cells != null && cells.Count > 0)
+                // Danno parola errata saltato con ≥1 carta DEF
+                if (cells != null && cells.Count > 0 && _defCards < 1)
                     StartCoroutine(WrongWordEffect(cells));
             }
             UpdateScoreUI();
@@ -266,6 +288,26 @@ namespace AppPuzz.Gameplay
             Destroy(go);
         }
 
+        // -------- Carte abilità --------
+        private void LoadCards()
+        {
+            string raw = PlayerProfile.Instance?.LegendCards ?? "0,0,0";
+            var parts = raw.Split(',');
+            _attCards = parts.Length > 0 && int.TryParse(parts[0], out int a) ? a : 0;
+            _defCards = parts.Length > 1 && int.TryParse(parts[1], out int d) ? d : 0;
+            _speCards = parts.Length > 2 && int.TryParse(parts[2], out int s) ? s : 0;
+        }
+
+        private void RefreshCardUI()
+        {
+            if (attCardText != null)
+                attCardText.text = _attCards > 0 ? $"ATT ×{_attCards}" : "ATT";
+            if (defCardText != null)
+                defCardText.text = _defCards > 0 ? $"DEF ×{_defCards}" : "DEF";
+            if (speCardText != null)
+                speCardText.text = _speCards > 0 ? $"SPE ×{_speCards}" : "SPE";
+        }
+
         // -------- Fine partita --------
         private void EndArena()
         {
@@ -299,7 +341,14 @@ namespace AppPuzz.Gameplay
                 resultTitle.text  = won ? "VITTORIA!" : "SCONFITTA";
                 resultTitle.color = won ? UITheme.Colors.Gold : UITheme.Colors.TextDanger;
             }
-            if (resultScoreText != null) resultScoreText.text = $"Energia: {_score:F0}";
+            // Build score line — show ATT bonus if active
+            string scoreStr = $"Energia: {_score:F0}";
+            if (_attCards > 0)
+            {
+                float attMult = Mathf.Min(1f + _attCards * 0.10f, 2.0f);
+                scoreStr += $"  (ATT ×{attMult:F1})";
+            }
+            if (resultScoreText != null) resultScoreText.text = scoreStr;
             if (resultRankText  != null) resultRankText.text  = $"Rango: {PlayerProfile.Instance?.ArenaRankName ?? "Bronzo"}";
 
             if (resultWordsText != null)
